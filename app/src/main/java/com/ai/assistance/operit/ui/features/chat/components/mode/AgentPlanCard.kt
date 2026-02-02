@@ -39,13 +39,18 @@ fun AgentPlanCard(
 ) {
     var isExpanded by remember { mutableStateOf(true) }
     
+    // Agent 橙色主题
+    val agentOrange = Color(0xFFFF6B35)
+    val agentContainerColor = Color(0xFFFFF3E0) // 浅橙色背景
+    val agentOnContainerColor = Color(0xFF3E2723) // 深棕色文字
+    
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            containerColor = agentContainerColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -63,13 +68,13 @@ fun AgentPlanCard(
                         text = "Agent 任务规划",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        color = agentOnContainerColor
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = plan.taskDescription,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                        color = agentOnContainerColor.copy(alpha = 0.8f)
                     )
                 }
                 
@@ -77,7 +82,7 @@ fun AgentPlanCard(
                     Icon(
                         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (isExpanded) "折叠" else "展开",
-                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                        tint = agentOnContainerColor
                     )
                 }
             }

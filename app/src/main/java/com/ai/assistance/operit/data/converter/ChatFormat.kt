@@ -4,7 +4,7 @@ package com.ai.assistance.operit.data.converter
  * 支持的聊天记录格式
  */
 enum class ChatFormat {
-    /** Operit 原生格式 */
+    /** MetaAgent 原生格式 */
     OPERIT,
     
     /** ChatGPT conversations.json 格式 */
@@ -36,7 +36,7 @@ enum class ChatFormat {
  * 导出格式
  */
 enum class ExportFormat {
-    /** JSON 格式（Operit原生） */
+    /** JSON 格式（MetaAgent原生） */
     JSON,
     
     /** Markdown 格式 */
