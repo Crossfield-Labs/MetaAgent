@@ -509,11 +509,8 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                 currentMode = conversationMode,
                                 onModeChange = { mode ->
                                     actualViewModel.switchConversationMode(mode)
-                                    // 切换到 Agent 模式时创建示例 Plan
-                                    if (mode == com.ai.assistance.operit.data.model.ConversationMode.AGENT 
-                                        && currentAgentPlan == null) {
-                                        actualViewModel.createAgentPlan("示例任务")
-                                    }
+                                    // 切换模式时不自动创建 Plan
+                                    // Plan 应在用户发送消息后由 AI 判断任务复杂度时生成
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
