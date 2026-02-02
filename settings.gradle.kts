@@ -24,7 +24,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Operit"
 include(":app")
-include(":dragonbones")
+// include(":dragonbones") // Disabled for simplification
 include(":terminal")
 include(":mnn")
 include(":llama")

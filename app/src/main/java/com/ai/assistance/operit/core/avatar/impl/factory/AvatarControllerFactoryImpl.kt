@@ -5,8 +5,6 @@ import com.ai.assistance.operit.core.avatar.common.control.AvatarController
 import com.ai.assistance.operit.core.avatar.common.factory.AvatarControllerFactory
 import com.ai.assistance.operit.core.avatar.common.model.AvatarModel
 import com.ai.assistance.operit.core.avatar.common.model.AvatarType
-import com.ai.assistance.operit.core.avatar.common.model.ISkeletalAvatarModel
-import com.ai.assistance.operit.core.avatar.impl.dragonbones.control.rememberDragonBonesAvatarController
 import com.ai.assistance.operit.core.avatar.impl.webp.control.rememberWebPAvatarController
 import com.ai.assistance.operit.core.avatar.impl.webp.model.WebPAvatarModel
 
@@ -20,12 +18,8 @@ class AvatarControllerFactoryImpl : AvatarControllerFactory {
     override fun createController(model: AvatarModel): AvatarController? {
         return when (model.type) {
             AvatarType.DRAGONBONES -> {
-                val skeletalModel = model as? ISkeletalAvatarModel
-                if (skeletalModel != null) {
-                    rememberDragonBonesAvatarController()
-                } else {
-                    null
-                }
+                // DragonBones module removed for simplification
+                null
             }
             AvatarType.WEBP -> {
                 val webpModel = model as? WebPAvatarModel
@@ -48,7 +42,7 @@ class AvatarControllerFactoryImpl : AvatarControllerFactory {
     
     override fun canCreateController(model: AvatarModel): Boolean {
         return when (model.type) {
-            AvatarType.DRAGONBONES -> model is ISkeletalAvatarModel
+            AvatarType.DRAGONBONES -> false // DragonBones module removed
             AvatarType.WEBP -> model is WebPAvatarModel
             else -> false // LIVE2D and MMD not yet implemented
         }
@@ -56,7 +50,6 @@ class AvatarControllerFactoryImpl : AvatarControllerFactory {
     
     override val supportedTypes: List<String>
         get() = listOf(
-            AvatarType.DRAGONBONES.name,
             AvatarType.WEBP.name
         )
 } 

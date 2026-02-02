@@ -606,6 +606,22 @@ sealed class Screen(
         }
     }
 
+    data object Test : Screen(navItem = NavItem.Test, titleRes = R.string.nav_test) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            TestScreen()
+        }
+    }
+
     data object TokenConfig : Screen(parentScreen = AiChat, navItem = NavItem.TokenConfig) {
         @Composable
         override fun Content(
@@ -1392,6 +1408,7 @@ object OperitRouter {
             NavItem.Agreement -> Screen.Agreement
             NavItem.UpdateHistory -> Screen.UpdateHistory
             NavItem.Workflow -> Screen.Workflow
+            NavItem.Test -> Screen.Test
             else -> Screen.AiChat
         }
     }

@@ -6,9 +6,7 @@ import com.ai.assistance.operit.core.avatar.common.control.AvatarController
 import com.ai.assistance.operit.core.avatar.common.model.AvatarModel
 import com.ai.assistance.operit.core.avatar.common.model.AvatarType
 import com.ai.assistance.operit.core.avatar.common.model.IFrameSequenceAvatarModel
-import com.ai.assistance.operit.core.avatar.common.model.ISkeletalAvatarModel
 import com.ai.assistance.operit.core.avatar.common.factory.AvatarRendererFactory
-import com.ai.assistance.operit.core.avatar.impl.dragonbones.view.DragonBonesRenderer
 import com.ai.assistance.operit.core.avatar.impl.webp.view.WebPRenderer
 
 /**
@@ -22,21 +20,8 @@ class AvatarRendererFactoryImpl : AvatarRendererFactory {
     override fun createRenderer(model: AvatarModel): @Composable ((modifier: Modifier, controller: AvatarController) -> Unit)? {
         return when (model.type) {
             AvatarType.DRAGONBONES -> {
-                // Ensure the model is of the correct subtype for the renderer.
-                val skeletalModel = model as? ISkeletalAvatarModel
-                if (skeletalModel != null) {
-                    // Return a lambda that correctly invokes the DragonBonesRenderer.
-                    { modifier, controller ->
-                        DragonBonesRenderer(
-                            modifier = modifier,
-                            model = skeletalModel,
-                            controller = controller,
-                            onError = { /* Handle error appropriately */ }
-                        )
-                    }
-                } else {
-                    null // Model is DRAGONBONES type but doesn't implement the required interface.
-                }
+                // DragonBones module removed for simplification
+                null
             }
             AvatarType.WEBP -> {
                 // Ensure the model is of the correct subtype for the renderer.

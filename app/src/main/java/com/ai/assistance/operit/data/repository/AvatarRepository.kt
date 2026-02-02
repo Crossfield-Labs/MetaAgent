@@ -69,42 +69,7 @@ interface AvatarPersistenceDelegate {
     fun scanDirectory(directory: File, isBuiltIn: Boolean): List<AvatarConfig>
 }
 
-/**
- * Persistence delegate for DragonBones models.
- */
-class DragonBonesPersistenceDelegate : AvatarPersistenceDelegate {
-    override val type = AvatarType.DRAGONBONES
-
-    override fun scanDirectory(directory: File, isBuiltIn: Boolean): List<AvatarConfig> {
-        val allConfigs = mutableListOf<AvatarConfig>()
-        if (!directory.exists() || !directory.isDirectory) return allConfigs
-
-        val skeletonFile = directory.listFiles { f -> f.isFile && f.extension == "json" && !f.name.endsWith("_tex.json") }?.firstOrNull()
-        if (skeletonFile == null) return allConfigs
-
-        val modelName = skeletonFile.nameWithoutExtension.removeSuffix("_ske")
-        val textureJsonFile = File(directory, "${modelName}_tex.json")
-        val textureImageFile = File(directory, "${modelName}_tex.png")
-
-        if (textureJsonFile.exists() && textureImageFile.exists()) {
-            val config = AvatarConfig(
-                id = if (isBuiltIn) "built_in_db_${directory.name}" else "user_db_${directory.name}_${System.currentTimeMillis()}",
-                name = directory.name,
-                type = AvatarType.DRAGONBONES,
-                isBuiltIn = isBuiltIn,
-                data = mapOf(
-                    "folderPath" to directory.absolutePath,
-                    "skeletonFile" to skeletonFile.name,
-                    "textureJsonFile" to textureJsonFile.name,
-                    "textureImageFile" to textureImageFile.name,
-                    "isBuiltIn" to isBuiltIn
-                )
-            )
-            allConfigs.add(config)
-        }
-        return allConfigs
-    }
-}
+// DragonBonesPersistenceDelegate removed - module disabled
 
 /**
  * Persistence delegate for WebP models.
@@ -171,7 +136,7 @@ class AvatarRepository(
     private val gson = Gson()
 
     private val delegates: Map<AvatarType, AvatarPersistenceDelegate> = listOf(
-        DragonBonesPersistenceDelegate(),
+        // DragonBonesPersistenceDelegate removed
         WebPPersistenceDelegate()
     ).associateBy { it.type }
 

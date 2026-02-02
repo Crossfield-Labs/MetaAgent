@@ -178,7 +178,7 @@ android {
 
 dependencies {
     implementation("com.github.jelmerk:hnswlib-core:1.2.1")
-    implementation(project(":dragonbones"))
+    // implementation(project(":dragonbones")) // Disabled for simplification
     implementation(project(":terminal"))
     implementation(project(":mnn"))
     implementation(project(":llama"))

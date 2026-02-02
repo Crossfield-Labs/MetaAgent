@@ -183,6 +183,7 @@ fun OperitApp(initialNavItem: NavItem = NavItem.AiChat, toolHandler: AIToolHandl
                 NavItem.Toolbox,
                 NavItem.ShizukuCommands,
                 NavItem.Workflow,
+                NavItem.Test,
             )
         ),
         NavGroup(
