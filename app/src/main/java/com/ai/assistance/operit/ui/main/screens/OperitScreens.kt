@@ -657,8 +657,24 @@ sealed class Screen(
             onError: (String) -> Unit,
             onGestureConsumed: (Boolean) -> Unit
         ) {
-            // Todo: Implement FileScreen
-            com.ai.assistance.operit.ui.features.files.FileScreen()
+            com.ai.assistance.operit.ui.features.files.FileScreen(
+                onNavigateToChat = { filePaths ->
+                    // 将文件路径转换为 URI 并通过 SharedFileHandler 传递
+                    val uris = filePaths.mapNotNull { path ->
+                        try {
+                            android.net.Uri.parse(path)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    if (uris.isNotEmpty()) {
+                        com.ai.assistance.operit.ui.main.SharedFileHandler.setSharedFiles(uris)
+                    }
+                    // 导航到 AI Chat 页面
+                    navigateTo(AiChat)
+                    updateNavItem(NavItem.AiChat)
+                }
+            )
         }
     }
 
