@@ -77,6 +77,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -272,6 +273,10 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
 
     // Collect reply state
     val replyToMessage by actualViewModel.replyToMessage.collectAsState()
+    
+    // Collect conversation mode and Agent Plan
+    val conversationMode by actualViewModel.conversationMode.collectAsState()
+    val currentAgentPlan by actualViewModel.currentAgentPlan.collectAsState()
 
     // Floating window mode state
     val isFloatingMode by actualViewModel.isFloatingMode.collectAsState()
@@ -494,11 +499,27 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                     // 只在不显示配置界面时显示底部输入框
                     if (!showConfig) {
                         // ChatInputSection is back in the bottomBar to reserve space
-                        Box(
+                        Column(
                                 modifier = Modifier.onGloballyPositioned {
                                     bottomBarHeightPx = it.size.height
                                 }
                         ) {
+                            // 模式切换按钮
+                            com.ai.assistance.operit.ui.features.chat.components.mode.ModeToggleButton(
+                                currentMode = conversationMode,
+                                onModeChange = { mode ->
+                                    actualViewModel.switchConversationMode(mode)
+                                    // 切换到 Agent 模式时创建示例 Plan
+                                    if (mode == com.ai.assistance.operit.data.model.ConversationMode.AGENT 
+                                        && currentAgentPlan == null) {
+                                        actualViewModel.createAgentPlan("示例任务")
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                            
                             ChatInputSection(
                                     actualViewModel = actualViewModel,
                                     userMessage = userMessage,
@@ -612,6 +633,20 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                 // The main content area is now a Box to allow overlaying.
                 // It respects the padding from the Scaffold's bottomBar.
                 Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                    // Agent Plan Card - 显示在聊天内容上方
+                    currentAgentPlan?.let { plan ->
+                        if (plan.status == com.ai.assistance.operit.data.model.PlanStatus.PENDING) {
+                            com.ai.assistance.operit.ui.features.chat.components.mode.AgentPlanCard(
+                                plan = plan,
+                                onApprove = { actualViewModel.approveAgentPlan() },
+                                onReject = { actualViewModel.rejectAgentPlan() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+                    
                     Box(modifier = Modifier.weight(1f)) {
                         ChatScreenContent(
                                 // modifier = Modifier.weight(1f), // This is no longer needed here

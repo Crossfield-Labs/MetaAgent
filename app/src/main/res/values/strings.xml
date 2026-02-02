@@ -506,7 +506,7 @@
     <string name="network_status_label">网络状态</string>
 
     <!-- Configuration Screen -->
-    <string name="config_title">MetaAgent 助手</string>
+    <string name="config_title">MetaAgent</string>
     <string name="config_description">我们默认使用DeepSeek API，如需更换请点击下方自定义选项</string>
     <string name="config_api_key_label">API密钥</string>
     <string name="config_api_key_placeholder">DeepSeek API密钥</string>

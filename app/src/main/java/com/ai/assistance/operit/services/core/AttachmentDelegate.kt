@@ -24,12 +24,18 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ai.assistance.operit.data.repository.MemoryRepository
+import com.ai.assistance.operit.data.model.Memory
 
 /**
  * Manages attachment operations for the chat feature Handles adding, removing, and referencing
  * attachments
  */
-class AttachmentDelegate(private val context: Context, private val toolHandler: AIToolHandler) {
+class AttachmentDelegate(
+    private val context: Context, 
+    private val toolHandler: AIToolHandler,
+    private val profileId: String = "default" // 默认 profile ID
+) {
     companion object {
         private const val TAG = "AttachmentDelegate"
         private const val OCR_INLINE_INSTRUCTION = "Do not read the file, answer the user\'s question directly based on the attachment content and the user\'s question."
@@ -42,6 +48,9 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
     // Events
     private val _toastEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val toastEvent: SharedFlow<String> = _toastEvent
+
+    // 记忆库实例
+    private val memoryRepository = MemoryRepository(context, profileId)
 
     /** Adds multiple attachments in one shot (dedup by filePath) */
     fun addAttachments(attachments: List<AttachmentInfo>) {
@@ -411,6 +420,69 @@ class AttachmentDelegate(private val context: Context, private val toolHandler: 
                 } catch (e: Exception) {
                     _toastEvent.emit(context.getString(R.string.attachment_screen_content_failed, e.message ?: ""))
                     AppLogger.e(TAG, "Error capturing screen content", e)
+                }
+            }
+
+    /**
+     * 捕获学习通资料：截图 + OCR + 存入记忆库
+     * 专门用于软创功能的学习通资料整理
+     */
+    suspend fun captureStudyMaterial() =
+            withContext(Dispatchers.IO) {
+                try {
+                    // 1. 截图
+                    val screenshotTool = AITool(name = "capture_screenshot", parameters = emptyList())
+                    val screenshotResult = toolHandler.executeTool(screenshotTool)
+                    if (!screenshotResult.success) {
+                        _toastEvent.emit("截图失败：${screenshotResult.error ?: "未知错误"}")
+                        return@withContext
+                    }
+
+                    val screenshotPath = screenshotResult.result.toString().trim()
+                    if (screenshotPath.isBlank()) {
+                        _toastEvent.emit("截图失败：路径为空")
+                        return@withContext
+                    }
+
+                    //  2. OCR 识别
+                    val ocrText = OCRUtils.recognizeText(
+                        context = context,
+                        uri = Uri.fromFile(File(screenshotPath)),
+                        quality = OCRUtils.Quality.HIGH
+                    ).trim()
+
+                    if (ocrText.isBlank()) {
+                        _toastEvent.emit("未识别到文字内容")
+                        // 清理截图
+                        try {
+                            File(screenshotPath).delete()
+                        } catch (_: Exception) {}
+                        return@withContext
+                    }
+
+                    // 3. 存入记忆库
+                    val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                    val memory = Memory(
+                        title = "学习通资料 - $timestamp",
+                        content = ocrText,
+                        source = "screenshot_xuexitong",
+                        folderPath = "学习通资料",
+                        importance = 0.8f,
+                        credibility = 0.9f,
+                        contentType = "text/plain"
+                    )
+                    
+                    memoryRepository.saveMemory(memory)
+
+                    _toastEvent.emit("✅ 已整理学习通资料到记忆库")
+
+                    // 4. 清理临时截图
+                    try {
+                        File(screenshotPath).delete()
+                    } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    _toastEvent.emit("整理资料失败：${e.message ?: ""}")
+                    AppLogger.e(TAG, "Error capturing study material", e)
                 }
             }
 

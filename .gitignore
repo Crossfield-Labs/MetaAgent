@@ -58,16 +58,18 @@ llama/third_party/llama.cpp/
 terminal/src/main/cpp/
 dragonbones/src/main/cpp/
 
-# ´óÎÄ¼ş
+# ï¿½ï¿½ï¿½Ä¼ï¿½
 *.zip
 *.tar.xz
 *.so
 *.apk
 terminal/src/main/assets/
 
-# ´óÎÄ¼ş
+# ï¿½ï¿½ï¿½Ä¼ï¿½
 *.zip
 *.tar.xz
 *.so
 *.apk
 terminal/src/main/assets/
+
+*.tar.gz

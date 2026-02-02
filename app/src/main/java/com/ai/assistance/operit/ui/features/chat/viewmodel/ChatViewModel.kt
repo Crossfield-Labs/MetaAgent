@@ -285,6 +285,14 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     private val _autoSwitchCharacterCard = MutableStateFlow(false)
     val autoSwitchCharacterCard: StateFlow<Boolean> = _autoSwitchCharacterCard.asStateFlow()
     
+    // 对话模式状态 - Chat/Agent 模式切换
+    private val _conversationMode = MutableStateFlow(com.ai.assistance.operit.data.model.ConversationMode.CHAT)
+    val conversationMode: StateFlow<com.ai.assistance.operit.data.model.ConversationMode> = _conversationMode.asStateFlow()
+    
+    // Agent Plan 状态
+    private val _currentAgentPlan = MutableStateFlow<com.ai.assistance.operit.data.model.AgentPlan?>(null)
+    val currentAgentPlan: StateFlow<com.ai.assistance.operit.data.model.AgentPlan?> = _currentAgentPlan.asStateFlow()
+    
     // 总结状态
     val isSummarizing: StateFlow<Boolean> by lazy {
         if (::messageCoordinationDelegate.isInitialized) {
@@ -1360,6 +1368,19 @@ class ChatViewModel(private val context: Context) : ViewModel() {
             }
         }
     }
+    
+    /** 捕获学习通资料（截图 + OCR + 记忆库存储）*/
+    fun captureStudyMaterial() {
+        viewModelScope.launch {
+            try {
+                // 直接委托给attachmentDelegate执行
+                attachmentDelegate.captureStudyMaterial()
+            } catch (e: Exception) {
+                AppLogger.e(TAG, "整理学习通资料失败", e)
+                uiStateDelegate.showErrorMessage("整理资料失败：${e.message ?: ""}")
+            }
+        }
+    }
 
     /** 获取设备当前通知数据并添加为附件 */
     fun captureNotifications() {
@@ -2128,6 +2149,59 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     /** 清除回复状态 */
     fun clearReplyToMessage() {
         _replyToMessage.value = null
+    }
+    
+    // ========== Chat/Agent 模式切换相关方法 ==========
+    
+    /** 切换对话模式 */
+    fun switchConversationMode(mode: com.ai.assistance.operit.data.model.ConversationMode) {
+        _conversationMode.value = mode
+    }
+    
+    /** 创建 Agent Plan（示例实现，后续可扩展）*/
+    fun createAgentPlan(taskDescription: String) {
+        val plan = com.ai.assistance.operit.data.model.AgentPlan(
+            taskDescription = taskDescription,
+            steps = listOf(
+                com.ai.assistance.operit.data.model.PlanStep(1, "分析任务需求"),
+                com.ai.assistance.operit.data.model.PlanStep(2, "执行具体操作"),
+                com.ai.assistance.operit.data.model.PlanStep(3, "验证结果")
+            ),
+            estimatedTime = "约 5 分钟",
+            requiredTools = listOf("UI Agent", "记忆库")
+        )
+        _currentAgentPlan.value = plan
+    }
+    
+    /** 批准 Agent Plan */
+    fun approveAgentPlan() {
+        _currentAgentPlan.value?.let { plan ->
+            _currentAgentPlan.value = plan.copy(
+                status = com.ai.assistance.operit.data.model.PlanStatus.APPROVED
+            )
+            // TODO: 触发实际的任务执行
+            uiStateDelegate.showToast("Plan 已批准，开始执行")
+        }
+    }
+    
+    /** 拒绝 Agent Plan */
+    fun rejectAgentPlan() {
+        _currentAgentPlan.value?.let { plan ->
+            _currentAgentPlan.value = plan.copy(
+                status = com.ai.assistance.operit.data.model.PlanStatus.REJECTED
+            )
+            uiStateDelegate.showToast("Plan 已拒绝")
+        }
+        // 清除 Plan
+        viewModelScope.launch {
+            delay(1000)
+            _currentAgentPlan.value = null
+        }
+    }
+    
+    /** 清除当前 Plan */
+    fun clearAgentPlan() {
+        _currentAgentPlan.value = null
     }
 
     fun manuallyUpdateMemory() {
