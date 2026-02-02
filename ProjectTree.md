@@ -280,7 +280,7 @@ MetaAgent
 │        │  │  │        │  ├─ application
 │        │  │  │        │  │  ├─ ActivityLifecycleManager.kt
 │        │  │  │        │  │  ├─ ForegroundServiceCompat.kt
-│        │  │  │        │  │  └─ OperitApplication.kt
+│        │  │  │        │  │  └─ MetaAgentApplication.kt
 │        │  │  │        │  ├─ avatar
 │        │  │  │        │  │  ├─ common
 │        │  │  │        │  │  │  ├─ control
@@ -429,7 +429,7 @@ MetaAgent
 │        │  │  │        │  │  │  ├─ AndroidShellExecutor.kt
 │        │  │  │        │  │  │  ├─ MediaProjectionCaptureManager.kt
 │        │  │  │        │  │  │  ├─ MediaProjectionHolder.kt
-│        │  │  │        │  │  │  ├─ OperitTerminalManager.kt
+│        │  │  │        │  │  │  ├─ MetaAgentTerminalManager.kt
 │        │  │  │        │  │  │  ├─ RootAuthorizer.kt
 │        │  │  │        │  │  │  ├─ ScreenCaptureActivity.kt
 │        │  │  │        │  │  │  ├─ ScreenCaptureService.kt
@@ -444,7 +444,7 @@ MetaAgent
 │        │  │  │        │  │  │  ├─ ShizukuAuthorizer.kt
 │        │  │  │        │  │  │  ├─ ShizukuInstaller.kt
 │        │  │  │        │  │  │  ├─ shower
-│        │  │  │        │  │  │  │  └─ OperitShowerShellRunner.kt
+│        │  │  │        │  │  │  │  └─ MetaAgentShowerShellRunner.kt
 │        │  │  │        │  │  │  └─ Terminal.kt
 │        │  │  │        │  │  ├─ ToolPackage.kt
 │        │  │  │        │  │  ├─ ToolProgressBus.kt
@@ -459,7 +459,7 @@ MetaAgent
 │        │  │  │        │  ├─ api
 │        │  │  │        │  │  └─ GitHubApiService.kt
 │        │  │  │        │  ├─ backup
-│        │  │  │        │  │  ├─ OperitBackupDirs.kt
+│        │  │  │        │  │  ├─ MetaAgentBackupDirs.kt
 │        │  │  │        │  │  ├─ RawSnapshotBackupManager.kt
 │        │  │  │        │  │  ├─ RoomDatabaseBackupManager.kt
 │        │  │  │        │  │  ├─ RoomDatabaseBackupPreferences.kt
@@ -530,7 +530,7 @@ MetaAgent
 │        │  │  │        │  │  ├─ ModelConfigData.kt
 │        │  │  │        │  │  ├─ ModelParameter.kt
 │        │  │  │        │  │  ├─ OpenAIModels.kt
-│        │  │  │        │  │  ├─ OperitNodeInfo.kt
+│        │  │  │        │  │  ├─ MetaAgentNodeInfo.kt
 │        │  │  │        │  │  ├─ PreferenceProfile.kt
 │        │  │  │        │  │  ├─ PromptFunctionType.kt
 │        │  │  │        │  │  ├─ PromptProfile.kt
@@ -591,8 +591,8 @@ MetaAgent
 │        │  │  │        │  └─ WorkspaceDocumentsProvider.kt
 │        │  │  │        ├─ services
 │        │  │  │        │  ├─ assistant
-│        │  │  │        │  │  ├─ OperitVoiceInteractionService.kt
-│        │  │  │        │  │  └─ OperitVoiceInteractionSessionService.kt
+│        │  │  │        │  │  ├─ MetaAgentVoiceInteractionService.kt
+│        │  │  │        │  │  └─ MetaAgentVoiceInteractionSessionService.kt
 │        │  │  │        │  ├─ ChatServiceCore.kt
 │        │  │  │        │  ├─ core
 │        │  │  │        │  │  ├─ ApiConfigDelegate.kt
@@ -608,7 +608,7 @@ MetaAgent
 │        │  │  │        │  │  └─ UIDebuggerWindowManager.kt
 │        │  │  │        │  ├─ FloatingChatService.kt
 │        │  │  │        │  ├─ notification
-│        │  │  │        │  │  └─ OperitNotificationListenerService.kt
+│        │  │  │        │  │  └─ MetaAgentNotificationListenerService.kt
 │        │  │  │        │  ├─ OnnxEmbeddingService.kt
 │        │  │  │        │  ├─ ServiceLifecycleOwner.kt
 │        │  │  │        │  ├─ TermuxCommandResultService.kt
@@ -786,7 +786,7 @@ MetaAgent
 │        │  │  │        │  │  │  │  └─ ShizukuDemoViewModel.kt
 │        │  │  │        │  │  │  └─ wizards
 │        │  │  │        │  │  │     ├─ AccessibilityWizardCard.kt
-│        │  │  │        │  │  │     ├─ OperitTerminalWizardCard.kt
+│        │  │  │        │  │  │     ├─ MetaAgentTerminalWizardCard.kt
 │        │  │  │        │  │  │     ├─ RootWizardCard.kt
 │        │  │  │        │  │  │     └─ ShizukuWizardCard.kt
 │        │  │  │        │  │  ├─ help
@@ -1072,9 +1072,9 @@ MetaAgent
 │        │  │  │        │  │  │  ├─ PhoneLayout.kt
 │        │  │  │        │  │  │  └─ TabletLayout.kt
 │        │  │  │        │  │  ├─ MainActivity.kt
-│        │  │  │        │  │  ├─ OperitApp.kt
+│        │  │  │        │  │  ├─ MetaAgentApp.kt
 │        │  │  │        │  │  ├─ screens
-│        │  │  │        │  │  │  └─ OperitScreens.kt
+│        │  │  │        │  │  │  └─ MetaAgentScreens.kt
 │        │  │  │        │  │  └─ SharedFileHandler.kt
 │        │  │  │        │  ├─ permissions
 │        │  │  │        │  │  ├─ PermissionRequestOverlay.kt
@@ -1114,7 +1114,7 @@ MetaAgent
 │        │  │  │        │  ├─ MediaPoolManager.kt
 │        │  │  │        │  ├─ NetworkUtils.kt
 │        │  │  │        │  ├─ OCRUtils.kt
-│        │  │  │        │  ├─ OperitPaths.kt
+│        │  │  │        │  ├─ MetaAgentPaths.kt
 │        │  │  │        │  ├─ PathMapper.kt
 │        │  │  │        │  ├─ SerializationSetup.kt
 │        │  │  │        │  ├─ SkillRepoZipPoolManager.kt

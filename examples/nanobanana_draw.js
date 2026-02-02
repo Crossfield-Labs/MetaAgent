@@ -2,8 +2,8 @@
 {
   "name": "nanobanana_draw",
   "description": {
-    "zh": "使用 Nano Banana API (基于Grsai的api服务/https://grsai.com/) 根据提示词画图，支持文生图和图生图（可传入参考图片URL或本地图片路径；本地图片会先上传到图床以获得公网URL），将图片保存到本地 /sdcard/Download/Operit/draws/ 目录，并返回 Markdown 图片提示。",
-    "en": "Generate images using the Nano Banana API (via Grsai service / https://grsai.com/). Supports text-to-image and image-to-image (you can provide reference image URLs or local image paths; local images will be uploaded first to get public URLs). Saves images to /sdcard/Download/Operit/draws/ and returns a Markdown image reference."
+    "zh": "使用 Nano Banana API (基于Grsai的api服务/https://grsai.com/) 根据提示词画图，支持文生图和图生图（可传入参考图片URL或本地图片路径；本地图片会先上传到图床以获得公网URL），将图片保存到本地 /sdcard/Download/MetaAgent/draws/ 目录，并返回 Markdown 图片提示。",
+    "en": "Generate images using the Nano Banana API (via Grsai service / https://grsai.com/). Supports text-to-image and image-to-image (you can provide reference image URLs or local image paths; local images will be uploaded first to get public URLs). Saves images to /sdcard/Download/MetaAgent/draws/ and returns a Markdown image reference."
   },
   "env": [
     "NANOBANANA_API_KEY",
@@ -40,8 +40,8 @@ const nanobananaDraw = (function () {
     const DEFAULT_MODEL = "nano-banana-pro";
     // Android 实际路径为 /sdcard/Download，对应系统中文名"下载"
     const DOWNLOAD_ROOT = "/sdcard/Download";
-    const OPERIT_DIR = `${DOWNLOAD_ROOT}/Operit`;
-    const DRAWS_DIR = `${OPERIT_DIR}/draws`;
+    const METAAGENT_DIR = `${DOWNLOAD_ROOT}/MetaAgent`;
+    const DRAWS_DIR = `${METAAGENT_DIR}/draws`;
     // 轮询配置
     const POLL_INTERVAL = 5000; // 每5秒查询一次
     const MAX_WAIT_TIME = 300000; // 最多等待5分钟
@@ -164,7 +164,7 @@ const nanobananaDraw = (function () {
         return `${base}_${timestamp}`;
     }
     async function ensureDirectories() {
-        const dirs = [DOWNLOAD_ROOT, OPERIT_DIR, DRAWS_DIR];
+        const dirs = [DOWNLOAD_ROOT, METAAGENT_DIR, DRAWS_DIR];
         for (const dir of dirs) {
             try {
                 const result = await Tools.Files.mkdir(dir);
@@ -417,7 +417,7 @@ const nanobananaDraw = (function () {
         const fileUri = `file://${filePath}`;
         const markdown = `![AI生成的图片](${fileUri})`;
         const hintLines = [];
-        hintLines.push("图片已生成并保存在本地 /sdcard/Download/Operit/draws/ 目录。");
+        hintLines.push("图片已生成并保存在本地 /sdcard/Download/MetaAgent/draws/ 目录。");
         hintLines.push(`本地路径: ${filePath}`);
         hintLines.push("");
         hintLines.push("在后续回答中，请直接输出下面这一行 Markdown 来展示这张图片：");
@@ -441,7 +441,7 @@ const nanobananaDraw = (function () {
             const result = await draw_image(params);
             complete({
                 success: true,
-                message: "图片生成成功，已保存到 /sdcard/Download/Operit/draws/，并返回 Markdown 图片提示。",
+                message: "图片生成成功，已保存到 /sdcard/Download/MetaAgent/draws/，并返回 Markdown 图片提示。",
                 data: result
             });
         }

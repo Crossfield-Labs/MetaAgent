@@ -2,8 +2,8 @@
 {
     "name": "history_chat",
     "description": {
-        "zh": "对话历史工具包：在当前话题中读取 OperitAI 内其它话题的消息（跨话题）。",
-        "en": "Chat history tools: read messages from other OperitAI chats (cross-chat)."
+        "zh": "对话历史工具包：在当前话题中读取 MetaAgent 内其它话题的消息（跨话题）。",
+        "en": "Chat history tools: read messages from other MetaAgent chats (cross-chat)."
     },
     "enabledByDefault": true,
     "tools": [

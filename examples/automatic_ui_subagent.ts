@@ -498,7 +498,7 @@ When the user asks you to complete a UI task (e.g. open an app, search content, 
 
 const UIAutomationSubAgentTools = (function () {
 
-    const CACHE_KEY = '__operit_ui_subagent_cached_agent_id';
+    const CACHE_KEY = '__metaagent_ui_subagent_cached_agent_id';
     function getCachedAgentId(): string | undefined {
         try {
             return (globalThis as unknown as Record<string, string | undefined>)[CACHE_KEY];

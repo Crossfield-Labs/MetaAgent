@@ -63,7 +63,7 @@ METADATA
                 },
                 {
                     "name": "download_dir",
-                    "description": { "zh": "下载目录 (可选, 默认: /sdcard/Download/OperitScripts)", "en": "Download directory (optional; default: /sdcard/Download/OperitScripts)." },
+                    "description": { "zh": "下载目录 (可选, 默认: /sdcard/Download/MetaAgentScripts)", "en": "Download directory (optional; default: /sdcard/Download/MetaAgentScripts)." },
                     "type": "string",
                     "required": false
                 }
@@ -81,7 +81,7 @@ METADATA
                 },
                 {
                     "name": "download_dir",
-                    "description": { "zh": "下载目录 (可选, 默认: /sdcard/Download/OperitScripts)", "en": "Download directory (optional; default: /sdcard/Download/OperitScripts)." },
+                    "description": { "zh": "下载目录 (可选, 默认: /sdcard/Download/MetaAgentScripts)", "en": "Download directory (optional; default: /sdcard/Download/MetaAgentScripts)." },
                     "type": "string",
                     "required": false
                 }
@@ -499,11 +499,11 @@ const jmcomic = (function () {
 
     class JmOptionImpl {
         public dirRule: DirRuleImpl;
-        constructor(baseDir: string = "/sdcard/Download/OperitScripts") {
+        constructor(baseDir: string = "/sdcard/Download/MetaAgentScripts") {
             this.dirRule = new DirRuleImpl(baseDir);
         }
 
-        static default(baseDir: string = "/sdcard/Download/OperitScripts"): JmOptionImpl {
+        static default(baseDir: string = "/sdcard/Download/MetaAgentScripts"): JmOptionImpl {
             return new JmOptionImpl(baseDir);
         }
 
@@ -720,7 +720,7 @@ const jmcomic = (function () {
         private client: JmApiClientImpl;
         private option: JmOptionImpl;
 
-        constructor(downloadDir: string = "/sdcard/Download/OperitScripts") {
+        constructor(downloadDir: string = "/sdcard/Download/MetaAgentScripts") {
             this.option = JmOptionImpl.default(downloadDir);
             this.downloader = new JmDownloaderImpl(this.option);
             this.client = this.option.buildJmClient();
@@ -804,7 +804,7 @@ const jmcomic = (function () {
     //region Tool Implementations
     async function main() {
         console.log("🚀 开始执行JMComic工具功能测试...");
-        const downloader = new SimpleJMDownloader("/sdcard/Download/OperitScripts/test_downloads");
+        const downloader = new SimpleJMDownloader("/sdcard/Download/MetaAgentScripts/test_downloads");
         const testQuery = "原神";
 
         console.log(`1. 测试搜索功能，关键词: "${testQuery}"`);

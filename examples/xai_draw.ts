@@ -3,8 +3,8 @@
 {
   "name": "xai_draw",
   "description": {
-    "zh": "使用 xAI 图像生成 API (grok-2-image-1212) 根据提示词画图，将图片保存到本地 /sdcard/Download/Operit/draws/ 目录，并返回 Markdown 图片提示。",
-    "en": "Generate images with the xAI image generation API (grok-2-image-1212) from a prompt, save to /sdcard/Download/Operit/draws/, and return a Markdown image reference."
+    "zh": "使用 xAI 图像生成 API (grok-2-image-1212) 根据提示词画图，将图片保存到本地 /sdcard/Download/MetaAgent/draws/ 目录，并返回 Markdown 图片提示。",
+    "en": "Generate images with the xAI image generation API (grok-2-image-1212) from a prompt, save to /sdcard/Download/MetaAgent/draws/, and return a Markdown image reference."
   },
   "env": [
     "XAI_API_KEY"
@@ -34,8 +34,8 @@ const xaiDraw = (function () {
 
     // Android 实际路径为 /sdcard/Download，对应系统中文名“下载”
     const DOWNLOAD_ROOT = "/sdcard/Download";
-    const OPERIT_DIR = `${DOWNLOAD_ROOT}/Operit`;
-    const DRAWS_DIR = `${OPERIT_DIR}/draws`;
+    const METAAGENT_DIR = `${DOWNLOAD_ROOT}/MetaAgent`;
+    const DRAWS_DIR = `${METAAGENT_DIR}/draws`;
 
     function getApiKey(): string {
         const apiKey = getEnv("XAI_API_KEY");
@@ -64,7 +64,7 @@ const xaiDraw = (function () {
     }
 
     async function ensureDirectories() {
-        const dirs = [DOWNLOAD_ROOT, OPERIT_DIR, DRAWS_DIR];
+        const dirs = [DOWNLOAD_ROOT, METAAGENT_DIR, DRAWS_DIR];
         for (const dir of dirs) {
             try {
                 const result = await Tools.Files.mkdir(dir);
@@ -159,7 +159,7 @@ const xaiDraw = (function () {
         const markdown = `![AI生成的图片](${fileUri})`;
 
         const hintLines: string[] = [];
-        hintLines.push("图片已生成并保存在本地 /sdcard/Download/Operit/draws/ 目录。");
+        hintLines.push("图片已生成并保存在本地 /sdcard/Download/MetaAgent/draws/ 目录。");
         hintLines.push(`本地路径: ${filePath}`);
         hintLines.push("");
         hintLines.push("在后续回答中，请直接输出下面这一行 Markdown 来展示这张图片：");
@@ -181,7 +181,7 @@ const xaiDraw = (function () {
             const result = await draw_image(params);
             complete({
                 success: true,
-                message: "图片生成成功，已保存到 /sdcard/Download/Operit/draws/，并返回 Markdown 图片提示。",
+                message: "图片生成成功，已保存到 /sdcard/Download/MetaAgent/draws/，并返回 Markdown 图片提示。",
                 data: result
             });
         } catch (error: any) {

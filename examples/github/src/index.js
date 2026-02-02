@@ -257,7 +257,7 @@ async function main(params) {
     try {
         const owner = String((params === null || params === void 0 ? void 0 : params.owner) || 'octocat');
         const repo = String((params === null || params === void 0 ? void 0 : params.repo) || 'Hello-World');
-        const query = String((params === null || params === void 0 ? void 0 : params.query) || 'operit');
+        const query = String((params === null || params === void 0 ? void 0 : params.query) || 'metaagent');
         const baseUrl = (0, api_1.getBaseUrl)();
         const token = (0, api_1.getToken)();
         const repoInfo = await (0, repos_1.getRepository)({ owner, repo });

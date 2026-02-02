@@ -1,7 +1,7 @@
 # DeepSeek Thinking / Thinking Guidance
 
 ## Overview
-Operit exposes two user-facing switches under **Thinking**:
+MetaAgent exposes two user-facing switches under **Thinking**:
 
 - **Thinking Mode**: enables provider-level "thinking" (when the provider supports it).
 - **Thinking Guidance**: prompt-level guidance to encourage models to think (works even when the provider has no explicit thinking switch).
@@ -23,7 +23,7 @@ Related docs:
 - https://api-docs.deepseek.com/api/create-chat-completion
 - https://api-docs.deepseek.com/guides/thinking_mode
 
-## How Operit sends DeepSeek requests today
+## How MetaAgent sends DeepSeek requests today
 - When **Thinking Mode** is enabled, `DeepseekProvider` injects:
 
 ```json
@@ -36,10 +36,10 @@ Related docs:
 
 Notes:
 - DeepSeek docs describe `max_tokens` as the maximum output length **including** the chain-of-thought part.
-- Operit does not currently add any undocumented "thinking quality" parameters to DeepSeek requests.
+- MetaAgent does not currently add any undocumented "thinking quality" parameters to DeepSeek requests.
 
 ## Thinking Quality setting
-Operit has an internal preference/plumbing for a "thinking quality" level, but **the SettingBar UI is currently hidden** and the provider request does not apply it.
+MetaAgent has an internal preference/plumbing for a "thinking quality" level, but **the SettingBar UI is currently hidden** and the provider request does not apply it.
 
 This was intentionally kept so it can be re-enabled later if DeepSeek documents a stable quality parameter or if we decide to map it to a supported field (e.g. `max_tokens`) with clear UX.
 

@@ -1,15 +1,15 @@
 /**
- * OperIT AI Tool Tester
+ * MetaAgent AI Tool Tester
  * 
- * This script tests all available tools in the OperIT system as documented in tools.md.
+ * This script tests all available tools in the MetaAgent system as documented in tools.md.
  * It validates each tool's functionality and the structure of its return values.
  * 
  * How to run:
- * 1. Compile: tsc operit-tester.ts
+ * 1. Compile: tsc metaagent-tester.ts
  * 2. Run via command line:
- *    - Windows: .\tools\execute_js.bat operit-tester.js main '{}'
- *    - Linux/macOS: ./tools/execute_js.sh operit-tester.js main '{}'
- *    - Specific test category: .\tools\execute_js.bat operit-tester.js testCategory '{"testType":"ui"}'
+ *    - Windows: .\tools\execute_js.bat metaagent-tester.js main '{}'
+ *    - Linux/macOS: ./tools/execute_js.sh metaagent-tester.js main '{}'
+ *    - Specific test category: .\tools\execute_js.bat metaagent-tester.js testCategory '{"testType":"ui"}'
  */
 
 // Types are defined in 'types/index.d.ts' and available globally
@@ -125,7 +125,7 @@ function printUIHierarchy(node: SimplifiedUINode, indent: string = ""): void {
  * Main test runner function that organizes and executes all test categories
  */
 async function runTests(params: { testType?: string } = {}): Promise<void> {
-    console.log("Starting OperIT Tool Tester...");
+    console.log("Starting MetaAgent Tool Tester...");
     console.log("Parameters:", params);
 
     const results: TestResults = {};
@@ -233,7 +233,7 @@ async function runTests(params: { testType?: string } = {}): Promise<void> {
         const summaryText = `Overall: ${successCount}/${totalTests} tests passed in ${duration / 1000}s`;
         console.log(`\n${summaryText}`);
 
-        console.log("\nOperIT Tool Tester completed!");
+        console.log("\nMetaAgent Tool Tester completed!");
 
         // Return results
         complete({
@@ -261,7 +261,7 @@ async function testQueryMemory(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting query_memory...");
         const queryResult = await toolCall("query_memory", {
-            query: "how to use OperIT tools"
+            query: "how to use MetaAgent tools"
         });
 
         // Validate the result (queryResult is a string)
@@ -416,8 +416,8 @@ async function testListFiles(results: TestResults): Promise<void> {
 async function testWriteFile(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting write_file...");
-        const testContent = "This is a test file created by the OperIT tool tester.\nTest timestamp: " + new Date().toISOString();
-        const testPath = "/sdcard/operit_test_file.txt";
+        const testContent = "This is a test file created by the MetaAgent tool tester.\nTest timestamp: " + new Date().toISOString();
+        const testPath = "/sdcard/metaagent_test_file.txt";
 
         const writeResult = await toolCall("write_file", {
             path: testPath,
@@ -453,7 +453,7 @@ async function testReadFile(results: TestResults): Promise<void> {
             console.log("WARNING: write_file test did not succeed. Reading test file may fail.");
         }
 
-        const testPath = "/sdcard/operit_test_file.txt";
+        const testPath = "/sdcard/metaagent_test_file.txt";
         const readResult = await toolCall("read_file", {
             path: testPath
         });
@@ -465,7 +465,7 @@ async function testReadFile(results: TestResults): Promise<void> {
         console.log(`Content preview: ${fileData.content.substring(0, 100)}...`);
 
         // Verify the content contains expected test data
-        const containsTestMarker = fileData.content.includes("test file created by the OperIT tool tester");
+        const containsTestMarker = fileData.content.includes("test file created by the MetaAgent tool tester");
         console.log(`Content verification: ${containsTestMarker ? "✅ Matched" : "❌ Failed"}`);
 
         results["read_file"] = {
@@ -486,7 +486,7 @@ async function testFileExists(results: TestResults): Promise<void> {
         console.log("\nTesting file_exists...");
 
         // Test for a file that should exist
-        const testPath = "/sdcard/operit_test_file.txt";
+        const testPath = "/sdcard/metaagent_test_file.txt";
         const existsResult = await toolCall("file_exists", {
             path: testPath
         });
@@ -528,7 +528,7 @@ async function testFileExists(results: TestResults): Promise<void> {
 async function testMakeDirectory(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting make_directory...");
-        const testDirPath = "/sdcard/operit_test_directory";
+        const testDirPath = "/sdcard/metaagent_test_directory";
 
         const mkdirResult = await toolCall("make_directory", {
             path: testDirPath
@@ -572,8 +572,8 @@ async function testCopyFile(results: TestResults): Promise<void> {
             console.log("WARNING: write_file test did not succeed. Copying test file may fail.");
         }
 
-        const sourcePath = "/sdcard/operit_test_file.txt";
-        const destPath = "/sdcard/operit_test_directory/copied_file.txt";
+        const sourcePath = "/sdcard/metaagent_test_file.txt";
+        const destPath = "/sdcard/metaagent_test_directory/copied_file.txt";
 
         const copyResult = await toolCall("copy_file", {
             source: sourcePath,
@@ -617,8 +617,8 @@ async function testMoveFile(results: TestResults): Promise<void> {
             console.log("WARNING: copy_file test did not succeed. Moving test file may fail.");
         }
 
-        const sourcePath = "/sdcard/operit_test_directory/copied_file.txt";
-        const destPath = "/sdcard/operit_test_directory/moved_file.txt";
+        const sourcePath = "/sdcard/metaagent_test_directory/copied_file.txt";
+        const destPath = "/sdcard/metaagent_test_directory/moved_file.txt";
 
         const moveResult = await toolCall("move_file", {
             source: sourcePath,
@@ -667,7 +667,7 @@ async function testFindFiles(results: TestResults): Promise<void> {
 
         const findResult = await toolCall("find_files", {
             path: "/sdcard/",
-            pattern: "operit_test_*",
+            pattern: "metaagent_test_*",
             max_depth: 5,
             case_insensitive: true
         });
@@ -706,7 +706,7 @@ async function testFileInfo(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting file_info...");
 
-        const testFilePath = "/sdcard/operit_test_file.txt";
+        const testFilePath = "/sdcard/metaagent_test_file.txt";
         const fileInfoResult = await toolCall("file_info", {
             path: testFilePath
         });
@@ -739,8 +739,8 @@ async function testZipFiles(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting zip_files...");
 
-        const sourceDir = "/sdcard/operit_test_directory";
-        const destZip = "/sdcard/operit_test.zip";
+        const sourceDir = "/sdcard/metaagent_test_directory";
+        const destZip = "/sdcard/metaagent_test.zip";
 
         const zipResult = await toolCall("zip_files", {
             source: sourceDir,
@@ -785,8 +785,8 @@ async function testUnzipFiles(results: TestResults): Promise<void> {
             console.log("WARNING: zip_files test did not succeed. Unzipping test file may fail.");
         }
 
-        const sourceZip = "/sdcard/operit_test.zip";
-        const destDir = "/sdcard/operit_test_extracted";
+        const sourceZip = "/sdcard/metaagent_test.zip";
+        const destDir = "/sdcard/metaagent_test_extracted";
 
         // Create the destination directory first
         await toolCall("make_directory", {
@@ -835,7 +835,7 @@ async function testOpenFile(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting open_file...");
 
-        const testFilePath = "/sdcard/operit_test_file.txt";
+        const testFilePath = "/sdcard/metaagent_test_file.txt";
         const openResult = await toolCall("open_file", {
             path: testFilePath
         });
@@ -864,10 +864,10 @@ async function testShareFile(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting share_file...");
 
-        const testFilePath = "/sdcard/operit_test_file.txt";
+        const testFilePath = "/sdcard/metaagent_test_file.txt";
         const shareResult = await toolCall("share_file", {
             path: testFilePath,
-            title: "OperIT Test Share"
+            title: "MetaAgent Test Share"
         });
 
         // Validate the result
@@ -896,10 +896,10 @@ async function testDeleteFile(results: TestResults): Promise<void> {
 
         // List of test files and directories to clean up
         const testPaths = [
-            "/sdcard/operit_test_file.txt",
-            "/sdcard/operit_test_directory",
-            "/sdcard/operit_test.zip",
-            "/sdcard/operit_test_extracted"
+            "/sdcard/metaagent_test_file.txt",
+            "/sdcard/metaagent_test_directory",
+            "/sdcard/metaagent_test.zip",
+            "/sdcard/metaagent_test_extracted"
         ];
 
         let allSuccessful = true;
@@ -950,7 +950,7 @@ async function testWebSearch(results: TestResults): Promise<void> {
     try {
         console.log("\nTesting visit_web...");
 
-        const url = "https://www.baidu.com/s?wd=OperIT+AI+automation+tools";
+        const url = "https://www.baidu.com/s?wd=MetaAgent+AI+automation+tools";
         const searchResult = await toolCall("visit_web", {
             url: url
         });
@@ -1045,7 +1045,7 @@ async function testDownloadFile(results: TestResults): Promise<void> {
 
         // Use a reliable small image for testing
         const downloadUrl = "https://httpbin.org/image/png";
-        const downloadPath = "/sdcard/operit_test_download.png";
+        const downloadPath = "/sdcard/metaagent_test_download.png";
 
         const downloadResult = await toolCall("download_file", {
             url: downloadUrl,
@@ -1737,7 +1737,7 @@ async function testSetInputText(results: TestResults): Promise<void> {
             console.log(`Current text: ${(inputField as SimplifiedUINode).text || "(empty)"}`);
 
             // Try to set text
-            const testText = "OperIT Test Input " + Date.now();
+            const testText = "MetaAgent Test Input " + Date.now();
             console.log(`\nSetting text to: "${testText}"`);
 
             const inputResult = await toolCall("set_input_text", {
