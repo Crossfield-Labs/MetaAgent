@@ -60,24 +60,31 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 private val DarkColorScheme =
-        darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
+        darkColorScheme(
+                primary = MonetGreenPrimaryDark,
+                onPrimary = MonetGreenOnPrimaryDark,
+                primaryContainer = MonetGreenContainerDark,
+                background = MonetGreenBackgroundDark,
+                surface = MonetGreenSurfaceDark,
+                onSurface = Color.White
+        )
 
 private val LightColorScheme =
         lightColorScheme(
-                primary = Purple40,
-                secondary = PurpleGrey40,
-                tertiary = Pink40,
-
-                /* Other default colors to override
-                background = Color(0xFFFFFBFE),
-                surface = Color(0xFFFFFBFE),
-                onPrimary = Color.White,
-                onSecondary = Color.White,
-                onTertiary = Color.White,
-                onBackground = Color(0xFF1C1B1F),
-                onSurface = Color(0xFF1C1B1F),
-                */
-                )
+                primary = MonetGreenPrimary,
+                onPrimary = MonetGreenOnPrimary,
+                primaryContainer = MonetGreenContainer,
+                onPrimaryContainer = MonetGreenOnContainer,
+                secondary = MonetGreenSecondary,
+                secondaryContainer = MonetGreenSecondaryContainer,
+                tertiary = MonetGreenTertiary,
+                background = MonetGreenBackground,
+                onBackground = MonetGreenOnSurface,
+                surface = MonetGreenSurface,
+                onSurface = MonetGreenOnSurface,
+                surfaceVariant = Color(0xFFE1E6DF), // 稍微深一点的表面色
+                onSurfaceVariant = MonetGreenSecondary
+        )
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -157,7 +164,8 @@ fun OperitTheme(content: @Composable () -> Unit) {
             }
 
     // Dynamic color is available on Android 12+
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    // 用户反馈：强制使用应用内定义的莫奈绿主题，禁用系统动态取色
+    val dynamicColor = false // Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     // 基础主题色调
     var colorScheme =
@@ -210,7 +218,8 @@ fun OperitTheme(content: @Composable () -> Unit) {
                     statusBarTransparent -> Color.Transparent.toArgb()
                     useBackgroundImage && backgroundImageUri != null -> Color.Transparent.toArgb()  // 有背景时透明
                     useCustomStatusBarColor && customStatusBarColorValue != null -> customStatusBarColorValue!!.toInt()
-                    else -> colorScheme.primary.toArgb()
+                    // 默认使用背景色作为状态栏颜色，实现一体化效果
+                    else -> colorScheme.background.toArgb()
                 }
                 window.statusBarColor = statusBarColor
 
@@ -234,13 +243,15 @@ fun OperitTheme(content: @Composable () -> Unit) {
             } else {
                 // 没有背景时使用软件背景色作为导航栏背景色
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    window.isNavigationBarContrastEnforced = true
+                    window.isNavigationBarContrastEnforced = false // 禁用强制对比度，防止系统加半透明遮罩
                 }
-                window.navigationBarColor = colorScheme.background.toArgb()
-                // 根据导航栏背景色动态设置导航栏图标颜色
-                // isAppearanceLightNavigationBars = true 表示图标为深色（适用于浅色背景）
-                // isAppearanceLightNavigationBars = false 表示图标为浅色（适用于深色背景）
-                insetsController?.isAppearanceLightNavigationBars = !isColorLight(colorScheme.background)
+                // 强制透明，让 BottomNavBar 的背景（或者 Scaffold 的背景）透出来，实现沉浸式
+                window.navigationBarColor = android.graphics.Color.TRANSPARENT
+                
+                // 根据背景色明暗设置图标颜色
+                // 如果是深色主题，insetsController?.isAppearanceLightNavigationBars = false (浅色图标)
+                // 如果是浅色主题，insetsController?.isAppearanceLightNavigationBars = true (深色图标)
+                insetsController?.isAppearanceLightNavigationBars = !darkTheme
             }
         }
     }

@@ -9,6 +9,9 @@
     <string name="model">模型</string>
     
     <!-- Navigation -->
+    <string name="nav_home">首页</string>
+    <string name="nav_files">文件</string>
+    <string name="nav_skills">技能</string>
     <string name="nav_ai_chat">AI 对话</string>
     <string name="nav_adb_commands">权限授予</string>
     <string name="nav_settings">设置</string>

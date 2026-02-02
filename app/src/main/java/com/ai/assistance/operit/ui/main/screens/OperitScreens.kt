@@ -116,6 +116,29 @@ sealed class Screen(
     }
 
     // Main screens (primary)
+    
+    // 首页
+    data object Home : Screen(navItem = NavItem.Home, titleRes = R.string.nav_home) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.operit.ui.features.home.HomeScreen(
+                onNavigateToChat = {
+                    navigateTo(AiChat)
+                    updateNavItem(NavItem.AiChat)
+                }
+            )
+        }
+    }
+    
     data object AiChat : Screen(navItem = NavItem.AiChat) {
         @Composable
         override fun Content(
@@ -619,6 +642,40 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             TestScreen()
+        }
+    }
+
+    data object Files : Screen(navItem = NavItem.Files, titleRes = R.string.nav_files) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            updateNavItem: NavItemChangeHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            // Todo: Implement FileScreen
+            com.ai.assistance.operit.ui.features.files.FileScreen()
+        }
+    }
+
+    data object Skills : Screen(navItem = NavItem.Skills, titleRes = R.string.nav_skills) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            updateNavItem: NavItemChangeHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            // Todo: Implement SkillScreen
+            com.ai.assistance.operit.ui.features.skills.SkillScreen()
         }
     }
 
@@ -1394,6 +1451,7 @@ object OperitRouter {
     // 根据NavItem获取对应的Screen
     fun getScreenForNavItem(navItem: NavItem): Screen {
         return when (navItem) {
+            NavItem.Home -> Screen.Home
             NavItem.AiChat -> Screen.AiChat
             NavItem.MemoryBase -> Screen.MemoryBase
             NavItem.Packages -> Screen.Packages
@@ -1409,6 +1467,8 @@ object OperitRouter {
             NavItem.UpdateHistory -> Screen.UpdateHistory
             NavItem.Workflow -> Screen.Workflow
             NavItem.Test -> Screen.Test
+            NavItem.Files -> Screen.Files
+            NavItem.Skills -> Screen.Skills
             else -> Screen.AiChat
         }
     }

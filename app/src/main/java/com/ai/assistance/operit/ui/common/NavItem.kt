@@ -1,9 +1,11 @@
 package com.ai.assistance.operit.ui.common
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Email
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
@@ -19,12 +22,22 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Token
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.ai.assistance.operit.R
 
 // 应用导航项
-sealed class NavItem(val route: String, val titleResId: Int, val icon: ImageVector) {
-        object AiChat : NavItem("ai_chat", R.string.nav_ai_chat, Icons.Default.Email)
+sealed class NavItem(
+        open val route: String,
+        @StringRes open val titleResId: Int,
+        open val icon: ImageVector
+) {
+        // 首页
+        object Home : NavItem("home", R.string.nav_home, Icons.Default.Home)
+        
+        // AI Chat
+        object AiChat : NavItem("ai_chat", R.string.nav_ai_chat, Icons.Default.Chat)
         object ShizukuCommands :
                 NavItem("shizuku_commands", R.string.shizuku_commands, Icons.Default.Build)
         object AssistantConfig :
@@ -64,4 +77,6 @@ sealed class NavItem(val route: String, val titleResId: Int, val icon: ImageVect
         object TokenConfig : NavItem("token_config", R.string.token_config, Icons.Default.Token)
         object Workflow : NavItem("workflow", R.string.nav_workflow, Icons.Default.AccountTree)
         object Test : NavItem("test", R.string.nav_test, Icons.Default.Build)
+        object Files : NavItem("files", R.string.nav_files, Icons.Default.Folder)
+        object Skills : NavItem("skills", R.string.nav_skills, Icons.Default.Star)
 }

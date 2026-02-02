@@ -15,6 +15,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -45,6 +46,10 @@ import com.ai.assistance.operit.ui.main.screens.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.padding
+import com.ai.assistance.operit.ui.main.components.BottomNavBar
+import com.ai.assistance.operit.ui.main.screens.OperitRouter
 
 /** Layout for phone devices with a modal navigation drawer */
 @Composable
@@ -218,26 +223,47 @@ fun PhoneLayout(
                     Modifier.fillMaxSize()
                         .graphicsLayer { translationX = animatedOffset.toPx() }
                 ) {
-                    // 普通调用AppContent，但由于我们的优化，它不会在动画时重组
-                    AppContent(
-                        currentScreen = currentScreen,
-                        selectedItem = selectedItem,
-                        useTabletLayout = false,
-                        isTabletSidebarExpanded = false,
-                        isLoading = isLoading,
-                        navController = navController,
-                        scope = scope,
-                        drawerState = drawerState,
-                        showFpsCounter = showFpsCounter,
-                        onScreenChange = onScreenChange,
-                        onNavItemChange = onNavItemChange,
-                        onToggleSidebar = { /* Not used in phone layout */},
-                        navigateToTokenConfig = navigateToTokenConfig,
-                        canGoBack = canGoBack,
-                        onGoBack = onGoBack,
-                        isNavigatingBack = isNavigatingBack,
-                        actions = topBarActions
-                    )
+                    Scaffold(
+                        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                        bottomBar = {
+                            BottomNavBar(
+                                currentRoute = currentScreen.navItem?.route ?: "home",
+                                onItemSelected = { route ->
+                                    val navItem = when (route) {
+                                        "home" -> NavItem.Home
+                                        "ai_chat" -> NavItem.AiChat
+                                        "files" -> NavItem.Files
+                                        "skills" -> NavItem.Skills
+                                        else -> NavItem.Home
+                                    }
+                                    onNavItemChange(navItem)
+                                }
+                            )
+                        }
+                    ) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding)) {
+                            // 普通调用AppContent，但由于我们的优化，它不会在动画时重组
+                            AppContent(
+                                currentScreen = currentScreen,
+                                selectedItem = selectedItem,
+                                useTabletLayout = false,
+                                isTabletSidebarExpanded = false,
+                                isLoading = isLoading,
+                                navController = navController,
+                                scope = scope,
+                                drawerState = drawerState,
+                                showFpsCounter = showFpsCounter,
+                                onScreenChange = onScreenChange,
+                                onNavItemChange = onNavItemChange,
+                                onToggleSidebar = { /* Not used in phone layout */},
+                                navigateToTokenConfig = navigateToTokenConfig,
+                                canGoBack = canGoBack,
+                                onGoBack = onGoBack,
+                                isNavigatingBack = isNavigatingBack,
+                                actions = topBarActions
+                            )
+                        }
+                    }
                 }
 
                 // // 添加一个小方块，填充圆角和工具栏之间的空隙
