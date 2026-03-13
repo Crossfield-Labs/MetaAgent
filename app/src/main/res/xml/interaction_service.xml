@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<voice-interaction-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.ai.assistance.metaagent.services.assistant.MetaAgentVoiceInteractionSessionService"
+    android:supportsAssist="true"
+    android:supportsLaunchVoiceAssistFromKeyguard="true"
+    android:supportsLocalInteraction="true"
+    android:settingsActivity="com.ai.assistance.metaagent.ui.main.MainActivity"
+    android:recognitionService="com.ai.assistance.metaagent.services.assistant.MetaAgentVoiceInteractionService" />
+
+
