@@ -23,4 +23,6 @@ include(":dragonbones")
 include(":mmd")
 include(":showerclient")
 include(":quickjs")
+include(":terminal")
+
 

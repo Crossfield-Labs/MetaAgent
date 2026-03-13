@@ -182,6 +182,7 @@ dependencies {
     implementation(project(":mmd"))
     implementation(project(":showerclient"))
     implementation(project(":quickjs"))
+    implementation(project(":terminal"))
 
     // glTF runtime rendering (Filament)
     implementation("com.google.android.filament:filament-android:1.69.2")
@@ -459,6 +460,7 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
 }
+
 
 
 

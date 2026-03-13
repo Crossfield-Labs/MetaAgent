@@ -57,7 +57,6 @@ import com.ai.assistance.metaagent.ui.features.settings.screens.ToolPermissionSe
 import com.ai.assistance.metaagent.ui.features.settings.screens.UserPreferencesGuideScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.UserPreferencesSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.CustomHeadersSettingsScreen
-import com.ai.assistance.metaagent.ui.features.settings.screens.MnnModelDownloadScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.TokenUsageStatisticsScreen
 import com.ai.assistance.metaagent.ui.features.token.TokenConfigWebViewScreen
 import com.ai.assistance.metaagent.ui.features.toolbox.screens.AppPermissionsToolScreen
@@ -716,7 +715,7 @@ sealed class Screen(
         ) {
             ModelConfigScreen(
                 onBackPressed = onGoBack,
-                navigateToMnnModelDownload = { navigateTo(MnnModelDownload) }
+                navigateToMnnModelDownload = null
             )
         }
     }
@@ -758,25 +757,6 @@ sealed class Screen(
             CustomHeadersSettingsScreen(onBackPressed = onGoBack)
         }
     }
-    
-    // MNN模型下载屏幕
-    data object MnnModelDownload :
-        Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_mnn_model_download) {
-        @Composable
-        override fun Content(
-            navController: NavController,
-            navigateTo: ScreenNavigationHandler,
-            updateNavItem: NavItemChangeHandler,
-            onGoBack: () -> Unit,
-            hasBackgroundImage: Boolean,
-            onLoading: (Boolean) -> Unit,
-            onError: (String) -> Unit,
-            onGestureConsumed: (Boolean) -> Unit
-        ) {
-            MnnModelDownloadScreen(onBackPressed = onGoBack)
-        }
-    }
-    
     // 新增：人设卡生成页面
     data object PersonaCardGeneration :
         Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_persona_card_generation) {
@@ -1461,4 +1441,5 @@ object GestureStateHolder {
     // 聊天界面手势是否被消费的状态
     var isChatScreenGestureConsumed: Boolean = false
 }
+
 

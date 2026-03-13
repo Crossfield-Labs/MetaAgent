@@ -1,0 +1,1104 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Configuration on demand is an incubating feature.
+> Task :dragonbones:preBuild UP-TO-DATE
+> Task :terminal:preBuild UP-TO-DATE
+> Task :quickjs:preBuild UP-TO-DATE
+> Task :showerclient:preBuild UP-TO-DATE
+> Task :mmd:preBuild UP-TO-DATE
+> Task :terminal:preDebugBuild UP-TO-DATE
+> Task :quickjs:preDebugBuild UP-TO-DATE
+> Task :mmd:preDebugBuild UP-TO-DATE
+> Task :dragonbones:preDebugBuild UP-TO-DATE
+> Task :showerclient:preDebugBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :showerclient:compileDebugAidl NO-SOURCE
+> Task :dragonbones:writeDebugAarMetadata UP-TO-DATE
+> Task :app:objectboxPrepareBuild UP-TO-DATE
+> Task :showerclient:writeDebugAarMetadata UP-TO-DATE
+> Task :mmd:writeDebugAarMetadata UP-TO-DATE
+> Task :quickjs:writeDebugAarMetadata UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :mmd:processDebugNavigationResources UP-TO-DATE
+> Task :quickjs:processDebugNavigationResources UP-TO-DATE
+> Task :showerclient:processDebugNavigationResources UP-TO-DATE
+> Task :dragonbones:processDebugNavigationResources UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :showerclient:generateDebugResValues UP-TO-DATE
+> Task :quickjs:generateDebugResValues UP-TO-DATE
+> Task :dragonbones:generateDebugResValues UP-TO-DATE
+> Task :mmd:generateDebugResValues UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :dragonbones:generateDebugResources UP-TO-DATE
+> Task :quickjs:generateDebugResources UP-TO-DATE
+> Task :showerclient:generateDebugResources UP-TO-DATE
+> Task :mmd:generateDebugResources UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :mmd:packageDebugResources UP-TO-DATE
+> Task :dragonbones:packageDebugResources UP-TO-DATE
+> Task :showerclient:packageDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :quickjs:packageDebugResources UP-TO-DATE
+> Task :mmd:extractDeepLinksDebug UP-TO-DATE
+> Task :showerclient:extractDeepLinksDebug UP-TO-DATE
+> Task :quickjs:extractDeepLinksDebug UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :dragonbones:extractDeepLinksDebug UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :mmd:processDebugManifest UP-TO-DATE
+> Task :showerclient:processDebugManifest UP-TO-DATE
+> Task :quickjs:processDebugManifest UP-TO-DATE
+> Task :mmd:compileDebugLibraryResources UP-TO-DATE
+> Task :dragonbones:processDebugManifest UP-TO-DATE
+> Task :quickjs:compileDebugLibraryResources UP-TO-DATE
+> Task :showerclient:compileDebugLibraryResources UP-TO-DATE
+> Task :dragonbones:compileDebugLibraryResources UP-TO-DATE
+> Task :mmd:parseDebugLocalResources UP-TO-DATE
+> Task :dragonbones:parseDebugLocalResources UP-TO-DATE
+> Task :quickjs:parseDebugLocalResources UP-TO-DATE
+> Task :showerclient:parseDebugLocalResources UP-TO-DATE
+> Task :quickjs:generateDebugRFile UP-TO-DATE
+> Task :showerclient:generateDebugRFile UP-TO-DATE
+> Task :dragonbones:generateDebugRFile UP-TO-DATE
+> Task :quickjs:checkKotlinGradlePluginConfigurationErrors
+> Task :mmd:generateDebugRFile UP-TO-DATE
+> Task :showerclient:checkKotlinGradlePluginConfigurationErrors
+> Task :dragonbones:checkKotlinGradlePluginConfigurationErrors
+> Task :mmd:checkKotlinGradlePluginConfigurationErrors
+> Task :quickjs:compileDebugKotlin UP-TO-DATE
+> Task :quickjs:javaPreCompileDebug UP-TO-DATE
+> Task :quickjs:compileDebugJavaWithJavac NO-SOURCE
+> Task :quickjs:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :showerclient:compileDebugKotlin UP-TO-DATE
+> Task :showerclient:javaPreCompileDebug UP-TO-DATE
+> Task :showerclient:compileDebugJavaWithJavac UP-TO-DATE
+> Task :showerclient:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :mmd:compileDebugKotlin UP-TO-DATE
+> Task :mmd:javaPreCompileDebug UP-TO-DATE
+> Task :mmd:compileDebugJavaWithJavac NO-SOURCE
+> Task :mmd:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :dragonbones:compileDebugKotlin UP-TO-DATE
+> Task :dragonbones:javaPreCompileDebug UP-TO-DATE
+> Task :dragonbones:compileDebugJavaWithJavac NO-SOURCE
+> Task :dragonbones:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal:processDebugNavigationResources UP-TO-DATE
+> Task :terminal:generateDebugResValues UP-TO-DATE
+> Task :terminal:generateDebugResources UP-TO-DATE
+> Task :terminal:compileDebugAidl
+> Task :terminal:packageDebugResources
+> Task :terminal:extractDeepLinksDebug UP-TO-DATE
+> Task :terminal:compileDebugLibraryResources UP-TO-DATE
+> Task :terminal:parseDebugLocalResources UP-TO-DATE
+
+> Task :terminal:processDebugManifest
+package="com.ai.assistance.metaagent.terminal" found in source AndroidManifest.xml: D:\works\MetaAgent\terminal\src\main\AndroidManifest.xml.
+Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+Recommendation: remove package="com.ai.assistance.metaagent.terminal" from the source AndroidManifest.xml: D:\works\MetaAgent\terminal\src\main\AndroidManifest.xml.
+
+> Task :terminal:checkKotlinGradlePluginConfigurationErrors
+> Task :terminal:javaPreCompileDebug UP-TO-DATE
+> Task :terminal:generateDebugRFile
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:compileDebugAidl
+
+> Task :app:processDebugMainManifest
+[org.tensorflow:tensorflow-lite:2.10.0] D:\Android\.gradle\caches\8.13\transforms\408f71b5184905e457da97065560c851\transformed\tensorflow-lite-2.10.0\AndroidManifest.xml Warning:
+	Namespace 'org.tensorflow.lite' is used in multiple modules and/or libraries: org.tensorflow:tensorflow-lite:2.10.0, org.tensorflow:tensorflow-lite-api:2.10.0. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :terminal:compileDebugKotlin
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/TerminalManager.kt:466:35 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/TerminalManager.kt:774:13 Variable 'rustSource' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/main/TerminalScreen.kt:67:9 Variable 'isTerminalReady' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/provider/filesystem/SSHFileSystemProvider.kt:602:31 Variable 'isSourceDir' initializer is redundant
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/SettingsScreen.kt:133:44 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/TerminalHome.kt:124:9 Variable 'listState' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/TerminalHome.kt:125:9 Variable 'coroutineScope' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/TerminalHome.kt:148:9 Variable 'visualTransformation' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/TerminalHome.kt:506:13 Name shadowed: context
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/ui/TerminalHome.kt:596:5 Parameter 'onSendCommand' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/utils/SSHDServerManager.kt:91:88 Parameter 'session' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/utils/SSHFileConnectionManager.kt:429:17 Unreachable code
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalCompose.kt:134:54 Parameter 'frameTime' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:204:13 Variable 'bubbleSize' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:461:51 'scaledDensity: Float' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:680:25 Parameter 'velocityX' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:704:29 Parameter 'x' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:704:32 Parameter 'y' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:1050:25 Parameter 'velocityX' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:1074:29 Parameter 'x' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:1074:32 Parameter 'y' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:1086:32 Parameter 'callback' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:1914:9 Parameter 'row' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2105:26 Parameter 'canvas' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2105:42 Parameter 'termChar' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2105:66 Parameter 'x' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2105:76 Parameter 'y' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2105:86 Parameter 'charWidth' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/CanvasTerminalView.kt:2201:88 'obtain(Int): AccessibilityEvent!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:76:46 'obtain(View!): AccessibilityNodeInfo!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:117:46 'obtain(View!, Int): AccessibilityNodeInfo!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:129:18 'setBoundsInParent(Rect!): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:147:18 'addAction(Int): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:148:18 'addAction(Int): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:242:44 'obtain(Int): AccessibilityEvent!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/canvas/TerminalAccessibilityDelegate.kt:282:31 Parameter 'x' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/domain/OutputProcessor.kt:339:55 Name shadowed: session
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/domain/OutputProcessor.kt:369:59 Name shadowed: session
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/domain/OutputProcessor.kt:444:13 Variable 'session' is never used
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/domain/OutputProcessor.kt:446:51 Name shadowed: session
+w: file:///D:/works/MetaAgent/terminal/src/main/java/com/ai/assistance/metaagent/terminal/view/domain/ansi/AnsiScanner.kt:95:21 Variable 'unknownChar' is never used
+
+> Task :terminal:compileDebugJavaWithJavac
+> Task :terminal:bundleLibCompileToJarDebug
+> Task :app:kaptGenerateStubsDebugKotlin
+
+> Task :app:kaptDebugKotlin
+Annotation processors discovery from compile classpath is deprecated.
+Set 'kapt.include.compile.classpath=false' to disable discovery.
+Run the build with '--info' for more details.
+[ObjectBox] ID model file unchanged: default.json
+[ObjectBox] ObjectBox Generator
+[ObjectBox] Copyright 2017-2024 ObjectBox Ltd, objectbox.io. Licensed under GPL V3.
+[ObjectBox] This program comes with ABSOLUTELY NO WARRANTY
+[ObjectBox] Processing schema version 1...
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.DocumentChunkCursor.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.DocumentChunk_.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryCursor.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.Memory_.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryLinkCursor.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryLink_.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryPropertyCursor.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryProperty_.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryTagCursor.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MemoryTag_.java
+[ObjectBox] Written com.ai.assistance.metaagent.data.model.MyObjectBox.java
+[ObjectBox] Processed 5 entities in 614ms
+
+> Task :app:compileDebugKotlin
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/AIForegroundService.kt:582:13 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:453:9 Parameter 'chatModelIndexOverride' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:488:9 Parameter 'chatModelIndexOverride' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:674:64 Parameter 'cachedInput' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:1149:81 Parameter 'content' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:1197:13 Variable 'startTime' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:1292:13 Variable 'startTime' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:1401:60 Parameter 'cachedInput' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/EnhancedAIService.kt:1894:34 Variable 'remainingValue' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/enhance/ConversationService.kt:436:13 Parameter 'messageIndex' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/enhance/ConversationService.kt:437:13 Parameter 'totalMessages' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/enhance/FileBindingService.kt:11:26 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/enhance/ToolExecutionManager.kt:339:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibrary.kt:239:13 Parameter 'toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibrary.kt:359:61 Unnecessary safe call on a non-null receiver of type ProblemLibrary.ParsedEntity?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibrary.kt:859:59 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:29:41 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:32:44 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:36:36 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:59:41 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:73:57 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:99:16 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:111:35 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:141:38 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:156:59 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:210:41 'searchProblemLibrary(String): List<ProblemLibraryTool.ProblemRecord>' is deprecated. This search method uses a legacy data structure.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/library/ProblemLibraryTool.kt:224:59 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:988:91 Unnecessary non-null assertion (!!) on a non-null receiver of type StreamingJsonXmlConverter
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1062:79 Unnecessary non-null assertion (!!) on a non-null receiver of type StreamingJsonXmlConverter
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1081:71 Unnecessary non-null assertion (!!) on a non-null receiver of type StreamingJsonXmlConverter
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1111:71 Unnecessary non-null assertion (!!) on a non-null receiver of type StreamingJsonXmlConverter
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1127:41 The value 'false' assigned to 'var isInToolCall: Boolean defined in com.ai.assistance.metaagent.api.chat.llmprovider.ClaudeProvider.sendMessage.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1128:41 The value 'null' assigned to 'var currentToolParser: StreamingJsonXmlConverter? defined in com.ai.assistance.metaagent.api.chat.llmprovider.ClaudeProvider.sendMessage.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ClaudeProvider.kt:1134:41 The value 'false' assigned to 'var isInThinkingBlock: Boolean defined in com.ai.assistance.metaagent.api.chat.llmprovider.ClaudeProvider.sendMessage.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/DoubaoAIProvider.kt:69:13 Variable 'sanitizedLogJson' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:861:17 The value 'e' assigned to 'var lastException: kotlin.Exception? /* = java.lang.Exception? */ defined in com.ai.assistance.metaagent.api.chat.llmprovider.GeminiProvider.sendMessage.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1004:13 Parameter 'requestId' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1144:49 Conditional branch result of type JSONArray is implicitly cast to Any
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1146:49 Conditional branch result of type JSONObject is implicitly cast to Any
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1212:33 Conditional branch result of type JSONArray is implicitly cast to Any
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1214:33 Conditional branch result of type JSONObject is implicitly cast to Any
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1319:9 Parameter 'requestId' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1367:37 Variable 'segment' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1373:45 Variable 'chunkIndex' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/GeminiProvider.kt:1596:17 Variable 'hasReceivedData' is assigned but never accessed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/MNNProvider.kt:26:25 Parameter '_context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/MistralProvider.kt:73:61 Parameter 'params' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ModelListFetcher.kt:517:35 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/ModelListFetcher.kt:565:37 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/OpenAIProvider.kt:557:29 Variable 'tokenCount' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/OpenAIProvider.kt:966:61 Parameter '_isStreaming' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/chat/llmprovider/QwenAIProvider.kt:70:13 Variable 'sanitizedLogJson' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/speech/DeepgramSttProvider.kt:283:57 The value 'true' assigned to 'var autoStopTriggered: Boolean defined in com.ai.assistance.metaagent.api.speech.DeepgramSttProvider.startRecognition.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/speech/DeepgramSttProvider.kt:603:68 Type mismatch: inferred type is Nothing? but String was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/speech/OpenAISttProvider.kt:299:57 The value 'true' assigned to 'var autoStopTriggered: Boolean defined in com.ai.assistance.metaagent.api.speech.OpenAISttProvider.startRecognition.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/voice/OpenAIRealtimeVoiceProvider.kt:203:58 The corresponding parameter in the supertype 'WebSocketListener' is named 'text'. This may cause problems when calling this function with named arguments.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/api/voice/OpenAIRealtimeVoiceProvider.kt:242:43 Unsafe use of a nullable receiver of type JSONObject?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/application/OperitApplication.kt:437:28 'locale: Locale!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/application/OperitApplication.kt:440:27 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/application/OperitApplication.kt:462:24 'locale: Locale!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/dragonbones/control/DragonBonesAvatarController.kt:36:23 'playAnimation(String, Float = ...): Unit' is deprecated. Use fadeInAnimation for more control over layers and looping.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/dragonbones/control/DragonBonesAvatarController.kt:46:27 'playAnimation(String, Float = ...): Unit' is deprecated. Use fadeInAnimation for more control over layers and looping.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/factory/AvatarModelFactoryImpl.kt:36:45 Unchecked cast: Any to Map<String, Any>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/factory/AvatarModelFactoryImpl.kt:144:59 Unchecked cast: Any? to Map<String, String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/gltf/view/GltfRenderer.kt:52:26 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/mmd/view/MmdRenderer.kt:54:26 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/avatar/impl/webp/view/WebPRenderer.kt:53:9 Variable 'controllerState' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/chat/AIMessageManager.kt:114:9 Parameter 'enableMemoryQuery' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/chat/AIMessageManager.kt:142:45 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/chat/AIMessageManager.kt:768:45 Unnecessary safe call on a non-null receiver of type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/chat/AIMessageManager.kt:795:60 Unnecessary safe call on a non-null receiver of type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/chat/AIMessageManager.kt:1133:13 Variable 'contentWithoutStatus' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/subpack/ApkReverseEngineer.kt:267:53 'WEBP' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/subpack/ApkReverseEngineer.kt:422:66 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/subpack/ApkReverseEngineer.kt:689:30 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/ToolPackage.kt:296:6 This declaration needs opt-in. Its usage should be marked with '@kotlinx.serialization.ExperimentalSerializationApi' or '@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/ToolPackage.kt:298:6 This declaration needs opt-in. Its usage should be marked with '@kotlinx.serialization.ExperimentalSerializationApi' or '@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/PhoneAgent.kt:464:38 Unnecessary safe call on a non-null receiver of type VirtualDisplayOverlay?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/PhoneAgent.kt:473:38 Unnecessary safe call on a non-null receiver of type VirtualDisplayOverlay?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/PhoneAgent.kt:521:29 Condition 'showerOverlay != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/PhoneAgent.kt:523:42 Unnecessary safe call on a non-null receiver of type VirtualDisplayOverlay?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/PhoneAgent.kt:532:42 Unnecessary safe call on a non-null receiver of type VirtualDisplayOverlay?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/agent/ShowerBinderReceiver.kt:16:32 'getParcelableExtra(String!): T?' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/calculator/ExpressionParser.kt:72:17 Variable 'nextPos' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/calculator/ExpressionParser.kt:281:29 Variable 'fromUnit' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/calculator/ExpressionParser.kt:283:29 Variable 'toUnit' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/accessbility/AccessibilityUITools.kt:44:52 Parameter 'tool' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/accessbility/AccessibilityUITools.kt:81:13 Variable 'detail' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:119:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:165:13 Parameter 'path' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:883:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1110:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1242:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1340:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1432:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1590:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1716:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:1903:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2054:13 Variable 'actualSourcePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2055:13 Variable 'actualZipPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2066:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2097:17 Variable 'destZipFile' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2275:13 Variable 'actualZipPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2276:13 Variable 'actualDestPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2287:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerFileSystemTools.kt:2606:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:44:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:100:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:170:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:232:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:290:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:375:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerSystemOperationTools.kt:417:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:102:89 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:165:96 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:238:75 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:418:92 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:472:71 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:1088:79 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:1101:78 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/debugger/DebuggerUITools.kt:1239:78 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/root/RootUITools.kt:81:73 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/root/RootUITools.kt:139:80 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/root/RootUITools.kt:200:71 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/root/RootUITools.kt:299:73 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/root/RootUITools.kt:338:67 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:54:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:287:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:523:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:594:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:666:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:752:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:839:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:909:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:982:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/LinuxFileSystemTools.kt:1060:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/MemoryQueryToolExecutor.kt:289:17 Variable 'chunkIndices' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardChatManagerTool.kt:883:21 Condition 'targetCard == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFFmpegTool.kt:150:13 Variable 'format' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:657:9 Parameter 'environment' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:1107:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2202:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2319:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2338:27 Variable 'success' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2437:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2516:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2680:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2740:17 Variable 'fileSize' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:2865:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3056:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3221:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3342:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3636:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3757:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:3883:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardFileSystemTools.kt:4539:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardHttpTools.kt:130:62 Parameter 'contentType' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardHttpTools.kt:359:47 Variable 'responseBodyString' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardHttpTools.kt:768:47 Variable 'responseBodyString' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardIntentToolExecutor.kt:207:21 Name shadowed: extras
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:639:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:689:46 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:723:46 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:732:58 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:741:66 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:745:66 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:776:52 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:785:58 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:804:46 'resume(T, ((cause: Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardSystemOperationTools.kt:875:38 'getFromLocation(Double, Double, Int): (Mutable)List<Address!>?' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardTerminalCommandExecutor.kt:121:21 Condition 'outputFlow != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebSessionTools.kt:2320:53 'ACTION_MEDIA_SCANNER_SCAN_FILE: String' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebVisitTool.kt:289:58 Parameter 'change' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebVisitTool.kt:631:52 'TYPE_PHONE: Int' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebVisitTool.kt:669:48 'TYPE_PHONE: Int' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebVisitTool.kt:1202:66 This declaration overrides deprecated member but not marked as deprecated itself. Please add @Deprecated annotation or suppress. See https://youtrack.jetbrains.com/issue/KT-47902 for details
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWebVisitTool.kt:1212:63 'onReceivedError(WebView!, Int, String!, String!): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWorkflowTools.kt:884:62 Type mismatch: inferred type is Nothing? but String was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/defaultTool/standard/StandardWorkflowTools.kt:1057:60 Type mismatch: inferred type is Nothing? but String was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsEngine.kt:1213:55 Parameter '_normalizedCallback' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsEngine.kt:1233:55 Parameter '_normalizedCallback' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsJavaBridgeDelegates.kt:1155:52 Type mismatch: inferred type is Class<*>? but Class<*> was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsJavaBridgeDelegates.kt:1161:42 Type mismatch: inferred type is Class<*>? but Class<*> was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsNativeInterfaceDelegates.kt:363:62 'scaledDensity: Float' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/javascript/JsToolManager.kt:184:58 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/mcp/MCPToolExecutor.kt:114:52 Condition 'text != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/mcp/MCPToolExecutor.kt:119:48 Condition 'text != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/mcp/MCPToolExecutor.kt:473:13 Variable 'serverConfig' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/system/ShizukuAuthorizer.kt:174:17 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/tools/system/action/AccessibilityActionListener.kt:140:34 Unnecessary safe call on a non-null receiver of type (Mutable)List<CharSequence!>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowExecutor.kt:142:9 Parameter 'triggerExtras' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowExecutor.kt:959:9 Parameter 'workflow' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowExecutor.kt:961:9 Parameter 'nodeById' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowScheduler.kt:117:40 'REPLACE' is deprecated. Deprecated in favor of the UPDATE policy. UPDATE policy has very similar behavior: next run of the worker with the same unique name, going to have new specification. However, UPDATE has better defaults: unlike REPLACE policy UPDATE won't cancel the worker if it is currently running and new worker specification will be used only on the next run. Also it preserves original enqueue time, so unlike REPLACE period isn't reset. If you want to preserve previous behavior, CANCEL_AND_REENQUEUE should be used.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowScheduler.kt:130:13 Variable 'repeat' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/core/workflow/WorkflowScheduler.kt:222:48 'REPLACE' is deprecated. Deprecated in favor of the UPDATE policy. UPDATE policy has very similar behavior: next run of the worker with the same unique name, going to have new specification. However, UPDATE has better defaults: unlike REPLACE policy UPDATE won't cancel the worker if it is currently running and new worker specification will be used only on the next run. Also it preserves original enqueue time, so unlike REPLACE period isn't reset. If you want to preserve previous behavior, CANCEL_AND_REENQUEUE should be used.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/api/GitHubApiService.kt:578:17 Variable 'url' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/backup/RoomDatabaseBackupManager.kt:155:39 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/backup/RoomDatabaseRestoreManager.kt:25:31 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/backup/RoomDatabaseRestoreManager.kt:41:27 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/converter/MarkdownConverter.kt:111:36 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/converter/MarkdownConverter.kt:125:32 Variable 'value' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/converter/MarkdownConverter.kt:186:28 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:7:53 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:56:28 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:56:47 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:57:16 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:57:35 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:70:21 'ProblemLibraryTool' is deprecated. Use ProblemLibrary for knowledge graph creation instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/db/ProblemEntity.kt:70:40 'ProblemRecord' is deprecated. ProblemRecord is a legacy data structure. Use Memory objects directly.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/MCPLocalServer.kt:286:48 Destructured parameter 'serverConfig' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/MCPLocalServer.kt:741:50 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/MCPLocalServer.kt:759:49 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/MCPRepository.kt:708:36 Parameter 'zip' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/MCPRepository.kt:1107:31 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPBridge.kt:178:17 Variable 'reader' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPBridge.kt:244:29 Condition 'newSessionId == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPBridge.kt:352:33 Condition 'newSessionId == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPBridgeClient.kt:405:25 Variable 'callParams' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPConfigGenerator.kt:38:43 Variable 'existingServerName' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPConfigGenerator.kt:242:13 Condition 'finalConfigJson == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPDeployer.kt:119:29 Condition 'sessionId == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPDeployer.kt:281:17 Condition 'sessionId == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPProjectAnalyzer.kt:266:55 Parameter 'pythonFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPProjectAnalyzer.kt:314:49 Parameter 'jsFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mcp/plugins/MCPSharedSession.kt:49:17 Condition 'sessionId == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mnn/MnnModelDownloadManager.kt:739:29 Variable 'lastDownloadedBytes' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/mnn/MnnModelDownloadManager.kt:777:33 The value 'downloadedBytes' assigned to 'var lastDownloadedBytes: Long defined in com.ai.assistance.metaagent.data.mnn.MnnModelDownloadManager.downloadAllFiles.`<anonymous>`.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/preferences/ModelConfigManager.kt:198:56 Parameter 'preferences' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/preferences/UserPreferencesManager.kt:38:5 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/preferences/WakeWordPreferences.kt:30:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.serialization.ExperimentalSerializationApi' or '@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/MemoryRepository.kt:207:65 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/MemoryRepository.kt:1789:64 Parameter 'currentFolderPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/MemoryRepository.kt:1828:45 Condition 'sourceMemory != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/MemoryRepository.kt:1828:69 Condition 'targetMemory != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/UIHierarchyManager.kt:108:9 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/WorkflowRepository.kt:559:28 'get(String!): Any?' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/WorkflowRepository.kt:611:85 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/WorkflowRepository.kt:614:50 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/WorkflowRepository.kt:617:57 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/repository/WorkflowRepository.kt:624:80 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/updates/PatchUpdateInstaller.kt:601:45 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/data/updates/PatchUpdateInstaller.kt:601:68 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/plugins/toolpkg/ToolPkgPromptHookBridge.kt:217:9 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/plugins/toolpkg/ToolPkgPromptHookBridge.kt:248:9 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/plugins/toolpkg/ToolPkgPromptHookBridge.kt:260:9 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/plugins/toolpkg/ToolPkgPromptHookBridge.kt:272:9 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/provider/MemoryDocumentsProvider.kt:661:21 Variable 'repo' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/provider/MemoryDocumentsProvider.kt:743:9 Parameter 'folderPaths' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/TermuxCommandResultService.kt:3:20 'IntentService' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/TermuxCommandResultService.kt:16:36 'constructor IntentService(String!)' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/TermuxCommandResultService.kt:16:36 'IntentService' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/TermuxCommandResultService.kt:69:13 Variable 'errmsg' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageCoordinationDelegate.kt:534:27 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageCoordinationDelegate.kt:538:30 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageCoordinationDelegate.kt:540:30 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageCoordinationDelegate.kt:593:27 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:331:35 Condition 'chatId != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:428:47 Condition 'chatId != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:459:25 Elvis operator (?:) always returns the left operand of non-nullable type EnhancedAIService
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:470:75 Condition 'chatScopedService != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:655:29 Condition 'chatId != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/core/MessageProcessingDelegate.kt:730:41 Condition 'chatId != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/floating/UIDebuggerWindowManager.kt:58:40 'TYPE_PHONE: Int' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/floating/UIDebuggerWindowManager.kt:146:5 Parameter 'ballX' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/floating/UIDebuggerWindowManager.kt:147:5 Parameter 'ballY' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/services/floating/UIDebuggerWindowManager.kt:179:38 Parameter 'change' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/WaveVisualizer.kt:32:5 Parameter 'waveColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/WaveVisualizer.kt:57:9 Variable 'animatedProgress' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:181:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:182:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:242:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:243:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:367:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:387:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:541:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:542:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:563:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:564:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:583:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:584:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:599:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:600:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:641:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:642:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:645:32 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:820:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:821:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:890:9 Variable 'props' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1153:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1154:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1182:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1183:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1201:9 Variable 'props' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1211:5 Parameter 'onAction' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslGeneratedRenderers.kt:1212:5 Parameter 'nodePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslScreen.kt:546:76 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslScreen.kt:668:59 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/composedsl/ToolPkgComposeDslScreen.kt:695:34 'quadraticBezierTo(Float, Float, Float, Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo()
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/MarkdownTextComposable.kt:24:9 Parameter 'fontSize' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/MarkdownTextComposable.kt:25:9 Parameter 'textAlign' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/MarkdownTextComposable.kt:26:9 Parameter 'isSelectable' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/MarkdownTextComposable.kt:27:9 Parameter 'onLinkClicked' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/VirtualDisplayOverlay.kt:358:21 Variable 'snappedWidthPx' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/VirtualDisplayOverlay.kt:375:13 Variable 'params' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/VirtualDisplayOverlay.kt:536:61 Parameter 'previewPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/displays/VirtualDisplayOverlay.kt:883:29 Name shadowed: density
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:212:9 Parameter 'typeface' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:426:5 Parameter 'index' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:684:5 Parameter 'density' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:1039:9 Expected performance impact from inlining is insignificant. Inlining works best for functions with parameters of functional types
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:1062:5 Parameter 'headlineLargeSize' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/CanvasMarkdownNodeRenderer.kt:1484:5 Parameter 'density' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/EnhancedCodeBlock.kt:737:34 This declaration overrides deprecated member but not marked as deprecated itself. Please add @Deprecated annotation or suppress. See https://youtrack.jetbrains.com/issue/KT-47902 for details
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/EnhancedCodeBlock.kt:822:34 This declaration overrides deprecated member but not marked as deprecated itself. Please add @Deprecated annotation or suppress. See https://youtrack.jetbrains.com/issue/KT-47902 for details
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/EnhancedCodeBlock.kt:877:5 Parameter 'index' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/EnhancedCodeBlock.kt:891:17 Variable 'lineStart' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:26:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:27:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:28:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:63:39 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:66:29 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownAudioRenderer.kt:96:17 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownImageRenderer.kt:422:61 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:29:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:30:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:31:41 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:32:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:60:39 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:63:29 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:99:21 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/MarkdownVideoRenderer.kt:102:38 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:221:9 Parameter 'backgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:344:39 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:459:9 Parameter 'backgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:482:9 Variable 'scope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:513:49 Parameter 'node' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:568:43 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:646:57 Parameter 'node' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:756:9 Variable 'density' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/common/markdown/StreamMarkdownRenderer.kt:765:9 Variable 'fontSizes' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/about/screens/AboutScreen.kt:111:9 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/about/screens/AboutScreen.kt:116:21 Name shadowed: context
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/about/screens/AboutScreen.kt:1241:29 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/about/screens/AboutScreen.kt:1271:29 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/about/screens/AboutScreen.kt:1431:29 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/agreement/screens/AgreementScreen.kt:109:146 'scaledDensity: Float' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/attachments/AttachmentUtils.kt:30:28 Parameter 'mimeType' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/AttachmentSelector.kt:88:9 Parameter 'userQuery' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/AttachmentSelector.kt:95:9 Variable 'attachmentManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/CharacterSelectorPanel.kt:178:69 'Sort: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Sort
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatArea.kt:190:5 Parameter 'aiReferences' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatArea.kt:200:5 Parameter 'hasBackgroundImage' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatArea.kt:208:5 Parameter 'onAutoReadMessage' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatArea.kt:387:5 Parameter 'onDeleteMessagesFrom' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatArea.kt:673:57 'Reply: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Reply
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatHistorySelector.kt:1129:13 Name shadowed: groupPrefix
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:104:9 Parameter 'chatScreenGestureConsumed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:105:9 Parameter 'onChatScreenGestureConsumed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:106:9 Parameter 'currentDrag' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:107:9 Parameter 'onCurrentDragChange' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:108:9 Parameter 'verticalDrag' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:109:9 Parameter 'onVerticalDragChange' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:110:9 Parameter 'dragThreshold' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:150:9 Variable 'showWebView' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:167:9 Variable 'currentChat' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:632:17 Name shadowed: density
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:904:29 Name shadowed: currentChat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenContent.kt:966:9 Parameter 'showChatHistorySelector' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ChatScreenHeader.kt:199:21 'CircularProgressIndicator(Float, Modifier = ..., Color = ..., Dp = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/ExportDialogs.kt:394:9 Parameter 'workDir' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/MemoryFolderSelectionDialog.kt:58:9 Variable 'coroutineScope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/MessageEditor.kt:642:48 'outlinedTextFieldColors(Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., TextSelectionColors = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ...): TextFieldColors' is deprecated. Renamed to `OutlinedTextFieldDefaults.colors` with additional parameters tocontrol container color based on state.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/MessageEditor.kt:659:48 'outlinedTextFieldColors(Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., TextSelectionColors = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ...): TextFieldColors' is deprecated. Renamed to `OutlinedTextFieldDefaults.colors` with additional parameters tocontrol container color based on state.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/MessageEditor.kt:677:48 'outlinedTextFieldColors(Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., TextSelectionColors = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ..., Color = ...): TextFieldColors' is deprecated. Renamed to `OutlinedTextFieldDefaults.colors` with additional parameters tocontrol container color based on state.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AttachmentViewerDialog.kt:206:54 'VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:11:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:12:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:13:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:24:9 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:28:29 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/AudioAttachmentPlayer.kt:46:13 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:11:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:12:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:13:41 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:14:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:25:9 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:29:29 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:47:13 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/attachments/VideoAttachmentPlayer.kt:50:30 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:729:51 Parameter '_modifier' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:729:72 Parameter '_textColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:739:32 'toLowerCase(): String' is deprecated. Use lowercase() instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:873:17 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:999:99 Parameter 'textColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:1286:31 Parameter '_content' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:1286:49 Parameter '_modifier' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/CustomXmlRenderer.kt:1286:70 Parameter '_textColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/FileDiffDisplay.kt:39:9 Variable 'clipboardManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/ToolDisplayComponents.kt:63:9 Variable 'clipboardManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/ToolDisplayComponents.kt:150:9 Variable 'clipboardManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/part/ToolDisplayComponents.kt:468:19 Variable 'ch' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/bubble/BubbleAiMessageComposable.kt:89:13 Condition 'message.roleName != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/bubble/BubbleUserMessageComposable.kt:90:9 Variable 'clipboardManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/bubble/BubbleUserMessageComposable.kt:91:9 Variable 'scope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/bubble/BubbleUserMessageComposable.kt:758:55 Destructured parameter 'isPaired' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/bubble/BubbleUserMessageComposable.kt:860:67 'VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/CursorStyleChatMessage.kt:21:9 Parameter 'thinkingBackgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/CursorStyleChatMessage.kt:22:9 Parameter 'thinkingTextColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/CursorStyleChatMessage.kt:23:9 Parameter 'supportToolMarkup' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/CursorStyleChatMessage.kt:24:9 Parameter 'initialThinkingExpanded' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/SummaryMessageComposable.kt:33:5 Parameter 'backgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/SummaryMessageComposable.kt:34:5 Parameter 'textColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/SummaryMessageComposable.kt:43:9 Variable 'haptic' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/UserMessageComposable.kt:85:9 Variable 'clipboardManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/UserMessageComposable.kt:86:9 Variable 'haptic' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/UserMessageComposable.kt:87:9 Variable 'scope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/UserMessageComposable.kt:501:55 Destructured parameter 'isPaired' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/cursor/UserMessageComposable.kt:602:67 'VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatInputSection.kt:96:5 Parameter 'modifier' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatInputSection.kt:100:5 Parameter 'enableTools' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:102:5 Parameter 'maxWindowSizeInK' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:105:5 Parameter 'onContextLengthChange' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:110:5 Parameter 'summaryTokenThreshold' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:111:5 Parameter 'onSummaryTokenThresholdChange' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:114:5 Parameter 'onNavigateToModelPrompts' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/components/style/input/classic/ClassicChatSettingsBar.kt:809:9 Variable 'stateDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:104:9 Parameter 'padding' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:106:9 Parameter 'isFloatingMode' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:107:9 Parameter 'onLoading' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:108:9 Parameter 'onError' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:152:9 Variable 'requestMicrophonePermissionLauncher' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:281:9 Variable 'apiProviderType' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:282:9 Variable 'isConfigured' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:372:9 Variable 'webViewRefreshCounter' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:378:9 Name shadowed: isFloatingMode
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:422:9 Variable 'backgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:661:9 Variable 'hasDefaultConfig' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:698:48 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:721:9 Variable 'view' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/AIChatScreen.kt:1551:39 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:32:9 Parameter 'apiEndpoint' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:34:9 Parameter 'modelName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:40:9 Parameter 'onError' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:41:9 Parameter 'coroutineScope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:42:9 Parameter 'onUseDefault' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:46:9 Parameter 'onNavigateToSettings' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:50:13 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/screens/ConfigurationScreen.kt:57:13 Variable 'isUsingDefaultApiKey' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/util/MessageImageGenerator.kt:127:29 'LocalImageLoader: ImageLoaderProvidableCompositionLocal' is deprecated. LocalImageLoader was intended to provide a method to overwrite the singleton ImageLoader in local compositions. In practice, it's not clear that `LocalImageLoader.provide` **does not** set the singleton ImageLoader. This can result in accidentally creating multiple ImageLoader instances if you use a combination of `LocalImageLoader.current` and `context.imageLoader`. To maximize performance, apps should create one ImageLoader or use `ImageLoader.newBuilder` to create new ImageLoaders that share the same resources.
+
+Additionally, as a composition is at most scoped to an Activity, `LocalImageLoader.provide` encourages creating multiple ImageLoaders if the user creates multiple activities that use Compose.
+
+You should migrate to `ImageLoaderFactory` to set the singleton ImageLoader and `LocalContext.current.imageLoader` to access the singleton ImageLoader in Compose. If you need to use a locally scoped ImageLoader it's recommended to use the `AsyncImage` and `rememberAsyncImagePainter` overloads that have an ImageLoader argument and pass the local ImageLoader as input.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/util/MessageImageGenerator.kt:127:46 'provides(ImageLoader): ProvidedValue<ImageLoader?>' is deprecated. Implement `ImageLoaderFactory` in your `android.app.Application` class.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/util/MessageImageGenerator.kt:133:33 Name shadowed: colorScheme
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/viewmodel/ChatViewModel.kt:1316:63 Unnecessary safe call on a non-null receiver of type EnhancedAIService
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/viewmodel/ChatViewModel.kt:2041:49 Elvis operator (?:) always returns the left operand of non-nullable type String?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/viewmodel/ChatViewModel.kt:2308:32 Destructured parameter 'config' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/viewmodel/FloatingWindowDelegate.kt:256:21 Variable 'isUiToolExecuting' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/LocalWebServer.kt:190:38 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/LocalWebServer.kt:344:41 Unnecessary safe call on a non-null receiver of type ResponseBody?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/LocalWebServer.kt:415:54 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/WebViewHandler.kt:101:48 'ACTION_MEDIA_SCANNER_SCAN_FILE: String' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/WebViewHandler.kt:157:17 'setter for allowFileAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/WebViewHandler.kt:158:17 'setter for allowUniversalAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/WebViewHandler.kt:364:13 Parameter 'contentLength' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/WebViewHandler.kt:456:57 Variable 'fileUri' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/FileManager.kt:210:50 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/FileManager.kt:395:57 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/WorkspaceManager.kt:219:57 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/WorkspaceManager.kt:1006:46 'Undo: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Undo
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/WorkspaceManager.kt:1008:46 'Redo: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Redo
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/WorkspaceReadOnlyDocumentPreview.kt:377:40 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/WorkspaceSetup.kt:98:9 Variable 'bindSafLauncher' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeEditor.kt:54:9 Parameter 'showLineNumbers' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeEditor.kt:58:9 Variable 'theme' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeEditor.kt:71:9 Variable 'density' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeEditor.kt:146:25 Name shadowed: density
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodePane.kt:53:13 Variable 'params' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeParser.kt:119:17 Variable 'colorArrayLength' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeParser.kt:465:21 Variable 'start' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeParser.kt:533:25 Variable 'start' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeText.kt:249:13 Condition 'completionProvider == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeText.kt:259:46 Unnecessary non-null assertion (!!) on a non-null receiver of type CompletionProvider
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeText.kt:261:31 Unnecessary safe call on a non-null receiver of type CompletionProvider
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/CodeText.kt:262:43 Unnecessary non-null assertion (!!) on a non-null receiver of type CompletionProvider
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/ColorsText.kt:321:16 Type mismatch: inferred type is Any? but Any was expected
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/ColorsText.kt:537:25 Variable 'dashPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/HVScrollView.kt:799:13 Condition 'focused != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/HVScrollView.kt:898:13 Variable 'fadingEdge' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/HVScrollView.kt:925:13 Variable 'fadingEdge' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/HVScrollView.kt:1145:51 Unnecessary safe call on a non-null receiver of type View?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/HVScrollView.kt:1173:51 Unnecessary safe call on a non-null receiver of type View?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/PerformEdit.kt:36:15 'open' has no effect in a final class
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/PerformEdit.kt:36:42 Parameter 's' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/PerformEdit.kt:41:15 'open' has no effect in a final class
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/PerformEdit.kt:41:38 Parameter 's' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/completion/CompletionPopup.kt:95:62 'Label: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Label
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/editor/theme/EditorTheme.kt:105:25 Parameter '_language' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:328:81 Parameter '_workspacePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:360:61 Parameter '_isLast' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:423:9 Parameter '_toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:474:9 Parameter '_toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:475:9 Parameter '_workspacePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:476:9 Parameter '_errorFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:486:9 Parameter '_toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:487:9 Parameter '_workspacePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:488:9 Parameter '_errorFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:498:9 Parameter '_toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:499:9 Parameter '_workspacePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/chat/webview/workspace/process/WorkspaceAttachmentProcessor.kt:500:9 Parameter '_errorFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:103:9 Variable 'elevation' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:158:29 Expression under 'when' is never equal to null
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:201:56 Elvis operator (?:) always returns the left operand of non-nullable type AndroidPermissionLevel
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:501:9 Parameter 'isCurrentlyDisplayed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:1292:21 Expression under 'when' is never equal to null
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/components/PermissionLevelCard.kt:1315:21 Expression under 'when' is never equal to null
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/state/DemoStateManager.kt:99:26 Parameter 'text' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/state/DemoStateManager.kt:228:56 Parameter 'isMetaAgentTerminalRunning' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/state/DemoStateManager.kt:339:5 Parameter 'updateMetaAgentTerminalRunning' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/AccessibilityWizardCard.kt:112:21 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:41:5 Parameter 'isInstalled' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:42:5 Parameter 'installedVersion' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:43:5 Parameter 'latestVersion' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:44:5 Parameter 'releaseNotes' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:45:5 Parameter 'updateNeeded' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:46:5 Parameter 'downloadUrl' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:47:5 Parameter 'onInstall' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:48:5 Parameter 'onUpdate' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:49:5 Parameter 'onOpen' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/OperitTerminalWizardCard.kt:50:5 Parameter 'onDownloadFromUrl' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/RootWizardCard.kt:125:41 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/ShizukuWizardCard.kt:27:9 Parameter 'onInstallFromStore' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/demo/wizards/ShizukuWizardCard.kt:118:21 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/help/screens/HelpScreen.kt:30:16 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/help/screens/HelpScreen.kt:69:30 This declaration overrides deprecated member but not marked as deprecated itself. Please add @Deprecated annotation or suppress. See https://youtrack.jetbrains.com/issue/KT-47902 for details
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/help/screens/HelpScreen.kt:75:27 'onReceivedError(WebView!, Int, String!, String!): Unit' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/FolderNavigator.kt:349:37 'animateItemPlacement(FiniteAnimationSpec<IntOffset> = ...): Modifier' is deprecated. Use Modifier.animateItem() instead
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/FolderNavigator.kt:377:5 Parameter 'fullPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/FolderNavigator.kt:480:32 Parameter 'index' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/graph/GraphVisualizer.kt:213:13 Variable 'visibleWorldRect' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/graph/GraphVisualizer.kt:416:49 Variable 'delta' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/screens/graph/GraphVisualizer.kt:544:30 Name shadowed: i
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/memory/viewmodel/MemoryViewModel.kt:931:87 Unchecked cast: MemoryViewModel to T
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/components/dialogs/MCPServerDetailsDialog.kt:68:9 Variable 'screenWidth' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/components/dialogs/header/MCPServerDetailsHeader.kt:75:17 Variable 'coroutineScope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/dialogs/AutomationFunctionExecutionDialog.kt:32:9 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/dialogs/AutomationPackageDetailsDialog.kt:28:9 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPConfigScreen.kt:968:33 Name shadowed: activity
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPConfigScreen.kt:1077:9 Parameter 'padding' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPConfigScreen.kt:1353:5 Parameter 'pluginId' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPManageScreen.kt:32:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPMarketScreen.kt:49:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPMarketScreen.kt:482:40 'Login: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Login
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPMarketScreen.kt:543:40 'Logout: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Logout
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPMarketScreen.kt:561:5 Parameter 'onNavigateToDetail' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPMarketScreen.kt:821:40 'Login: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Login
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/MCPPluginDetailScreen.kt:52:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/PackageManagerScreen.kt:81:5 Parameter 'onNavigateToMCPDetail' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/PackageManagerScreen.kt:88:9 Variable 'mcpRepository' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/PackageManagerScreen.kt:178:64 Elvis operator (?:) always returns the left operand of non-nullable type String?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/SkillDetailScreen.kt:101:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/SkillManageScreen.kt:65:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/SkillMarketScreen.kt:91:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/SkillMarketScreen.kt:483:40 'Login: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Login
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/SkillMarketScreen.kt:544:40 'Logout: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Logout
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/screens/mcp/viewmodel/MCPMarketViewModel.kt:754:35 Parameter 'updatedIssue' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/packages/viewmodel/MCPViewModel.kt:86:69 Parameter 'zipFilePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/permission/screens/PermissionGuideScreen.kt:406:57 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/permission/screens/PermissionGuideScreen.kt:476:56 'ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/permission/screens/PermissionGuideScreen.kt:925:9 Parameter 'level' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/components/BackupDialogs.kt:366:5 Parameter 'format' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/components/BackupDialogs.kt:417:5 Parameter 'format' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ChatBackupSettingsScreen.kt:1590:36 Parameter '_context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ChatHistorySettingsScreen.kt:219:9 Variable 'assignGroupInProgress' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ChatHistorySettingsScreen.kt:1037:9 Variable 'isMissing' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ContextSummarySettingsScreen.kt:41:9 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/CustomEmojiManagementScreen.kt:38:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/CustomHeadersSettingsScreen.kt:59:33 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/CustomHeadersSettingsScreen.kt:116:44 'List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.List
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/FunctionalConfigScreen.kt:49:9 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/FunctionalConfigScreen.kt:60:9 Variable 'configMapping' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/GitHubAccountScreen.kt:121:48 'Logout: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Logout
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/GitHubAccountScreen.kt:145:48 'Login: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Login
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/GlobalDisplaySettingsScreen.kt:40:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/GlobalDisplaySettingsScreen.kt:60:9 Variable 'globalUserAvatarUri' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/GlobalDisplaySettingsScreen.kt:180:38 'Message: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Message
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/LanguageSettingsScreen.kt:60:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/LayoutAdjustmentSettingsScreen.kt:64:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/MnnModelDownloadScreen.kt:35:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/MnnModelDownloadScreen.kt:566:20 Duplicate label in when
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:60:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:229:62 'with(ExitTransition): ContentTransform' is deprecated. Infix fun EnterTransition.with(ExitTransition) has been renamed to togetherWith
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:740:5 Parameter 'scope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:741:5 Parameter 'showNotification' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:785:14 This declaration is in a preview state and can be changed in a backwards-incompatible manner with a best-effort migration. Its usage should be marked with '@kotlinx.coroutines.FlowPreview' or '@OptIn(kotlinx.coroutines.FlowPreview::class)' if you accept the drawback of relying on preview API
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelConfigScreen.kt:836:14 This declaration is in a preview state and can be changed in a backwards-incompatible manner with a best-effort migration. Its usage should be marked with '@kotlinx.coroutines.FlowPreview' or '@OptIn(kotlinx.coroutines.FlowPreview::class)' if you accept the drawback of relying on preview API
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelPromptsSettingsScreen.kt:108:9 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelPromptsSettingsScreen.kt:822:47 'Label: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Label
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ModelPromptsSettingsScreen.kt:2084:61 'Sort: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Sort
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:80:17 Condition 'currentCard == null' is always 'false'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:141:5 Parameter 'onNavigateToSettings' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:142:5 Parameter 'onNavigateToUserPreferences' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:143:5 Parameter 'onNavigateToModelConfig' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:144:5 Parameter 'onNavigateToModelPrompts' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:152:9 Variable 'characterAssistantIntro' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:269:23 Unnecessary safe call on a non-null receiver of type CharacterCard
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:278:15 Elvis operator (?:) always returns the left operand of non-nullable type Unit
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:295:31 Unnecessary safe call on a non-null receiver of type CharacterCard
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:295:38 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:389:60 Parameter 'assistantIndex' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/PersonaCardGenerationScreen.kt:999:108 'Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:70:13 Variable 'apiPreferences' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:97:13 Variable 'showSaveSuccessMessage' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:105:13 Variable 'componentBackgroundColor' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:125:55 Unnecessary non-null assertion (!!) on a non-null receiver of type GitHubUser
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:137:62 'Logout: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Logout
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:146:62 'Login: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Login
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:232:46 'Message: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Message
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SettingsScreen.kt:449:9 Parameter 'steps' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SpeechServicesSettingsScreen.kt:91:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/SpeechServicesSettingsScreen.kt:1579:61 'VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/TagMarketBilingualData.kt:397:30 'Label: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Label
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/TagMarketScreen.kt:42:21 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:62:38 'DefaultLoadControl' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:63:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:64:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:65:38 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:559:9 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:562:25 'DefaultLoadControl' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:576:34 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:587:45 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:620:40 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:636:51 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ThemeSettingsScreen.kt:636:79 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/TokenUsageStatisticsScreen.kt:47:5 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/ToolPermissionSettingsScreen.kt:37:34 Parameter 'navigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/UserPreferencesGuideScreen.kt:142:9 Parameter 'onBackPressed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/UserPreferencesSettingsScreen.kt:48:9 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/UserPreferencesSettingsScreen.kt:116:9 Variable 'listState' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/UserPreferencesSettingsScreen.kt:325:66 'with(ExitTransition): ContentTransform' is deprecated. Infix fun EnterTransition.with(ExitTransition) has been renamed to togetherWith
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/WaifuModeSettingsScreen.kt:32:5 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/WaifuModeSettingsScreen.kt:36:9 Variable 'apiPreferences' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/screens/WaifuModeSettingsScreen.kt:456:43 'ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/AdvancedSettingsSection.kt:115:14 This declaration is in a preview state and can be changed in a backwards-incompatible manner with a best-effort migration. Its usage should be marked with '@kotlinx.coroutines.FlowPreview' or '@OptIn(kotlinx.coroutines.FlowPreview::class)' if you accept the drawback of relying on preview API
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/AdvancedSettingsSection.kt:602:72 'HelpOutline: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.HelpOutline
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelApiSettingsSection.kt:88:26 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelApiSettingsSection.kt:269:14 This declaration is in a preview state and can be changed in a backwards-incompatible manner with a best-effort migration. Its usage should be marked with '@kotlinx.coroutines.FlowPreview' or '@OptIn(kotlinx.coroutines.FlowPreview::class)' if you accept the drawback of relying on preview API
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelApiSettingsSection.kt:488:74 Destructured parameter 'label' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelApiSettingsSection.kt:640:33 Variable 'refreshModelsFailedText' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelApiSettingsSection.kt:1180:9 Variable 'focusManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:61:9 Variable 'maxTokensName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:62:9 Variable 'maxTokensDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:63:9 Variable 'temperatureName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:64:9 Variable 'temperatureDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:65:9 Variable 'topPName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:66:9 Variable 'topPDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:67:9 Variable 'topKName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:68:9 Variable 'topKDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:69:9 Variable 'presencePenaltyName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:70:9 Variable 'presencePenaltyDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:71:9 Variable 'frequencyPenaltyName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:72:9 Variable 'frequencyPenaltyDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:73:9 Variable 'repetitionPenaltyName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:74:9 Variable 'repetitionPenaltyDescription' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:75:9 Variable 'parametersSavedText' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:78:9 Variable 'saveParametersText' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:79:9 Variable 'valueText' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:80:9 Variable 'rangeFormatText' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:122:60 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:123:49 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:126:52 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:127:52 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:129:19 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:252:50 Unchecked cast: ModelParameter<*> to ModelParameter<Int>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:257:52 Unchecked cast: ModelParameter<*> to ModelParameter<Float>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:262:53 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:267:51 Unchecked cast: ModelParameter<*> to ModelParameter<Boolean>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:271:50 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:290:50 Unchecked cast: ModelParameter<*> to ModelParameter<Int>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:295:52 Unchecked cast: ModelParameter<*> to ModelParameter<Float>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:300:53 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:305:51 Unchecked cast: ModelParameter<*> to ModelParameter<Boolean>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:309:50 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:330:58 Unchecked cast: ModelParameter<*> to ModelParameter<Int>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:338:60 Unchecked cast: ModelParameter<*> to ModelParameter<Float>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:346:61 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:354:59 Unchecked cast: ModelParameter<*> to ModelParameter<Boolean>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:361:58 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1175:9 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1301:50 Unchecked cast: ModelParameter<*> to ModelParameter<Int>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1339:52 Unchecked cast: ModelParameter<*> to ModelParameter<Float>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1377:53 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1388:51 Unchecked cast: ModelParameter<*> to ModelParameter<Boolean>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ModelParametersSection.kt:1406:50 Unchecked cast: ModelParameter<*> to ModelParameter<String>
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:58:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:59:41 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:60:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:74:16 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:216:60 Unnecessary safe call on a non-null receiver of type String?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:241:37 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/sections/ThemeSettingsBackgroundSection.kt:246:54 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/settings/viewmodels/CustomEmojiViewModel.kt:198:26 Parameter '_category' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/startup/screens/PluginLoadingScreen.kt:370:9 Variable 'animatedProgress' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/startup/screens/PluginLoadingScreen.kt:811:25 Name shadowed: mcpLocalServer
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/token/TokenConfigWebViewScreen.kt:62:30 Parameter 'onNavigateBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/token/webview/WebViewConfig.kt:91:17 Parameter 'v' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/token/webview/WebViewConfig.kt:125:53 Unnecessary safe call on a non-null receiver of type WebView?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/token/webview/WebViewConfig.kt:135:45 Unnecessary safe call on a non-null receiver of type WebView?
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/StreamMarkdownDemo.kt:63:30 Parameter 'onBackClick' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/StreamMarkdownDemo.kt:70:9 Variable 'autoScroll' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/StreamMarkdownDemo.kt:123:30 This is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/ToolboxScreen.kt:86:9 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/ToolboxScreen.kt:538:24 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/ToolboxScreen.kt:550:34 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:63:26 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:103:57 'DirectionsRun: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.DirectionsRun
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:221:64 'with(ExitTransition): ContentTransform' is deprecated. Infix fun EnterTransition.with(ExitTransition) has been renamed to togetherWith
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:224:63 'with(ExitTransition): ContentTransform' is deprecated. Infix fun EnterTransition.with(ExitTransition) has been renamed to togetherWith
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:428:73 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:539:70 'List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.List
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/apppermissions/AppPermissionsScreen.kt:711:41 Parameter 'index' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/autoglm/AutoGlmOneClickToolScreen.kt:38:5 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/autoglm/AutoGlmOneClickToolScreen.kt:156:39 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/autoglm/AutoGlmOneClickToolScreen.kt:164:39 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/autoglm/AutoGlmOneClickToolScreen.kt:172:39 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/autoglm/AutoGlmViewModel.kt:219:55 Parameter 'stepIndex' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/defaultassistant/DefaultAssistantGuideScreen.kt:42:33 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/defaultassistant/DefaultAssistantGuideScreen.kt:413:61 'Launch: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Launch
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/ffmpegtoolbox/FFmpegToolboxScreen.kt:36:25 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/ffmpegtoolbox/FFmpegToolboxScreen.kt:325:58 No cast needed
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/FileManagerScreen.kt:49:23 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:43:9 Parameter 'onOpen' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:44:9 Parameter 'onShare' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:69:9 Variable 'clipboardFiles' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:70:9 Variable 'isCutOperation' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:71:9 Variable 'clipboardSourcePath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:373:25 Parameter 'folderName' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:373:45 Parameter 'currentPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:402:50 'OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:457:52 Unnecessary non-null assertion (!!) on a non-null receiver of type FileItem
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:540:79 Unnecessary non-null assertion (!!) on a non-null receiver of type FileItem
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileContextMenu.kt:542:63 Unnecessary non-null assertion (!!) on a non-null receiver of type FileItem
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/FileListPane.kt:132:65 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/ToolbarComponents.kt:38:5 Parameter 'currentPath' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/components/ToolbarComponents.kt:393:40 'Indicator(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Use SecondaryIndicator instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/utils/FileUtils.kt:40:76 'TextSnippet: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TextSnippet
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/filemanager/utils/FileUtils.kt:47:35 'InsertDriveFile: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.InsertDriveFile
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/htmlpackager/HtmlPackagerScreen.kt:43:24 Parameter 'onGoBack' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/logcat/LogcatScreen.kt:24:18 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/processlimit/ProcessLimitRemoverScreen.kt:60:31 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/shellexecutor/ShellCommandManager.kt:135:38 'ViewList: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ViewList
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/shellexecutor/ShellCommandManager.kt:150:40 Parameter 'command' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/shellexecutor/ShellCommandManager.kt:158:13 Variable 'historyJson' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/shellexecutor/ShellCommandManager.kt:201:13 Variable 'trimmedHistory' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/shellexecutor/ShellExecutorScreen.kt:83:25 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/speechtotext/SpeechToTextScreen.kt:37:24 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/sqlviewer/SqlTableView.kt:31:58 'scaledDensity: Float' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/sqlviewer/SqlViewerScreen.kt:55:21 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/sqlviewer/SqlViewerViewModel.kt:150:47 Unnecessary safe call on a non-null receiver of type Cursor
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/texttospeech/TextToSpeechScreen.kt:38:24 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/tooltester/ToolTesterScreen.kt:46:22 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/tooltester/ToolTesterScreen.kt:171:9 'AlertDialog(() -> Unit, Modifier = ..., DialogProperties = ..., () -> Unit): Unit' is deprecated. Use BasicAlertDialog instead
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/tooltester/ToolTesterScreen.kt:231:5 Parameter 'scope' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/tooltester/ToolTesterScreen.kt:245:40 'HelpOutline: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Outlined.HelpOutline
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/UIDebuggerComponents.kt:72:5 Parameter 'viewModelStoreOwner' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/UIDebuggerScreen.kt:26:5 Parameter 'navController' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/UIDebuggerScreen.kt:30:9 Variable 'uiState' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/UIDebuggerScreen.kt:56:35 'OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/UIDebuggerScreen.kt:71:31 'OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/toolbox/screens/uidebugger/components/ActivityMonitorPanel.kt:79:9 Variable 'inputMethodManager' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/update/screens/UpdateScreen.kt:72:45 The corresponding parameter in the supertype 'Factory' is named 'modelClass'. This may cause problems when calling this function with named arguments.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/update/screens/UpdateScreen.kt:72:71 Unchecked cast: VM to T
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/update/screens/UpdateScreen.kt:107:5 Parameter 'onRefresh' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/update/screens/UpdateScreen.kt:170:5 Parameter 'isFirst' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/update/screens/UpdateScreen.kt:172:5 Parameter 'onNavigateToThemeSettings' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/DraggableNodeCard.kt:106:9 'when' is exhaustive so 'else' is redundant here
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/DraggableNodeCard.kt:126:65 Variable 'longPressJob' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/DraggableNodeCard.kt:127:41 Variable 'isLongPressed' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/GridWorkflowCanvas.kt:257:64 Parameter 'rotation' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/GridWorkflowCanvas.kt:492:29 Parameter 'isSource' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/components/GridWorkflowCanvas.kt:577:33 Name shadowed: x
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/screens/WorkflowDetailScreen.kt:274:49 Parameter 'nodeId' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/screens/WorkflowDetailScreen.kt:485:43 Condition 'workflow != null' is always 'true'
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/screens/WorkflowDetailScreen.kt:717:13 Name shadowed: description
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/features/workflow/screens/WorkflowDetailScreen.kt:2015:29 'when' is exhaustive so 'else' is redundant here
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/ball/SiriBall.kt:60:9 Variable 'pressStartTime' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:112:5 Parameter 'isProcessingSpeech' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:113:5 Parameter 'showDragHints' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:119:5 Parameter 'onEnterEditMode' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:120:5 Parameter 'onShowDragHintsChange' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:211:62 'VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:211:91 'VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:348:73 'Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:409:66 Variable 'totalDragY' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:428:57 The value '0f' assigned to 'var totalDragY: Float defined in com.ai.assistance.metaagent.ui.floating.ui.fullscreen.components.BottomControlBar.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:441:57 The value '0f' assigned to 'var totalDragY: Float defined in com.ai.assistance.metaagent.ui.floating.ui.fullscreen.components.BottomControlBar.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/components/BottomControlBar.kt:699:41 'Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Chat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/screen/FloatingFullscreenScreen.kt:138:9 Variable 'speed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/fullscreen/screen/FloatingFullscreenScreen.kt:343:49 'Chat: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Chat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/screenocr/screen/FloatingScreenOcrScreen.kt:318:9 Variable 'glowPulse' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/screenocr/screen/FloatingScreenOcrScreen.kt:363:13 Variable 'bitmap' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/screenocr/screen/FloatingScreenOcrScreen.kt:503:36 'consumeAllChanges(): Unit' is deprecated. Use consume() instead
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/screenocr/screen/FloatingScreenOcrScreen.kt:693:17 Name shadowed: density
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/ChatMessages.kt:29:9 Parameter 'index' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/ChatMessages.kt:40:9 Parameter 'onSelectMessageToEdit' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/ChatMessages.kt:41:9 Parameter 'onCopyMessage' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/ChatMessages.kt:44:13 Variable 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/FloatingChatWindowInputControls.kt:250:92 'Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/components/FloatingChatWindowInputControls.kt:269:5 Parameter 'viewModel' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/screen/FloatingChatWindowScreen.kt:830:5 Parameter '_viewModel' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/floating/ui/window/screen/FloatingChatWindowScreen.kt:1017:5 Parameter 'floatContext' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/MainActivity.kt:336:36 Name shadowed: uri
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/MainActivity.kt:349:21 Name shadowed: uri
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/OperitApp.kt:56:60 Parameter 'toolHandler' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/AppContent.kt:100:9 Parameter 'navigateToTokenConfig' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/AppContent.kt:204:17 'SmallTopAppBar(() -> Unit, Modifier = ..., () -> Unit = ..., RowScope.() -> Unit = ..., WindowInsets = ..., TopAppBarColors = ..., TopAppBarScrollBehavior? = ...): Unit' is deprecated. Use TopAppBar instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/AppContent.kt:259:62 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/AppContent.kt:279:39 'smallTopAppBarColors(Color = ..., Color = ..., Color = ..., Color = ..., Color = ...): TopAppBarColors' is deprecated. Use topAppBarColors instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/AppContent.kt:415:37 Name shadowed: visibility
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/components/DrawerContent.kt:43:9 Parameter 'currentScreen' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/layout/PhoneLayout.kt:125:13 Variable 'drawerContentAlpha' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/layout/PhoneLayout.kt:138:13 Variable 'internalGestureConsumed' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/main/layout/TabletLayout.kt:136:55 Parameter 'consumed' is never used, could be renamed to _
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/permissions/PermissionRequestOverlay.kt:401:44 'TYPE_PHONE: Int' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:50:38 'DefaultLoadControl' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:51:38 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:52:38 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:53:38 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:54:41 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:55:41 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:201:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:202:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:206:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:220:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:233:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:243:33 Unnecessary safe call on a non-null receiver of type WindowInsetsControllerCompat
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:261:21 'ExoPlayer' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:264:37 'DefaultLoadControl' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:279:66 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:280:46 'Player' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:287:53 'MediaItem' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:326:30 'LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:361:21 Name shadowed: coroutineScope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:426:37 'StyledPlayerView' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Theme.kt:432:54 'AspectRatioFrameLayout' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/ui/theme/Type.kt:57:26 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/AnrMonitor.kt:262:42 Unnecessary safe call on a non-null receiver of type Thread
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/AppLogger.kt:106:17 Variable 'appContext' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/AppLogger.kt:356:55 Parameter 'msg' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/ArchiveUtil.kt:30:13 Parameter 'extraParams' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/ArchiveUtil.kt:212:28 'getter for nextTarEntry: TarArchiveEntry!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/ArchiveUtil.kt:370:31 Name shadowed: archive
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/ArchiveUtil.kt:371:25 Variable 'buffer' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/DocumentConversionUtil.kt:39:26 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/DocumentConversionUtil.kt:192:37 'toLowerCase(): String' is deprecated. Use lowercase() instead.
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/DocumentConversionUtil.kt:195:57 'WEBP' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/DocumentConversionUtil.kt:203:47 'WEBP' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/DocumentConversionUtil.kt:537:29 Variable 'text' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/ImageBitmapLimiter.kt:139:57 'WEBP' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/LocaleUtils.kt:101:53 'locale: Locale!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/LocaleUtils.kt:155:28 'locale: Locale!' is deprecated. Deprecated in Java
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/OCRUtils.kt:243:13 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/OCRUtils.kt:274:13 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:157:21 The value 'true' assigned to 'var inSingleLineComment: Boolean defined in com.ai.assistance.metaagent.util.SyntaxCheckUtil.checkBracketMatching.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:164:37 Variable 'isEscaped' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:289:21 The value 'true' assigned to 'var inSingleLineComment: Boolean defined in com.ai.assistance.metaagent.util.SyntaxCheckUtil.checkQuoteMatching.`<anonymous>`' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:354:13 Variable 'content' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:652:13 Variable 'content' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:656:13 Variable 'currentLine' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:657:13 Variable 'currentCol' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:659:13 Variable 'i' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/SyntaxCheckUtil.kt:738:33 Variable 'attrValue' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/TextSegmenter.kt:31:20 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/HotStream.kt:190:9 Parameter 'context' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamKmpGraph.kt:248:13 Variable 'previousNode' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamKmpGraph.kt:397:35 Unnecessary non-null assertion (!!) on a non-null receiver of type KmpNode
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:228:9 Variable 'TAG' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:387:37 Variable 'tryingPlugins' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:397:41 Variable 'otherTryingPlugins' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:466:9 Variable 'TAG' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:508:25 Variable 'lastValue' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:558:28 Variable 'pendingValue' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StreamOperators.kt:559:22 Variable 'hasPending' initializer is redundant
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/StringExtensions.kt:7:23 This label is now resolved to 'function stream' but soon it will be resolved to the closest 'anonymous function'. Please consider introducing or changing explicit label name
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:117:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:201:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:273:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:359:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:713:26 Variable 'result' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:870:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:942:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:998:26 Variable 'result' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1068:26 Variable 'result' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1155:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1224:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1288:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1351:9 Unreachable code
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1440:23 Variable 'result' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/stream/plugins/StreamMarkdownPlugin.kt:1476:27 Variable 'result' is never used
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/streamnative/NativeMarkdownParser.kt:39:49 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/streamnative/NativeMarkdownParser.kt:54:45 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/streamnative/NativeMarkdownParser.kt:60:45 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/streamnative/NativeMarkdownParser.kt:66:53 There is more than one label with such a name in this scope
+w: file:///D:/works/MetaAgent/app/src/main/java/com/ai/assistance/metaagent/util/vector/VectorIndexManager.kt:29:82 Unchecked cast: Any! to HnswIndex<Id, FloatArray, T, Float>
+
+[Incubating] Problems report is available at: file:///D:/works/MetaAgent/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 22m 2s
+95 actionable tasks: 21 executed, 74 up-to-date

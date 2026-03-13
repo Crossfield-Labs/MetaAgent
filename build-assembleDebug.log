@@ -1,0 +1,298 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Configuration on demand is an incubating feature.
+> Task :quickjs:preBuild UP-TO-DATE
+> Task :showerclient:preBuild UP-TO-DATE
+> Task :mmd:preBuild UP-TO-DATE
+> Task :dragonbones:preBuild UP-TO-DATE
+> Task :terminal:preBuild UP-TO-DATE
+> Task :mmd:preDebugBuild UP-TO-DATE
+> Task :showerclient:preDebugBuild UP-TO-DATE
+> Task :quickjs:preDebugBuild UP-TO-DATE
+> Task :terminal:preDebugBuild UP-TO-DATE
+> Task :dragonbones:preDebugBuild UP-TO-DATE
+> Task :showerclient:compileDebugAidl NO-SOURCE
+> Task :dragonbones:writeDebugAarMetadata UP-TO-DATE
+> Task :app:objectboxPrepareBuild UP-TO-DATE
+> Task :mmd:writeDebugAarMetadata UP-TO-DATE
+> Task :showerclient:writeDebugAarMetadata UP-TO-DATE
+> Task :quickjs:writeDebugAarMetadata UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :showerclient:processDebugNavigationResources UP-TO-DATE
+> Task :quickjs:processDebugNavigationResources UP-TO-DATE
+> Task :dragonbones:processDebugNavigationResources UP-TO-DATE
+> Task :mmd:processDebugNavigationResources UP-TO-DATE
+> Task :showerclient:generateDebugResValues UP-TO-DATE
+> Task :quickjs:generateDebugResValues UP-TO-DATE
+> Task :mmd:generateDebugResValues UP-TO-DATE
+> Task :dragonbones:generateDebugResValues UP-TO-DATE
+> Task :quickjs:generateDebugResources UP-TO-DATE
+> Task :showerclient:generateDebugResources UP-TO-DATE
+> Task :dragonbones:generateDebugResources UP-TO-DATE
+> Task :mmd:generateDebugResources UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :dragonbones:packageDebugResources UP-TO-DATE
+> Task :quickjs:packageDebugResources UP-TO-DATE
+> Task :mmd:packageDebugResources UP-TO-DATE
+> Task :showerclient:packageDebugResources UP-TO-DATE
+> Task :quickjs:extractDeepLinksDebug UP-TO-DATE
+> Task :dragonbones:extractDeepLinksDebug UP-TO-DATE
+> Task :showerclient:extractDeepLinksDebug UP-TO-DATE
+> Task :mmd:extractDeepLinksDebug UP-TO-DATE
+> Task :dragonbones:processDebugManifest UP-TO-DATE
+> Task :mmd:processDebugManifest UP-TO-DATE
+> Task :mmd:compileDebugLibraryResources UP-TO-DATE
+> Task :dragonbones:compileDebugLibraryResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :showerclient:processDebugManifest UP-TO-DATE
+> Task :quickjs:processDebugManifest UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :quickjs:compileDebugLibraryResources UP-TO-DATE
+> Task :showerclient:compileDebugLibraryResources UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :quickjs:parseDebugLocalResources UP-TO-DATE
+> Task :dragonbones:parseDebugLocalResources UP-TO-DATE
+> Task :mmd:parseDebugLocalResources UP-TO-DATE
+> Task :showerclient:parseDebugLocalResources UP-TO-DATE
+> Task :quickjs:generateDebugRFile UP-TO-DATE
+> Task :mmd:generateDebugRFile UP-TO-DATE
+> Task :showerclient:generateDebugRFile UP-TO-DATE
+> Task :dragonbones:generateDebugRFile UP-TO-DATE
+> Task :quickjs:checkKotlinGradlePluginConfigurationErrors
+> Task :mmd:checkKotlinGradlePluginConfigurationErrors
+> Task :showerclient:checkKotlinGradlePluginConfigurationErrors
+> Task :dragonbones:checkKotlinGradlePluginConfigurationErrors
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:l8DexDesugarLibDebug UP-TO-DATE
+> Task :quickjs:compileDebugKotlin UP-TO-DATE
+> Task :showerclient:compileDebugKotlin UP-TO-DATE
+> Task :quickjs:javaPreCompileDebug UP-TO-DATE
+> Task :showerclient:javaPreCompileDebug UP-TO-DATE
+> Task :quickjs:compileDebugJavaWithJavac NO-SOURCE
+> Task :quickjs:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :quickjs:mergeDebugShaders UP-TO-DATE
+> Task :quickjs:compileDebugShaders NO-SOURCE
+> Task :quickjs:generateDebugAssets UP-TO-DATE
+> Task :quickjs:mergeDebugAssets UP-TO-DATE
+> Task :quickjs:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :quickjs:processDebugJavaRes UP-TO-DATE
+> Task :showerclient:compileDebugJavaWithJavac UP-TO-DATE
+> Task :showerclient:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :quickjs:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :showerclient:mergeDebugShaders UP-TO-DATE
+> Task :showerclient:compileDebugShaders NO-SOURCE
+> Task :showerclient:generateDebugAssets UP-TO-DATE
+> Task :showerclient:mergeDebugAssets UP-TO-DATE
+> Task :showerclient:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :showerclient:processDebugJavaRes UP-TO-DATE
+> Task :showerclient:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :mmd:compileDebugKotlin UP-TO-DATE
+> Task :showerclient:mergeDebugJniLibFolders UP-TO-DATE
+> Task :mmd:javaPreCompileDebug UP-TO-DATE
+> Task :showerclient:mergeDebugNativeLibs NO-SOURCE
+> Task :mmd:compileDebugJavaWithJavac NO-SOURCE
+> Task :showerclient:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :mmd:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :mmd:mergeDebugShaders UP-TO-DATE
+> Task :mmd:compileDebugShaders NO-SOURCE
+> Task :mmd:generateDebugAssets UP-TO-DATE
+> Task :mmd:mergeDebugAssets UP-TO-DATE
+> Task :mmd:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :mmd:processDebugJavaRes UP-TO-DATE
+> Task :mmd:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :showerclient:checkDebugAarMetadata UP-TO-DATE
+> Task :showerclient:stripDebugDebugSymbols NO-SOURCE
+> Task :showerclient:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :terminal:compileDebugAidl UP-TO-DATE
+> Task :terminal:writeDebugAarMetadata UP-TO-DATE
+> Task :terminal:processDebugNavigationResources UP-TO-DATE
+> Task :terminal:generateDebugResValues UP-TO-DATE
+> Task :terminal:generateDebugResources UP-TO-DATE
+> Task :terminal:packageDebugResources UP-TO-DATE
+> Task :showerclient:extractDebugAnnotations UP-TO-DATE
+> Task :terminal:extractDeepLinksDebug UP-TO-DATE
+> Task :dragonbones:compileDebugKotlin UP-TO-DATE
+> Task :showerclient:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :dragonbones:javaPreCompileDebug UP-TO-DATE
+> Task :showerclient:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :terminal:processDebugManifest UP-TO-DATE
+> Task :showerclient:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :terminal:compileDebugLibraryResources UP-TO-DATE
+> Task :dragonbones:compileDebugJavaWithJavac NO-SOURCE
+> Task :showerclient:prepareDebugArtProfile UP-TO-DATE
+> Task :dragonbones:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :showerclient:prepareLintJarForPublish UP-TO-DATE
+> Task :dragonbones:mergeDebugShaders UP-TO-DATE
+> Task :terminal:parseDebugLocalResources UP-TO-DATE
+> Task :showerclient:mergeDebugJavaResource UP-TO-DATE
+> Task :dragonbones:compileDebugShaders NO-SOURCE
+> Task :dragonbones:generateDebugAssets UP-TO-DATE
+> Task :terminal:generateDebugRFile UP-TO-DATE
+> Task :showerclient:syncDebugLibJars UP-TO-DATE
+> Task :terminal:checkKotlinGradlePluginConfigurationErrors
+> Task :dragonbones:mergeDebugAssets UP-TO-DATE
+> Task :dragonbones:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :showerclient:bundleDebugAar UP-TO-DATE
+> Task :showerclient:assembleDebug UP-TO-DATE
+> Task :dragonbones:processDebugJavaRes UP-TO-DATE
+> Task :dragonbones:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :terminal:compileDebugKotlin UP-TO-DATE
+> Task :terminal:javaPreCompileDebug UP-TO-DATE
+> Task :terminal:compileDebugJavaWithJavac UP-TO-DATE
+> Task :terminal:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :terminal:mergeDebugShaders
+> Task :terminal:compileDebugShaders NO-SOURCE
+> Task :terminal:generateDebugAssets UP-TO-DATE
+> Task :quickjs:configureCMakeDebug[arm64-v8a]
+> Task :mmd:configureCMakeDebug[arm64-v8a]
+> Task :dragonbones:configureCMakeDebug[arm64-v8a]
+> Task :app:compileDebugAidl UP-TO-DATE
+> Task :mmd:buildCMakeDebug[arm64-v8a]
+> Task :mmd:mergeDebugJniLibFolders UP-TO-DATE
+> Task :mmd:mergeDebugNativeLibs UP-TO-DATE
+> Task :mmd:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :quickjs:buildCMakeDebug[arm64-v8a]
+> Task :dragonbones:buildCMakeDebug[arm64-v8a]
+> Task :quickjs:mergeDebugJniLibFolders UP-TO-DATE
+> Task :quickjs:mergeDebugNativeLibs UP-TO-DATE
+> Task :quickjs:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :quickjs:checkDebugAarMetadata UP-TO-DATE
+> Task :quickjs:stripDebugDebugSymbols UP-TO-DATE
+> Task :quickjs:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :quickjs:extractDebugAnnotations UP-TO-DATE
+> Task :quickjs:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :quickjs:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :quickjs:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :quickjs:prepareDebugArtProfile UP-TO-DATE
+> Task :quickjs:prepareLintJarForPublish UP-TO-DATE
+> Task :dragonbones:configureCMakeDebug[armeabi-v7a]
+> Task :mmd:checkDebugAarMetadata UP-TO-DATE
+> Task :mmd:stripDebugDebugSymbols UP-TO-DATE
+> Task :terminal:mergeDebugAssets
+> Task :quickjs:mergeDebugJavaResource UP-TO-DATE
+> Task :mmd:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :quickjs:syncDebugLibJars UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :quickjs:bundleDebugAar UP-TO-DATE
+> Task :quickjs:assembleDebug UP-TO-DATE
+> Task :mmd:extractDebugAnnotations UP-TO-DATE
+> Task :mmd:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :mmd:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :mmd:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :mmd:prepareDebugArtProfile UP-TO-DATE
+> Task :mmd:prepareLintJarForPublish UP-TO-DATE
+> Task :mmd:mergeDebugJavaResource UP-TO-DATE
+> Task :mmd:syncDebugLibJars UP-TO-DATE
+> Task :mmd:bundleDebugAar UP-TO-DATE
+> Task :mmd:assembleDebug UP-TO-DATE
+> Task :dragonbones:buildCMakeDebug[armeabi-v7a]
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :dragonbones:configureCMakeDebug[x86]
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :terminal:processDebugJavaRes
+> Task :dragonbones:buildCMakeDebug[x86]
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :dragonbones:configureCMakeDebug[x86_64]
+> Task :dragonbones:buildCMakeDebug[x86_64]
+> Task :dragonbones:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :dragonbones:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :dragonbones:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :dragonbones:checkDebugAarMetadata UP-TO-DATE
+> Task :dragonbones:stripDebugDebugSymbols UP-TO-DATE
+> Task :dragonbones:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :dragonbones:extractDebugAnnotations UP-TO-DATE
+> Task :dragonbones:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :dragonbones:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :dragonbones:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :dragonbones:prepareDebugArtProfile UP-TO-DATE
+> Task :dragonbones:prepareLintJarForPublish UP-TO-DATE
+> Task :terminal:bundleLibRuntimeToJarDebug
+> Task :dragonbones:mergeDebugJavaResource UP-TO-DATE
+> Task :dragonbones:syncDebugLibJars UP-TO-DATE
+> Task :dragonbones:bundleDebugAar UP-TO-DATE
+> Task :dragonbones:assembleDebug UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsDebugKotlin UP-TO-DATE
+> Task :terminal:bundleLibRuntimeToDirDebug
+> Task :terminal:configureCMakeDebug[arm64-v8a]
+> Task :terminal:buildCMakeDebug[arm64-v8a]
+> Task :terminal:mergeDebugJniLibFolders
+> Task :terminal:mergeDebugNativeLibs
+> Task :terminal:checkDebugAarMetadata
+> Task :terminal:extractDebugAnnotations
+> Task :terminal:copyDebugJniLibsProjectOnly
+> Task :terminal:extractDeepLinksForAarDebug FROM-CACHE
+> Task :terminal:mergeDebugGeneratedProguardFiles
+
+> Task :terminal:mergeDebugConsumerProguardFiles
+Supplied consumer proguard configuration does not exist: D:\works\MetaAgent\terminal\consumer-rules.pro
+
+> Task :terminal:prepareDebugArtProfile
+> Task :terminal:prepareLintJarForPublish
+> Task :terminal:mergeDebugJavaResource
+
+> Task :terminal:stripDebugDebugSymbols
+D:/Android/SDK/ndk/27.0.12077973/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-strip.exe: error: 'D:\works\MetaAgent\terminal\build\intermediates\merged_native_libs\debug\mergeDebugNativeLibs\out\lib\arm64-v8a\libsudo.so': The file was not recognized as a valid object file
+
+Unable to strip the following libraries, packaging them as they are: libsudo.so. Run with --info option to learn more.
+
+> Task :terminal:syncDebugLibJars
+> Task :terminal:copyDebugJniLibsProjectAndLocalJars
+> Task :app:kaptDebugKotlin
+> Task :terminal:bundleDebugAar
+> Task :terminal:assembleDebug
+> Task :app:kaptDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac
+> Task :app:mergeDebugAssets
+> Task :app:processDebugJavaRes
+> Task :app:configureCMakeDebug[arm64-v8a]
+> Task :app:checkDebugDuplicateClasses
+> Task :app:buildCMakeDebug[arm64-v8a]
+> Task :app:compressDebugAssets
+> Task :app:transformDebugClassesWithAsm
+> Task :app:mergeDebugJavaResource
+> Task :app:mergeExtDexDebug
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+D:/Android/SDK/ndk/27.0.12077973/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-strip.exe: error: 'D:\works\MetaAgent\app\build\intermediates\merged_native_libs\debug\mergeDebugNativeLibs\out\lib\arm64-v8a\libsudo.so': The file was not recognized as a valid object file
+
+Unable to strip the following libraries, packaging them as they are: libsudo.so. Run with --info option to learn more.
+
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+[Incubating] Problems report is available at: file:///D:/works/MetaAgent/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 9m 52s
+233 actionable tasks: 57 executed, 1 from cache, 175 up-to-date

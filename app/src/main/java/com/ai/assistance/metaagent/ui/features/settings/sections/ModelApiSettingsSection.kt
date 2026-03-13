@@ -1530,7 +1530,7 @@ private fun ApiProviderDialog(
         onDismissRequest: () -> Unit,
         onProviderSelected: (ApiProviderType) -> Unit
 ) {
-    val providers = ApiProviderType.values()
+    val providers = ApiProviderType.values().filterNot { it == ApiProviderType.MNN || it == ApiProviderType.LLAMA_CPP }
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     
@@ -1688,4 +1688,5 @@ private fun getProviderColor(provider: ApiProviderType): androidx.compose.ui.gra
         ApiProviderType.OTHER -> MaterialTheme.colorScheme.surfaceVariant
     }
 }
+
 
