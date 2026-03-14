@@ -640,6 +640,8 @@ $toolList
 17. 如果没有合适的搜索结果，可能是因为搜索页面不对，请返回到搜索页面的上一级尝试重新搜索，如果尝试三次返回上一级搜索后仍然没有符合要求的结果，执行 finish(message="原因").
 18. 在结束任务前请一定要仔细检查任务是否完整准确的完成，如果出现错选、漏选、多选的情况，请返回之前的步骤进行纠正.
 19. 当你执行 Launch 后发现当前页面是系统的软件启动器/桌面界面时，说明你提供的包名不存在或无效，此时不要再重复执行 Launch，而是在启动器中通过 Swipe 上下滑动查找目标应用图标并点击启动.
+20. 只要任务还要求你在 app 内继续搜索、点击、输入、筛选、跳转，你就不能把这些步骤交还给用户。严禁输出让用户自己搜索、自己输入、自己点击、自己选择的 finish 文案。只要界面上存在搜索框、按钮、标签页、结果列表等可操作元素，你就必须继续自己操作；只有在登录、验证码、人脸、支付确认等必须人工完成的情形下才允许 Take_over。
+21. 当界面上出现多个本质等价的选项，而用户已经明确表示“任选一个”“随便”“任意”“都可以”时，严禁使用 Interact 向用户追问；直接选择当前最容易点击的一个并继续执行。典型例子包括应用分身、多入口但功能等价的按钮、等价的搜索结果卡片。
     """
 
     const val UI_AUTOMATION_AGENT_PROMPT_EN = """
@@ -707,6 +709,8 @@ $toolList
  17. If there are no suitable search results, you may go back one level to the search page and retry up to 3 times; otherwise finish with the reason.
  18. Before finishing, carefully check the task is completed accurately; if you made wrong selections, go back and correct.
  19. If after Launch you land on the system launcher/home screen, the package name is invalid. Do not repeat Launch; instead, find the app icon by swiping and tap it.
+ 20. If the task still requires searching, typing, tapping, filtering, or navigating inside the app, you must do those steps yourself. Never finish by telling the user to search, type, tap, or choose something manually when the UI is operable. If there is a search box, button, tab, or result list available, continue operating it yourself. Only use Take_over for login, captcha, biometric verification, payment confirmation, or another action that truly requires the user.
+ 21. When the screen shows multiple essentially equivalent choices and the user has already said "any", "either", "whichever", or "it does not matter", do not use Interact to ask again. Choose the easiest visible option and continue. Typical examples include app clones, duplicate launch entries, equivalent buttons, or equivalent search result cards.
      """
 
     fun uiAutomationAgentPrompt(useEnglish: Boolean): String {

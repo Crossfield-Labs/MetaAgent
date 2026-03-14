@@ -26,7 +26,7 @@ inline jintArray segmentsToJIntArray(JNIEnv* env, const std::vector<streamnative
 } // namespace
 
 extern "C" JNIEXPORT jintArray JNICALL
-Java_com_ai_assistance_operit_util_streamnative_NativeXmlSplitter_nativeSplitXmlSegments(
+Java_com_ai_assistance_metaagent_util_streamnative_NativeXmlSplitter_nativeSplitXmlSegments(
         JNIEnv* env,
         jobject /*thiz*/,
         jstring content
@@ -44,3 +44,4 @@ Java_com_ai_assistance_operit_util_streamnative_NativeXmlSplitter_nativeSplitXml
 
     return segmentsToJIntArray(env, segments);
 }
+

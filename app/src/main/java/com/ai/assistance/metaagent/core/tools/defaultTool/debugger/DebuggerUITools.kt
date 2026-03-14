@@ -394,6 +394,18 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             val pasteResult = AndroidShellExecutor.executeShellCommand(pasteCommand)
 
             if (pasteResult.success) {
+                kotlinx.coroutines.delay(250)
+                val verifiedUi = runCatching { getUIDataFromShell(tool) }.getOrNull()
+                val textVerified = verifiedUi?.uiXml?.contains(text) == true
+                if (!textVerified) {
+                    withContext(Dispatchers.Main) { operationOverlay.hide() }
+                    return ToolResult(
+                            toolName = tool.name,
+                            success = false,
+                            result = StringResultData(""),
+                            error = "Paste command succeeded, but the target field does not appear to contain the requested text. Ensure the correct input box is focused before typing."
+                    )
+                }
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
                 return ToolResult(

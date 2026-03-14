@@ -28,6 +28,7 @@ import com.ai.assistance.metaagent.plugins.lifecycle.AppLifecycleHookParams
 import com.ai.assistance.metaagent.plugins.lifecycle.AppLifecycleHookPluginRegistry
 import com.ai.assistance.metaagent.core.config.SystemPromptConfig
 import com.ai.assistance.metaagent.core.tools.AIToolHandler
+import com.ai.assistance.metaagent.core.tools.system.AndroidPermissionLevel
 import com.ai.assistance.metaagent.core.tools.system.AndroidShellExecutor
 import com.ai.assistance.metaagent.core.tools.system.Terminal
 import com.ai.assistance.metaagent.core.workflow.WorkflowSchedulerInitializer
@@ -35,8 +36,10 @@ import com.ai.assistance.metaagent.data.backup.RoomDatabaseBackupPreferences
 import com.ai.assistance.metaagent.data.backup.RoomDatabaseBackupScheduler
 import com.ai.assistance.metaagent.data.db.AppDatabase
 import com.ai.assistance.metaagent.data.preferences.CharacterCardManager
+import com.ai.assistance.metaagent.data.preferences.DisplayPreferencesManager
 import com.ai.assistance.metaagent.data.preferences.UserPreferencesManager
 import com.ai.assistance.metaagent.data.preferences.WakeWordPreferences
+import com.ai.assistance.metaagent.data.preferences.androidPermissionPreferences
 import com.ai.assistance.metaagent.data.preferences.initAndroidPermissionPreferences
 import com.ai.assistance.metaagent.data.preferences.initUserPreferencesManager
 import com.ai.assistance.metaagent.data.preferences.preferencesManager
@@ -53,6 +56,9 @@ import com.ai.assistance.metaagent.util.SerializationSetup
 import com.ai.assistance.metaagent.util.TextSegmenter
 import com.ai.assistance.metaagent.util.WaifuMessageProcessor
 import com.ai.assistance.metaagent.core.tools.agent.ShowerController
+import com.ai.assistance.metaagent.core.tools.system.shell.ShellExecutorFactory
+import com.ai.assistance.metaagent.ui.permissions.PermissionLevel
+import com.ai.assistance.metaagent.ui.permissions.ToolPermissionSystem
 import com.ai.assistance.metaagent.ui.common.displays.VirtualDisplayOverlay
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.ai.assistance.metaagent.core.tools.system.shower.MetaAgentShowerShellRunner
@@ -93,6 +99,26 @@ class MetaAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
 
     // 应用级协程作用域
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private suspend fun configureDemoPrivilegeDefaults() {
+        runCatching {
+            DisplayPreferencesManager.getInstance(applicationContext).saveDisplaySettings(
+                enableExperimentalVirtualDisplay = true
+            )
+
+            val (executor, permissionStatus) = ShellExecutorFactory.getHighestAvailableExecutor(applicationContext)
+            val preferredLevel = if (executor.isAvailable() && permissionStatus.granted) {
+                executor.getPermissionLevel()
+            } else {
+                AndroidPermissionLevel.STANDARD
+            }
+
+            androidPermissionPreferences.savePreferredPermissionLevel(preferredLevel)
+            AppLogger.i(TAG, "演示模式默认权限级别已设置为最高可用层级: $preferredLevel")
+        }.onFailure { e ->
+            AppLogger.e(TAG, "初始化默认高权限策略失败", e)
+        }
+    }
 
     // 懒加载数据库实例
     private val database by lazy { AppDatabase.getDatabase(this) }
@@ -175,6 +201,18 @@ class MetaAgentApplication : Application(), ImageLoaderFactory, WorkConfiguratio
         // 初始化Android权限偏好管理器
         initAndroidPermissionPreferences(applicationContext)
         AppLogger.d(TAG, "【启动计时】Android权限偏好管理器初始化完成 - ${System.currentTimeMillis() - startTime}ms")
+
+        applicationScope.launch {
+            configureDemoPrivilegeDefaults()
+        }
+
+        applicationScope.launch {
+            runCatching {
+                ToolPermissionSystem.getInstance(applicationContext).saveMasterSwitch(PermissionLevel.ALLOW)
+            }.onFailure { e ->
+                AppLogger.e(TAG, "初始化演示模式工具权限失败", e)
+            }
+        }
 
         // 初始化功能提示词管理器
         applicationScope.launch {
