@@ -4,8 +4,11 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.file.Files
 import kotlinx.coroutines.launch
 import java.nio.file.Paths
@@ -118,6 +121,8 @@ class TerminalManager private constructor(
 
         private const val TAG = "TerminalManager"
         private const val UBUNTU_FILENAME = "ubuntu-noble-aarch64-pd-v4.18.0.tar.xz"
+        private const val UBUNTU_RELEASE_URL =
+            "https://github.com/Crossfield-Labs/MetaAgent/releases/latest/download/$UBUNTU_FILENAME"
         private const val MAX_HISTORY_ITEMS = 500
         private const val MAX_OUTPUT_LINES_PER_ITEM = 1000
         private const val TERMINAL_ENTER = "\r"
@@ -562,8 +567,9 @@ class TerminalManager private constructor(
                     linkNativeLibs()
                     createBusyboxSymlinks()
 
-                    // 3. Extract assets
+                    // 3. Extract script assets and fetch large runtime payloads on demand
                     extractAssets()
+                    ensureUbuntuArchiveAvailable()
 
                     // 4. Generate and write startup script
                     val startScript = generateStartScript()
@@ -715,33 +721,21 @@ class TerminalManager private constructor(
 
     private fun extractAssets() {
         try {
-            val assets = listOf(
-                UBUNTU_FILENAME,
-                "setup_fake_sysdata.sh"
-            )
+            val assets = listOf("setup_fake_sysdata.sh")
             assets.forEach { assetName ->
                 val assetFile = File(filesDir, assetName)
-                // 强制更新脚本文件，大文件只在不存在时提取
                 val shouldExtract = !assetFile.exists() || assetName == "setup_fake_sysdata.sh"
 
                 if (shouldExtract) {
-                    if (assetName.endsWith(".sh")) {
-                        context.assets.open(assetName).use { input ->
-                            val raw = input.readBytes()
-                            val text = raw.toString(Charsets.UTF_8)
-                            val normalized =
-                                text
-                                    .removePrefix("\uFEFF")
-                                    .replace("\r\n", "\n")
-                                    .replace("\r", "\n")
-                            assetFile.writeText(normalized, Charsets.UTF_8)
-                        }
-                    } else {
-                        context.assets.open(assetName).use { input ->
-                            assetFile.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
+                    context.assets.open(assetName).use { input ->
+                        val raw = input.readBytes()
+                        val text = raw.toString(Charsets.UTF_8)
+                        val normalized =
+                            text
+                                .removePrefix("\uFEFF")
+                                .replace("\r\n", "\n")
+                                .replace("\r", "\n")
+                        assetFile.writeText(normalized, Charsets.UTF_8)
                     }
                     Log.d(TAG, "Extracted $assetName")
                 } else {
@@ -751,6 +745,62 @@ class TerminalManager private constructor(
         } catch (e: IOException) {
             Log.e(TAG, "Failed to extract assets", e)
             throw e
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun ensureUbuntuArchiveAvailable() {
+        val archiveFile = File(filesDir, UBUNTU_FILENAME)
+        if (archiveFile.exists() && archiveFile.length() > 0L) {
+            Log.d(TAG, "Ubuntu runtime archive already exists at ${archiveFile.absolutePath}")
+            return
+        }
+
+        val tempFile = File(filesDir, "$UBUNTU_FILENAME.download")
+        var connection: HttpURLConnection? = null
+        try {
+            Log.d(TAG, "Downloading Ubuntu runtime archive from release: $UBUNTU_RELEASE_URL")
+            connection = (URL(UBUNTU_RELEASE_URL).openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = true
+                connectTimeout = 30_000
+                readTimeout = 30 * 60_000
+                requestMethod = "GET"
+                connect()
+            }
+
+            val responseCode = connection.responseCode
+            if (responseCode !in 200..299) {
+                throw IOException("Failed to download Ubuntu runtime archive: HTTP $responseCode")
+            }
+
+            BufferedInputStream(connection.inputStream).use { input ->
+                tempFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            if (!tempFile.exists() || tempFile.length() == 0L) {
+                throw IOException("Downloaded Ubuntu runtime archive is empty")
+            }
+
+            if (archiveFile.exists() && !archiveFile.delete()) {
+                throw IOException("Failed to replace existing Ubuntu runtime archive")
+            }
+
+            if (!tempFile.renameTo(archiveFile)) {
+                tempFile.copyTo(archiveFile, overwrite = true)
+                if (!tempFile.delete()) {
+                    Log.w(TAG, "Failed to delete temporary Ubuntu runtime archive: ${tempFile.absolutePath}")
+                }
+            }
+
+            Log.d(TAG, "Ubuntu runtime archive ready at ${archiveFile.absolutePath}")
+        } catch (e: IOException) {
+            tempFile.delete()
+            Log.e(TAG, "Failed to ensure Ubuntu runtime archive", e)
+            throw e
+        } finally {
+            connection?.disconnect()
         }
     }
 

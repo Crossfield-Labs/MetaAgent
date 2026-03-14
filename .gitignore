@@ -52,6 +52,8 @@ kls_database.db
 .codex
 operit-pc-agent.zip
 .uv-caches
+terminal/src/main/assets/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz
+terminal/src/main/assets/*.tar.xz
 
 # generated toolpkg bundles
 *.toolpkg
