@@ -726,7 +726,7 @@ $readyUrls = $launchContext.ReadyUrls
 $launchId = [guid]::NewGuid().ToString()
 Set-Content -Path $activeLaunchPath -Value $launchId -Encoding ASCII
 
-$mutexName = "Local\OperitPcAgentLauncher"
+$mutexName = "Local\MetaAgentPcAgentLauncher"
 $mutex = New-Object System.Threading.Mutex($false, $mutexName)
 $hasLock = $false
 $originalPath = $env:Path
@@ -738,7 +738,7 @@ try {
         exit 0
     }
 
-    Write-Log "INFO" "===== operit_pc_agent.bat ====="
+    Write-Log "INFO" "===== metaagent_pc_agent.bat ====="
     Write-Log "INFO" "Launch ID: $launchId"
     Write-Log "INFO" "Working directory: $projectRoot"
     Write-Log "INFO" "Target bind: $bindAddress"
@@ -889,7 +889,7 @@ try {
         Set-Content -Path $pidPath -Value ([string]$resolvedPid) -Encoding ASCII
     }
 
-    Write-Host "[OK] Operit PC Agent started on $url"
+    Write-Host "[OK] MetaAgent PC Agent started on $url"
     Write-Log "OK" "Agent started: $url"
 
     $latestLaunchId = ""

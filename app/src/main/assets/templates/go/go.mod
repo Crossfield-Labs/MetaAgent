@@ -1,4 +1,4 @@
-module operit-go-project
+module metaagent-go-project
 
 go 1.21
 

@@ -88,7 +88,7 @@ function Stop-AgentProcess {
     return $stoppedAny
 }
 
-$mutexName = "Local\OperitPcAgentLauncher"
+$mutexName = "Local\MetaAgentPcAgentLauncher"
 $mutex = New-Object System.Threading.Mutex($false, $mutexName)
 $hasLock = $false
 
@@ -96,22 +96,22 @@ try {
     $hasLock = $mutex.WaitOne(0)
     if (-not $hasLock) {
         Write-Log "WARN" "Launcher is running. Close launching flow and retry stop."
-        Write-Host "[WARN] Operit PC Agent is busy (launcher running)."
+        Write-Host "[WARN] MetaAgent PC Agent is busy (launcher running)."
         exit 1
     }
 
     $port = Resolve-AgentPort -ConfigFilePath $configPath
-    Write-Log "INFO" "===== operit_pc_agent_stop.bat ====="
+    Write-Log "INFO" "===== metaagent_pc_agent_stop.bat ====="
     Write-Log "INFO" "Working directory: $projectRoot"
     Write-Log "INFO" "Target port: $port"
 
     $stopped = Stop-AgentProcess -Port $port
     if ($stopped) {
-        Write-Host "[OK] Operit PC Agent stopped (port $port)."
+        Write-Host "[OK] MetaAgent PC Agent stopped (port $port)."
         Write-Log "OK" "Agent stopped on port $port"
     }
     else {
-        Write-Host "[OK] No running Operit PC Agent process found."
+        Write-Host "[OK] No running MetaAgent PC Agent process found."
         Write-Log "INFO" "No running agent process found on port $port"
     }
 

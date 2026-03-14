@@ -124,7 +124,7 @@ Aec3Engine* FromHandle(jlong handle) {
 }  // namespace
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeCreate(
+Java_com_ai_assistance_metaagent_core_audio_WebRtcAec3Processor_nativeCreate(
     JNIEnv* env,
     jobject /* thiz */,
     jint sample_rate,
@@ -140,7 +140,7 @@ Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeCreate(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeRelease(
+Java_com_ai_assistance_metaagent_core_audio_WebRtcAec3Processor_nativeRelease(
     JNIEnv* env,
     jobject /* thiz */,
     jlong handle) {
@@ -149,7 +149,7 @@ Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeRelease(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeAnalyzeRender(
+Java_com_ai_assistance_metaagent_core_audio_WebRtcAec3Processor_nativeAnalyzeRender(
     JNIEnv* env,
     jobject /* thiz */,
     jlong handle,
@@ -171,7 +171,7 @@ Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeAnalyzeRender
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_ai_assistance_operit_core_audio_WebRtcAec3Processor_nativeProcessCapture(
+Java_com_ai_assistance_metaagent_core_audio_WebRtcAec3Processor_nativeProcessCapture(
     JNIEnv* env,
     jobject /* thiz */,
     jlong handle,
