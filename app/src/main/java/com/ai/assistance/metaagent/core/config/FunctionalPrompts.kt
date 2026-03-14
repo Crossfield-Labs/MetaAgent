@@ -642,6 +642,10 @@ $toolList
 19. 当你执行 Launch 后发现当前页面是系统的软件启动器/桌面界面时，说明你提供的包名不存在或无效，此时不要再重复执行 Launch，而是在启动器中通过 Swipe 上下滑动查找目标应用图标并点击启动.
 20. 只要任务还要求你在 app 内继续搜索、点击、输入、筛选、跳转，你就不能把这些步骤交还给用户。严禁输出让用户自己搜索、自己输入、自己点击、自己选择的 finish 文案。只要界面上存在搜索框、按钮、标签页、结果列表等可操作元素，你就必须继续自己操作；只有在登录、验证码、人脸、支付确认等必须人工完成的情形下才允许 Take_over。
 21. 当界面上出现多个本质等价的选项，而用户已经明确表示“任选一个”“随便”“任意”“都可以”时，严禁使用 Interact 向用户追问；直接选择当前最容易点击的一个并继续执行。典型例子包括应用分身、多入口但功能等价的按钮、等价的搜索结果卡片。
+22. 当任务要求“给指定联系人/群聊发送消息”时，进入任何聊天页面都不代表任务完成。你必须核对当前会话标题、头像旁名称或页面显著标识是否与用户指定的联系人/群聊一致；如果不一致，必须返回并继续搜索，不能在错误会话里停下。
+23. 当任务要求发送消息时，只有在以下条件都满足后才允许 finish：已经进入正确的目标会话、消息文本已经真实出现在输入框或消息草稿区、并且如果用户要求“发送”，还必须点击发送按钮或明确确认消息已经发出。严禁把“已打开 app”“已进入聊天页”“已预填消息”当成完成。
+24. 当用户明确说“群”“群聊”“QQ群”“微信群”时，必须把目标理解为群聊而不是个人账号。以 QQ/微信为例：优先进入搜索页、切到“群聊/群组”结果页签或等价筛选项，优先点击群聊结果；不要把同名个人、QQ号、名片页、资料页当成目标完成任务。
+25. 对于“XX群”“一只小天依这个群聊”这类表述，搜索时应先保留完整群聊短语进行查找；只有在完整短语无结果时，才逐步去掉“群”“群聊”等后缀重试，并且每次重试后仍然必须优先检查群聊结果页签。
     """
 
     const val UI_AUTOMATION_AGENT_PROMPT_EN = """
@@ -709,8 +713,12 @@ $toolList
  17. If there are no suitable search results, you may go back one level to the search page and retry up to 3 times; otherwise finish with the reason.
  18. Before finishing, carefully check the task is completed accurately; if you made wrong selections, go back and correct.
  19. If after Launch you land on the system launcher/home screen, the package name is invalid. Do not repeat Launch; instead, find the app icon by swiping and tap it.
- 20. If the task still requires searching, typing, tapping, filtering, or navigating inside the app, you must do those steps yourself. Never finish by telling the user to search, type, tap, or choose something manually when the UI is operable. If there is a search box, button, tab, or result list available, continue operating it yourself. Only use Take_over for login, captcha, biometric verification, payment confirmation, or another action that truly requires the user.
- 21. When the screen shows multiple essentially equivalent choices and the user has already said "any", "either", "whichever", or "it does not matter", do not use Interact to ask again. Choose the easiest visible option and continue. Typical examples include app clones, duplicate launch entries, equivalent buttons, or equivalent search result cards.
+20. If the task still requires searching, typing, tapping, filtering, or navigating inside the app, you must do those steps yourself. Never finish by telling the user to search, type, tap, or choose something manually when the UI is operable. If there is a search box, button, tab, or result list available, continue operating it yourself. Only use Take_over for login, captcha, biometric verification, payment confirmation, or another action that truly requires the user.
+21. When the screen shows multiple essentially equivalent choices and the user has already said "any", "either", "whichever", or "it does not matter", do not use Interact to ask again. Choose the easiest visible option and continue. Typical examples include app clones, duplicate launch entries, equivalent buttons, or equivalent search result cards.
+22. When the task says to send a message to a specific contact or group chat, entering any chat screen is not enough. You must verify that the visible chat title, name near the avatar, or another prominent identifier matches the requested target. If it does not match, go back and keep searching instead of stopping in the wrong conversation.
+23. For message-sending tasks, you may finish only after all required conditions are true: you are in the correct target conversation, the requested text has actually appeared in the input box or draft area, and if the user asked to send it, you have tapped the send button or otherwise confirmed the message was sent. Never treat "app opened", "chat screen opened", or "message prefilled" as completion.
+ 24. When the user explicitly says "group", "group chat", "QQ群", or "微信群", you must interpret the target as a group conversation, not a personal account. In QQ or WeChat, go to search first, switch to the group/group-chat results tab or equivalent filter, and prefer group results. Do not treat a same-name person, QQ number, profile card, or contact detail page as task completion.
+ 25. For phrases like "XX group" or "send a message to the group chat named 一只小天依", search with the full group phrase first. Only if that yields no result may you gradually remove suffix words like "group" and retry, and after each retry you must still prefer the group-chat result tab.
      """
 
     fun uiAutomationAgentPrompt(useEnglish: Boolean): String {

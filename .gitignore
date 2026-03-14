@@ -57,3 +57,5 @@ terminal/src/main/assets/*.tar.xz
 
 # generated toolpkg bundles
 *.toolpkg
+
+release-assets/

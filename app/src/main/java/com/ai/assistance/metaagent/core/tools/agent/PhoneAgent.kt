@@ -698,6 +698,7 @@ class PhoneAgent(
     private fun shouldRejectDelegatingFinish(message: String): Boolean {
         if (message.isBlank()) return false
         val normalized = message.lowercase(Locale.ROOT)
+        val fullContext = _contextHistory.joinToString("\n") { it.second }.lowercase(Locale.ROOT)
         val blockedPhrases = listOf(
             "自己搜索",
             "自行搜索",
@@ -718,7 +719,52 @@ class PhoneAgent(
             "you can search",
             "please search"
         )
-        return blockedPhrases.any { normalized.contains(it) }
+        if (blockedPhrases.any { normalized.contains(it) }) {
+            return true
+        }
+
+        val isTargetedMessageTask = listOf(
+            "发送",
+            "发一条",
+            "发消息",
+            "群聊",
+            "联系人",
+            "chat",
+            "group",
+            "contact",
+            "send message",
+            "send a message"
+        ).any { fullContext.contains(it) }
+
+        if (!isTargetedMessageTask) {
+            return false
+        }
+
+        val incompleteFinishPhrases = listOf(
+            "已打开",
+            "打开了",
+            "已启动",
+            "已进入",
+            "进入了",
+            "已预填",
+            "预填了",
+            "opened",
+            "launched",
+            "entered",
+            "prefilled",
+            "pre-filled"
+        )
+        val completionPhrases = listOf(
+            "已发送",
+            "发送成功",
+            "消息已发送",
+            "sent successfully",
+            "message sent",
+            "has been sent"
+        )
+
+        return incompleteFinishPhrases.any { normalized.contains(it) } &&
+            completionPhrases.none { normalized.contains(it) }
     }
 
     private fun extractTagContent(text: String, tag: String): String? {

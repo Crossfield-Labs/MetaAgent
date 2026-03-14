@@ -21,7 +21,8 @@ BEHAVIOR GUIDELINES:
   2. Task Complete: Use `<status type="complete"></status>` when the entire task is finished.
   3. Wait for User: Use `<status type="wait_for_user_need"></status>` if you need user input or are unsure how to proceed.
 - Critical Rule: The three ending methods are mutually exclusive. If a response contains both a tool call and a status tag, the tool call will be ignored.
-- For multi-step mobile app tasks (for example: open an app, then search, choose a chat, type text, send a message, switch tabs, or handle in-app dialogs), you must prefer `run_ui_subagent` instead of stopping after primitive tools like `start_app` or `set_input_text`. Unless the user asked only to launch an app, do not reduce such tasks to app launch only."""
+- For multi-step mobile app tasks (for example: open an app, then search, choose a chat, type text, send a message, switch tabs, or handle in-app dialogs), you must prefer `run_ui_subagent` instead of stopping after primitive tools like `start_app` or `set_input_text`. Unless the user asked only to launch an app, do not reduce such tasks to app launch only.
+- If the user specifies a target contact, group chat, search keyword, app clone choice, or says to continue operating inside an app, you must not switch to share-sheet style package tools that require manual user selection. End-to-end completion must stay on UI automation."""
     private const val BEHAVIOR_GUIDELINES_CN = """
 行为准则：
 - 并行工具调用: 对于任何信息搜集任务（例如，读取文件、搜索、获取评论、页面操作），你**必须**在单次回合中调用所有需要的工具。**严禁分开串行调用**。这是一条严格的效率指令。系统已设计好先后顺序并整合结果。写入工具依旧要保证每次只调用一次。
@@ -33,7 +34,8 @@ BEHAVIOR GUIDELINES:
   2. 任务完成：当整个任务完成时，使用 `<status type="complete"></status>`。
   3. 等待用户：当你需要用户输入或不确定如何继续时，使用 `<status type="wait_for_user_need"></status>`。
 - 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。
-- 对于手机 App 内的多步任务（例如打开 App 后继续搜索、选群聊、输入文本、发送消息、切换标签、处理弹窗），必须优先调用 `run_ui_subagent`，不要只调用 `start_app`、`set_input_text` 之类的原子工具后就结束。除非用户只要求单步启动 App，否则不要把这类任务拆成只开 App。"""
+- 对于手机 App 内的多步任务（例如打开 App 后继续搜索、选群聊、输入文本、发送消息、切换标签、处理弹窗），必须优先调用 `run_ui_subagent`，不要只调用 `start_app`、`set_input_text` 之类的原子工具后就结束。除非用户只要求单步启动 App，否则不要把这类任务拆成只开 App。
+- 如果用户明确指定了联系人、群聊、搜索词、应用分身选择，或者要求继续在 App 内完成后续操作，就绝对不能改用需要用户手动挑选对象的分享面板类包工具。此类任务必须坚持 UI 自动化直到真正完成。"""
 
     private const val TOOL_USAGE_GUIDELINES_EN = """
 When calling a tool, the user will see your response, and then will automatically send the tool results back to you in a follow-up message.

@@ -132,7 +132,7 @@ METADATA
         },
         {
             "name": "qq_send_message",
-            "description": { "zh": "通过QQ发送文本消息，调起QQ分享界面，由用户选择联系人并确认发送。", "en": "Send a text message via QQ by opening the share UI; the user selects the contact and confirms sending." },
+            "description": { "zh": "通过QQ分享界面发送文本消息，仅适用于用户明确要求手动选择联系人并确认发送的场景。不适用于指定联系人/群聊并要求自动完成的任务。", "en": "Send a text message through the QQ share UI. Use only when the user explicitly wants to manually choose the recipient and confirm. Do not use for tasks that specify a contact/group and require end-to-end automation." },
             "parameters": [
                 {
                     "name": "message",
@@ -795,18 +795,10 @@ const dailyLife = (function () {
             if (!params.message) {
                 throw new Error("Message content is required");
             }
-            console.log("通过 Intent 调起 QQ 发送文本消息...");
-            const intent = new Intent("android.intent.action.SEND" /* IntentAction.ACTION_SEND */);
-            intent.setType("text/plain");
-            intent.putExtra("android.intent.extra.TEXT", params.message);
-            intent.setComponent("com.tencent.mobileqq", "com.tencent.mobileqq.activity.JumpActivity");
-            intent.addFlag(268435456 /* IntentFlag.ACTIVITY_NEW_TASK */);
-            const result = await intent.start();
             return {
-                success: true,
-                message: "已打开 QQ 分享界面，请选择联系人并确认发送",
-                content_preview: params.message.length > 30 ? params.message.substring(0, 30) + "..." : params.message,
-                raw_result: result
+                success: false,
+                message: "MetaAgent 已禁用 QQ 分享发送工具。该工具只会拉起分享界面，无法按指定联系人或群聊自动发送消息，并且可能导致 QQ 停留在异常分享状态。请改用 UI 自动化工具完成 QQ 内部搜索、进入会话、输入并发送消息。",
+                content_preview: params.message.length > 30 ? params.message.substring(0, 30) + "..." : params.message
             };
         }
         catch (error) {
