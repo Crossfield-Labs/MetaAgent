@@ -60,6 +60,38 @@
 
 如果代码已经改了，但文档没有同步，后来的人就会根据过时信息继续工作，这是当前仓库要明确避免的情况。
 
+## 快速编译
+
+如果你刚接手项目，先不要猜环境。按下面做，先验证工程能不能编过：
+
+环境要求：
+- JDK 17
+- Android SDK
+- Android NDK
+- CMake
+
+推荐先看：
+- [README.md](../README.md)
+- [开发规则](./RULES.md)
+
+本地编译命令：
+
+```powershell
+cd MetaAgent
+.\gradlew.bat assembleDebug --no-daemon --stacktrace --console plain
+```
+
+APK 输出位置：
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+编译相关判断：
+- 如果是 Gradle、SDK、NDK、CMake 环境问题，先看 [README.md](../README.md)
+- 如果是 Kotlin 编译错误，优先确认最近改动是否破坏了 `app`、`terminal`、`quickjs` 之间的依赖
+- 当前主工程不包含本地模型主线，不要再把 `mnn`、`llama` 当成必需模块接回
+
 ## 当前路口判断
 
 现在这个仓库的大方向不是“继续把空壳补齐”，而是：
