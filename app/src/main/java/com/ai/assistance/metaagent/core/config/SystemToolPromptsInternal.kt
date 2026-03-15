@@ -1535,7 +1535,7 @@ object SystemToolPromptsInternal {
                         ),
                         ToolPrompt(
                             name = "run_ui_subagent",
-                            description = "Run a lightweight UI automation subagent. Prefer this for multi-step mobile app tasks such as opening an app and then searching, navigating, choosing chats, typing, sending messages, handling dialogs, or completing any in-app workflow.",
+                            description = "Run a lightweight UI automation subagent.",
                             parametersStructured =
                                 listOf(
                                     ToolParameterSchema(

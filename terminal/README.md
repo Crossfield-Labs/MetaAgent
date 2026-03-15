@@ -29,4 +29,5 @@ The `terminal-core` module is responsible for the following core tasks:
 
 This module is vendored into the MetaAgent repository. The client application can either bind to the `TerminalService` for background operation and IPC, or directly access the `TerminalManager` singleton if running in the same process.
 
-The Ubuntu runtime archive is intentionally not stored in git. When the local terminal environment is initialized for the first time, `TerminalManager` downloads `ubuntu-noble-aarch64-pd-v4.18.0.tar.xz` from the latest GitHub Release and caches it under the app's files directory.
+The Ubuntu runtime archive is not stored in git. `TerminalManager` downloads `ubuntu-noble-aarch64-pd-v4.18.0.tar.xz` from the fixed release asset at `https://github.com/Crossfield-Labs/MetaAgent/releases/download/runtime-assets-v1/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz` when the local terminal environment is initialized for the first time.
+

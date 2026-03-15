@@ -382,7 +382,7 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             AppLogger.d(TAG, "Setting text to clipboard and pasting via ADB: $text")
             withContext(Dispatchers.Main) {
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("metaagent_input", text)
+                val clip = ClipData.newPlainText("operit_input", text)
                 clipboard.setPrimaryClip(clip)
             }
 
@@ -394,18 +394,6 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
             val pasteResult = AndroidShellExecutor.executeShellCommand(pasteCommand)
 
             if (pasteResult.success) {
-                kotlinx.coroutines.delay(250)
-                val verifiedUi = runCatching { getUIDataFromShell(tool) }.getOrNull()
-                val textVerified = verifiedUi?.uiXml?.contains(text) == true
-                if (!textVerified) {
-                    withContext(Dispatchers.Main) { operationOverlay.hide() }
-                    return ToolResult(
-                            toolName = tool.name,
-                            success = false,
-                            result = StringResultData(""),
-                            error = "Paste command succeeded, but the target field does not appear to contain the requested text. Ensure the correct input box is focused before typing."
-                    )
-                }
                 // 成功后主动隐藏overlay
                 withContext(Dispatchers.Main) { operationOverlay.hide() }
                 return ToolResult(
@@ -1292,4 +1280,5 @@ open class DebuggerUITools(context: Context) : AccessibilityUITools(context) {
         return Pair(centerX, centerY)
     }
 }
+
 

@@ -14,8 +14,6 @@ import com.ai.assistance.metaagent.R
 import com.ai.assistance.metaagent.api.chat.llmprovider.AIService
 import com.ai.assistance.metaagent.core.tools.AIToolHandler
 import com.ai.assistance.metaagent.core.tools.AppListData
-import com.ai.assistance.metaagent.core.tools.SimplifiedUINode
-import com.ai.assistance.metaagent.core.tools.UIPageResultData
 import com.ai.assistance.metaagent.core.tools.defaultTool.standard.StandardUITools
 import com.ai.assistance.metaagent.core.tools.system.AndroidPermissionLevel
 import com.ai.assistance.metaagent.core.tools.system.ShizukuAuthorizer
@@ -638,25 +636,8 @@ class PhoneAgent(
         val parsedAction = parseAgentAction(answer)
         actionHandler.removeImagesFromLastUserMessage(_contextHistory)
 
-        if (parsedAction.metadata == "do" && parsedAction.actionName == "Interact") {
-            if (shouldRejectEquivalentChoiceInteract()) {
-                _contextHistory.add(
-                    "user" to
-                        "Correction: the user already indicated any equivalent option is acceptable. Do not ask again. Choose the easiest visible equivalent option and continue the task."
-                )
-                return StepResult(success = false, finished = false, action = parsedAction, thinking = thinking, message = parsedAction.fields["message"] ?: "Interact rejected")
-            }
-        }
-
         if (parsedAction.metadata == "finish") {
             val message = parsedAction.fields["message"] ?: "Task finished."
-            if (shouldRejectDelegatingFinish(message)) {
-                _contextHistory.add(
-                    "user" to
-                        "Correction: do not hand the task back to the user. If the app UI is available, continue the in-app search, typing, tapping, filtering, and result selection yourself. Only use finish after the requested in-app action is actually completed, or use Take_over only when a real human-only step such as login, captcha, biometric verification, or payment confirmation is required."
-                )
-                return StepResult(success = false, finished = false, action = parsedAction, thinking = thinking, message = message)
-            }
             return StepResult(success = true, finished = true, action = parsedAction, thinking = thinking, message = message)
         }
 
@@ -671,100 +652,6 @@ class PhoneAgent(
 
         val errorMessage = "Unknown action format: ${parsedAction.metadata}"
         return StepResult(success = false, finished = true, action = parsedAction, thinking = thinking, message = errorMessage)
-    }
-
-    private fun shouldRejectEquivalentChoiceInteract(): Boolean {
-        val combined = _contextHistory.joinToString("\n") { it.second }.lowercase(Locale.ROOT)
-        val allowAnyPhrases = listOf(
-            "任选一个",
-            "任意一个",
-            "随便",
-            "都可以",
-            "任一",
-            "任意",
-            "哪个都行",
-            "随意",
-            "any one",
-            "either one",
-            "either",
-            "whichever",
-            "any is fine",
-            "doesn't matter",
-            "does not matter"
-        )
-        return allowAnyPhrases.any { combined.contains(it) }
-    }
-
-    private fun shouldRejectDelegatingFinish(message: String): Boolean {
-        if (message.isBlank()) return false
-        val normalized = message.lowercase(Locale.ROOT)
-        val fullContext = _contextHistory.joinToString("\n") { it.second }.lowercase(Locale.ROOT)
-        val blockedPhrases = listOf(
-            "自己搜索",
-            "自行搜索",
-            "手动搜索",
-            "自己输入",
-            "自行输入",
-            "自己点击",
-            "自行点击",
-            "你来搜索",
-            "请搜索",
-            "请自行",
-            "你自己",
-            "search yourself",
-            "search manually",
-            "manually search",
-            "type it yourself",
-            "tap it yourself",
-            "you can search",
-            "please search"
-        )
-        if (blockedPhrases.any { normalized.contains(it) }) {
-            return true
-        }
-
-        val isTargetedMessageTask = listOf(
-            "发送",
-            "发一条",
-            "发消息",
-            "群聊",
-            "联系人",
-            "chat",
-            "group",
-            "contact",
-            "send message",
-            "send a message"
-        ).any { fullContext.contains(it) }
-
-        if (!isTargetedMessageTask) {
-            return false
-        }
-
-        val incompleteFinishPhrases = listOf(
-            "已打开",
-            "打开了",
-            "已启动",
-            "已进入",
-            "进入了",
-            "已预填",
-            "预填了",
-            "opened",
-            "launched",
-            "entered",
-            "prefilled",
-            "pre-filled"
-        )
-        val completionPhrases = listOf(
-            "已发送",
-            "发送成功",
-            "消息已发送",
-            "sent successfully",
-            "message sent",
-            "has been sent"
-        )
-
-        return incompleteFinishPhrases.any { normalized.contains(it) } &&
-            completionPhrases.none { normalized.contains(it) }
     }
 
     private fun extractTagContent(text: String, tag: String): String? {
@@ -1112,8 +999,7 @@ class ActionHandler(
                             } catch (_: Exception) {}
                             useShowerIndicatorForAgent(context, agentId)
                             delay(POST_LAUNCH_DELAY_MS)
-                            val chooserResolved = attemptAutoResolveLaunchChooser(app, packageName, showerCtx)
-                            chooserResolved ?: ok()
+                            ok()
                         } else {
                             val desktopPackage = "com.ai.assistance.metaagent.desktop"
                             val desktopLaunched = ShowerController.launchApp(agentId, desktopPackage)
@@ -1134,8 +1020,7 @@ class ActionHandler(
                         )
                         if (result.success) {
                             delay(POST_LAUNCH_DELAY_MS)
-                            val chooserResolved = attemptAutoResolveLaunchChooser(app, packageName, showerCtx)
-                            chooserResolved ?: ok()
+                            ok()
                         } else {
                             fail(message = result.error ?: "Failed to launch app: $packageName")
                         }
@@ -1185,7 +1070,7 @@ class ActionHandler(
                             if (text.isEmpty()) return@withAgentUiHiddenForAction ok()
                             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                                 ?: return@withAgentUiHiddenForAction fail(message = "Clipboard unavailable")
-                            clipboard.setPrimaryClip(ClipData.newPlainText("metaagent_input", text))
+                            clipboard.setPrimaryClip(ClipData.newPlainText("operit_input", text))
                             delay(100)
                             val pasted = ShowerController.key(agentId, KeyEvent.KEYCODE_PASTE)
                             if (pasted) ok() else fail(message = "Shower PASTE failed")
@@ -1259,88 +1144,6 @@ class ActionHandler(
             "Take_over" -> ok(shouldFinish = true, message = fields["message"] ?: "User takeover required")
             else -> fail(message = "Unknown action: $actionName")
         }
-    }
-
-    private suspend fun attemptAutoResolveLaunchChooser(
-        app: String,
-        packageName: String,
-        showerCtx: ShowerUsageContext
-    ): ActionExecResult? {
-        return try {
-            val pageInfoResult = aiToolManager.executeTool(
-                AITool("get_page_info", withDisplayParam(emptyList()))
-            )
-            if (!pageInfoResult.success) return null
-
-            val pageInfo = pageInfoResult.result as? UIPageResultData ?: return null
-            if (pageInfo.packageName == packageName) return null
-
-            val choiceNode = findLaunchChoiceNode(pageInfo.uiElements, buildLaunchAliases(app, packageName)) ?: return null
-            val (x, y) = extractBoundsCenter(choiceNode.bounds) ?: return null
-
-            val exec = withAgentUiHiddenForAction(showerCtx) {
-                if (showerCtx.canUseShowerForInput) {
-                    val okTap = ShowerController.tap(agentId, x, y)
-                    if (okTap) ok(message = "Resolved app chooser by selecting ${choiceNode.text ?: choiceNode.contentDesc ?: app}")
-                    else fail(message = "Failed to select app chooser option")
-                } else {
-                    val params = withDisplayParam(
-                        listOf(
-                            ToolParameter("x", x.toString()),
-                            ToolParameter("y", y.toString())
-                        )
-                    )
-                    val result = toolImplementations.tap(AITool("tap", params))
-                    if (result.success) ok(message = "Resolved app chooser by selecting ${choiceNode.text ?: choiceNode.contentDesc ?: app}")
-                    else fail(message = result.error ?: "Failed to select app chooser option")
-                }
-            }
-
-            if (exec.success && !exec.shouldFinish) {
-                delay(POST_NON_WAIT_ACTION_DELAY_MS)
-            }
-            exec
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            AppLogger.w("ActionHandler", "[$agentId] Failed to auto-resolve launch chooser", e)
-            null
-        }
-    }
-
-    private fun buildLaunchAliases(app: String, packageName: String): List<String> {
-        val aliases = linkedSetOf<String>()
-        val trimmed = app.trim()
-        if (trimmed.isNotBlank()) aliases += trimmed
-
-        StandardUITools.APP_PACKAGES.entries
-            .filter { it.value == packageName }
-            .map { it.key.trim() }
-            .filter { it.isNotBlank() }
-            .forEach { aliases += it }
-
-        return aliases.sortedByDescending { it.length }
-    }
-
-    private fun findLaunchChoiceNode(node: SimplifiedUINode?, aliases: List<String>): SimplifiedUINode? {
-        if (node == null || aliases.isEmpty()) return null
-
-        val labelCandidates = listOfNotNull(node.text, node.contentDesc)
-        if (node.isClickable && labelCandidates.any { label -> aliases.any { alias -> label.contains(alias, ignoreCase = true) } }) {
-            return node
-        }
-
-        node.children?.forEach { child ->
-            val match = findLaunchChoiceNode(child, aliases)
-            if (match != null) return match
-        }
-        return null
-    }
-
-    private fun extractBoundsCenter(bounds: String?): Pair<Int, Int>? {
-        if (bounds.isNullOrBlank()) return null
-        val match = Regex("""\[(\d+),(\d+)]\[(\d+),(\d+)]""").find(bounds) ?: return null
-        val (x1, y1, x2, y2) = match.destructured
-        return ((x1.toInt() + x2.toInt()) / 2) to ((y1.toInt() + y2.toInt()) / 2)
     }
 
     private suspend fun withAgentUiHiddenForAction(
@@ -1484,4 +1287,5 @@ interface ToolImplementations {
     suspend fun pressKey(tool: AITool): ToolResult
     suspend fun captureScreenshot(tool: AITool): Pair<String?, Pair<Int, Int>?>
 }
+
 

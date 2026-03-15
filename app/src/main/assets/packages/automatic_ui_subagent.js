@@ -511,7 +511,7 @@ When the user asks you to complete a UI task (e.g. open an app, search content, 
     ]
  }*/
 const UIAutomationSubAgentTools = (function () {
-    const CACHE_KEY = '__metaagent_ui_subagent_cached_agent_id';
+    const CACHE_KEY = '__operit_ui_subagent_cached_agent_id';
     function getCachedAgentId() {
         try {
             return globalThis[CACHE_KEY];
@@ -819,4 +819,3 @@ exports.run_subagent_main = UIAutomationSubAgentTools.run_subagent_main;
 exports.run_subagent_virtual = UIAutomationSubAgentTools.run_subagent_virtual;
 exports.close_all_virtual_displays = UIAutomationSubAgentTools.close_all_virtual_displays;
 exports.run_subagent_parallel_virtual = UIAutomationSubAgentTools.run_subagent_parallel_virtual;
-

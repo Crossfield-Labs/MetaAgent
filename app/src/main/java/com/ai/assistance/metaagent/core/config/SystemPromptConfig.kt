@@ -20,9 +20,7 @@ BEHAVIOR GUIDELINES:
   1. Tool Call: To perform an action. A tool call must be the absolute last thing in your response. Nothing can follow it.
   2. Task Complete: Use `<status type="complete"></status>` when the entire task is finished.
   3. Wait for User: Use `<status type="wait_for_user_need"></status>` if you need user input or are unsure how to proceed.
-- Critical Rule: The three ending methods are mutually exclusive. If a response contains both a tool call and a status tag, the tool call will be ignored.
-- For multi-step mobile app tasks (for example: open an app, then search, choose a chat, type text, send a message, switch tabs, or handle in-app dialogs), you must prefer `run_ui_subagent` instead of stopping after primitive tools like `start_app` or `set_input_text`. Unless the user asked only to launch an app, do not reduce such tasks to app launch only.
-- If the user specifies a target contact, group chat, search keyword, app clone choice, or says to continue operating inside an app, you must not switch to share-sheet style package tools that require manual user selection. End-to-end completion must stay on UI automation."""
+- Critical Rule: The three ending methods are mutually exclusive. If a response contains both a tool call and a status tag, the tool call will be ignored."""
     private const val BEHAVIOR_GUIDELINES_CN = """
 行为准则：
 - 并行工具调用: 对于任何信息搜集任务（例如，读取文件、搜索、获取评论、页面操作），你**必须**在单次回合中调用所有需要的工具。**严禁分开串行调用**。这是一条严格的效率指令。系统已设计好先后顺序并整合结果。写入工具依旧要保证每次只调用一次。
@@ -33,9 +31,7 @@ BEHAVIOR GUIDELINES:
   1. 工具调用：用于执行操作。工具调用必须是响应的最后一部分，后面不能有任何内容。
   2. 任务完成：当整个任务完成时，使用 `<status type="complete"></status>`。
   3. 等待用户：当你需要用户输入或不确定如何继续时，使用 `<status type="wait_for_user_need"></status>`。
-- 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。
-- 对于手机 App 内的多步任务（例如打开 App 后继续搜索、选群聊、输入文本、发送消息、切换标签、处理弹窗），必须优先调用 `run_ui_subagent`，不要只调用 `start_app`、`set_input_text` 之类的原子工具后就结束。除非用户只要求单步启动 App，否则不要把这类任务拆成只开 App。
-- 如果用户明确指定了联系人、群聊、搜索词、应用分身选择，或者要求继续在 App 内完成后续操作，就绝对不能改用需要用户手动挑选对象的分享面板类包工具。此类任务必须坚持 UI 自动化直到真正完成。"""
+- 关键规则：以上三种结束方式互斥。如果响应中同时包含工具调用和状态标签，工具调用将被忽略。"""
 
     private const val TOOL_USAGE_GUIDELINES_EN = """
 When calling a tool, the user will see your response, and then will automatically send the tool results back to you in a follow-up message.
@@ -303,7 +299,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
    * Applies custom prompt replacements from ApiPreferences to the system prompt
    *
    * @param systemPrompt The original system prompt
-   * @param customIntroPrompt The custom introduction prompt (about MetaAgent)
+   * @param customIntroPrompt The custom introduction prompt (about Operit)
    * @return The system prompt with custom prompts applied
    */
   fun applyCustomPrompts(
@@ -319,6 +315,26 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
 
     return result
   }
+
+  private const val MESSAGE_AUTOMATION_ROUTING_RULES_CN = """
+
+消息发送自动化规则：
+- 当用户要求“向指定联系人、指定群聊、指定会话”发送消息时，必须走 UI 自动化子代理链路，例如 run_ui_subagent。
+- 这类任务的完成标准是：已经进入正确会话、已经输入目标内容、已经点击发送，并且在消息列表中确认消息确实出现。
+- 严禁把“打开分享界面、预填文本、等待用户选择联系人”当成完成。
+- wechat_send_message 和 qq_send_message 这类分享工具，只适用于用户自己手动选联系人的场景；当用户明确指定对象时，不允许使用它们代替 UI 自动化。
+- 如果已经打开了微信或 QQ，但还没有进入正确会话，就必须继续搜索、识别、进入并验证会话，不允许提前结束。
+"""
+
+  private const val MESSAGE_AUTOMATION_ROUTING_RULES_EN = """
+
+Message sending automation rules:
+- When the user asks to send a message to a specific contact, group, or conversation, you must use the UI automation sub-agent path such as run_ui_subagent.
+- The task is only complete after you have opened the correct conversation, entered the requested text, tapped send, and verified that the sent message appears in the chat history.
+- Never treat “opened the share panel”, “prefilled the text”, or “waiting for the user to choose a contact” as completion.
+- Tools like wechat_send_message and qq_send_message are only for cases where the user will manually choose the recipient; they must not replace UI automation when the user has specified a target.
+- If WeChat or QQ is open but the correct conversation is not yet opened, you must keep searching, identifying, entering, and verifying the conversation instead of stopping early.
+"""
 
   private fun buildGroupOrchestrationHint(
       useEnglish: Boolean,
@@ -442,6 +458,7 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     val workspaceGuidelines = getWorkspaceGuidelines(workspacePath, workspaceEnv, useEnglish)
 
     // Build prompt with appropriate sections
+    val automationRules = if (useEnglish) MESSAGE_AUTOMATION_ROUTING_RULES_EN else MESSAGE_AUTOMATION_ROUTING_RULES_CN
     var prompt = templateToUse
         .replace("ACTIVE_PACKAGES_SECTION", if (enableTools) packagesSection.toString() else "")
         .replace("WEB_WORKSPACE_GUIDELINES_SECTION", workspaceGuidelines)
@@ -564,6 +581,10 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
         prompt = prompt
                 .replace(Regex("(?m)^\\s*FORMULA FORMATTING:.*(?:\\r?\\n)?"), "")
                 .replace(Regex("(?m)^\\s*公式格式化：.*(?:\\r?\\n)?"), "")
+    }
+
+    if (enableTools) {
+        prompt += automationRules
     }
 
     // Clean up multiple consecutive blank lines (replace 3+ newlines with 2)
@@ -773,4 +794,5 @@ AVAILABLE_TOOLS_SECTION""".trimIndent()
     )
   }
 }
+
 

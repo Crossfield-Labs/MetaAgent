@@ -33,15 +33,16 @@
 - 不要简单把 `terminal` 当成“可随便删的 Ubuntu 功能”
 - 后续应逐步做的是“保留必要 core，收掉 Ubuntu 产品能力”
 
-## 4. 不再把 Ubuntu 大包放进 git
+## 4. 当前阶段 Ubuntu 运行时通过固定 release 资产提供
 
 结论：
-- Ubuntu 运行时大包已经从 git 中移除
-- 仓库不再追踪这个大文件
+- 为了恢复和 `Operit` 更接近的自动化行为，`MetaAgent` 仍保留 Ubuntu 运行时这条链
+- 但运行时大包不进入 git 历史，而是固定从 `runtime-assets-v1` release 下载
+- 固定地址是 `https://github.com/Crossfield-Labs/MetaAgent/releases/download/runtime-assets-v1/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz`
 
 意味着：
-- 不要把大包重新提交回仓库
-- 当前如果仍用到那条链，应该走外部资产方式，而不是进 git 历史
+- 当前要先保证自动化能力恢复，不要在验证前再次裁掉这条链
+- 后续如果有人找不到这个包，先去上面的 release 地址，不要再把大文件重新提交进仓库
 
 ## 5. 当前最主要的问题不是编译，而是自动化行为
 
@@ -89,6 +90,10 @@
 - 某些实现不是长期产品化的最佳设计
 - 它们是为了让当前比赛环境里更容易跑通
 
+补充：
+- 现在已经开始把自动化关键文件回退到 `Operit` 基线
+- 后续优先级高于继续新增演示专用兜底
+
 ## 9. QQ 指定群聊发消息仍未彻底解决
 
 结论：
@@ -99,7 +104,17 @@
 - 不要把这条能力视为已完成
 - 后续如果继续修，优先检查 `PhoneAgent`、`SystemPromptConfig`、`SystemToolPromptsInternal`、`DebuggerUITools`
 
-## 10. GitHub Release 可以直接上传本地 APK
+## 10. 现在应以补齐后的 `Operit` 作为对照基线
+
+结论：
+- 之前本地 `Operit` 不是完整 checkout，多个 submodule 缺失
+- 现在子模块已经补齐，后续所有“和原项目一致吗”的判断都应以补齐后的仓库为准
+
+意味着：
+- 不要再基于之前那个缺子模块的 `Operit` 下结论
+- 后续回退和对比要以完整基线为准
+
+## 11. GitHub Release 可以直接上传本地 APK
 
 结论：
 - 当前发布不要求必须走 GitHub 构建产物
@@ -109,7 +124,7 @@
 - 发布时不要被 CI 绑定住
 - 先保证本地构建和安装正确
 
-## 11. 文档目标不是替代全部对话，而是提供接手入口
+## 12. 文档目标不是替代全部对话，而是提供接手入口
 
 结论：
 - `agent/` 目录的目标不是保存每一句历史对话

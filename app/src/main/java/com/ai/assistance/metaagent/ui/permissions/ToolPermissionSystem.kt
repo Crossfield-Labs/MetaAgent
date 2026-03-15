@@ -62,7 +62,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
         private val MASTER_SWITCH = stringPreferencesKey("master_switch")
         
         // Default permission setting
-        private val DEFAULT_MASTER_SWITCH = PermissionLevel.ALLOW.name
+        private val DEFAULT_MASTER_SWITCH = PermissionLevel.ASK.name
         
         @Volatile
         private var INSTANCE: ToolPermissionSystem? = null
@@ -110,7 +110,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
     fun getToolPermissionFlow(toolName: String): Flow<PermissionLevel> {
         return context.toolPermissionsDataStore.data.map { preferences ->
             val key = toolPermissionKey(toolName)
-            PermissionLevel.fromString(preferences[key] ?: PermissionLevel.ALLOW.name)
+            PermissionLevel.fromString(preferences[key] ?: PermissionLevel.ASK.name)
         }
     }
     
@@ -189,7 +189,7 @@ class ToolPermissionSystem private constructor(private val context: Context) {
     suspend fun getToolPermission(toolName: String): PermissionLevel {
         val preferences = context.toolPermissionsDataStore.data.first()
         val key = toolPermissionKey(toolName)
-        return PermissionLevel.fromString(preferences[key] ?: PermissionLevel.ALLOW.name)
+        return PermissionLevel.fromString(preferences[key] ?: PermissionLevel.ASK.name)
     }
     
     suspend fun getToolPermissionOverride(toolName: String): PermissionLevel? {
@@ -337,4 +337,3 @@ class ToolPermissionSystem private constructor(private val context: Context) {
         return hasActivePermissionRequest()
     }
 } 
-

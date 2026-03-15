@@ -421,19 +421,30 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
             )
         }
 
-        val uiConfig = EnhancedAIService.getModelConfigForFunction(context, FunctionType.UI_CONTROLLER)
-        if (!uiConfig.enableDirectImageProcessing) {
-            return ToolResult(
-                toolName = tool.name,
-                success = false,
-                result = StringResultData(""),
-                error = "当前 UI 控制器模型未启用识图能力，请在设置-功能模型中为 UI 控制器功能选择支持图片理解的模型后再试。"
-            )
-        }
-
         return try {
-            // 获取专用于 UI_CONTROLLER 的 AIService 实例
-            val uiService = EnhancedAIService.getAIServiceForFunction(context, FunctionType.UI_CONTROLLER)
+            val uiConfig = EnhancedAIService.getModelConfigForFunction(context, FunctionType.UI_CONTROLLER)
+            val chatConfig = EnhancedAIService.getModelConfigForFunction(context, FunctionType.CHAT)
+            val useChatFallback = !uiConfig.enableDirectImageProcessing && chatConfig.enableDirectImageProcessing
+
+            if (!uiConfig.enableDirectImageProcessing && !useChatFallback) {
+                return ToolResult(
+                    toolName = tool.name,
+                    success = false,
+                    result = StringResultData(""),
+                    error =
+                        "当前 UI 控制器模型未启用识图能力，且当前聊天模型也不支持识图。请在设置-功能模型中为“UI 控制器”选择支持图片理解的模型，或使用 AutoGLM 一键配置后再试。"
+                )
+            }
+
+            if (useChatFallback) {
+                AppLogger.w(TAG, "UI_CONTROLLER 未启用识图，回退复用 CHAT 模型执行 UI 子代理")
+            }
+
+            // 优先使用专用于 UI_CONTROLLER 的模型；未配置时回退到当前聊天模型
+            val uiService = EnhancedAIService.getAIServiceForFunction(
+                context,
+                if (useChatFallback) FunctionType.CHAT else FunctionType.UI_CONTROLLER
+            )
             val systemPrompt = buildUiAutomationSystemPrompt()
 
             val metrics = context.resources.displayMetrics
