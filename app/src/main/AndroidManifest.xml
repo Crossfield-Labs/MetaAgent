@@ -355,6 +355,12 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
+        <service
+            android:name=".remote.RemoteControlService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|specialUse" />
         
         <!-- Voice Assistant Widget Receiver -->
         <receiver

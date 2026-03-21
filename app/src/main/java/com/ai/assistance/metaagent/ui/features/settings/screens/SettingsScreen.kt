@@ -50,6 +50,7 @@ fun SettingsScreen(
         onNavigateToUserPreferences: () -> Unit,
         navigateToGitHubAccount: () -> Unit,
         navigateToToolPermissions: () -> Unit,
+        navigateToRemoteControl: () -> Unit,
         navigateToModelConfig: () -> Unit,
         navigateToThemeSettings: () -> Unit,
         navigateToGlobalDisplaySettings: () -> Unit,
@@ -276,6 +277,13 @@ fun SettingsScreen(
                         icon = Icons.Default.Security,
                         containerColor = cardContainerColor
                 ) {
+                        CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_remote_control),
+                                subtitle = stringResource(id = R.string.settings_remote_control_subtitle),
+                                icon = Icons.Default.Devices,
+                                onClick = navigateToRemoteControl
+                        )
+
                         CompactSettingsItem(
                                 title = stringResource(id = R.string.settings_tool_permissions),
                                 subtitle = stringResource(id = R.string.settings_tool_permissions_subtitle),

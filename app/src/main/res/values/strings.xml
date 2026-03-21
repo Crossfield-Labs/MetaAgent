@@ -3121,6 +3121,8 @@
     <string name="settings_data_permissions">数据和权限</string>
     <string name="settings_tool_permissions_subtitle">工具权限和安全设置</string>
     <string name="settings_data_backup_subtitle">聊天记录备份管理</string>
+    <string name="settings_remote_control">远程控制</string>
+    <string name="settings_remote_control_subtitle">启动手机端远程服务，给电脑端提供 HTTP 控制入口</string>
     <string name="settings_token_usage_stats">Token使用统计</string>
     <string name="settings_function_label">功能</string>
     <string name="settings_model_label">模型</string>
@@ -3623,6 +3625,7 @@
 
     <!-- Screen Titles -->
     <string name="screen_title_memory_base">记忆库</string>
+    <string name="screen_title_remote_control">远程控制</string>
     <string name="screen_title_tool_permissions">工具权限</string>
     <string name="screen_title_user_preferences_guide">用户偏好引导</string>
     <string name="screen_title_user_preferences_settings">用户偏好设置</string>

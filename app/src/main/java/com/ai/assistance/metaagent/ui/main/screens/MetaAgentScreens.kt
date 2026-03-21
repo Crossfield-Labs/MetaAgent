@@ -49,6 +49,7 @@ import com.ai.assistance.metaagent.ui.features.settings.screens.LanguageSettings
 import com.ai.assistance.metaagent.ui.features.settings.screens.LayoutAdjustmentSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.ModelPromptsSettingsScreen
+import com.ai.assistance.metaagent.ui.features.settings.screens.RemoteControlSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.TagMarketScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.SettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.SpeechServicesSettingsScreen
@@ -445,6 +446,7 @@ sealed class Screen(
         ) {
             SettingsScreen(
                     navigateToToolPermissions = { navigateTo(ToolPermission) },
+                    navigateToRemoteControl = { navigateTo(RemoteControl) },
                     onNavigateToUserPreferences = { navigateTo(UserPreferencesSettings) },
                     navigateToGitHubAccount = { navigateTo(GitHubAccount) },
                     navigateToModelConfig = { navigateTo(ModelConfig) },
@@ -463,6 +465,23 @@ sealed class Screen(
                     navigateToContextSummarySettings = { navigateTo(ContextSummarySettings) },
                     navigateToLayoutAdjustmentSettings = { navigateTo(LayoutAdjustmentSettings) }
             )
+        }
+    }
+
+    data object RemoteControl :
+        Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_remote_control) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            updateNavItem: NavItemChangeHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            RemoteControlSettingsScreen(onBackPressed = onGoBack)
         }
     }
 

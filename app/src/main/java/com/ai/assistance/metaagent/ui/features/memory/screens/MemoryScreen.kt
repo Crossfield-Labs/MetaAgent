@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.ai.assistance.metaagent.ui.features.memory.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,14 +11,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.SelectAll
@@ -27,14 +36,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -81,10 +91,14 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import com.ai.assistance.metaagent.R
+import com.ai.assistance.metaagent.data.model.Memory
 import com.ai.assistance.metaagent.ui.features.memory.screens.dialogs.MemorySearchSettingsDialog
 import com.ai.assistance.metaagent.ui.features.memory.screens.dialogs.MemorySearchSimulationDialog
+import com.ai.assistance.metaagent.ui.features.memory.viewmodel.MemoryUiState
 
 @Composable
 fun MemorySearchBar(
@@ -131,6 +145,8 @@ fun MemorySearchBar(
     }
 }
 
+private enum class MemoryDisplayMode { GRAPH, LIST }
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MemoryScreen() {
@@ -152,6 +168,7 @@ fun MemoryScreen() {
 
     var selectedProfileId by remember { mutableStateOf(activeProfileId) }
     var showFolderNavigator by remember { mutableStateOf(false) }
+    var displayMode by remember { mutableStateOf(MemoryDisplayMode.GRAPH) }
 
     LaunchedEffect(activeProfileId) { selectedProfileId = activeProfileId }
 
@@ -333,24 +350,43 @@ fun MemoryScreen() {
                     onMenuClick = { showFolderNavigator = !showFolderNavigator }
                 )
 
+                MemoryOverviewPanel(
+                    uiState = uiState,
+                    displayMode = displayMode,
+                    onDisplayModeChange = { displayMode = it },
+                    onEditSelected = { uiState.selectedMemory?.let(viewModel::startEditing) },
+                    onDeleteSelected = { uiState.selectedMemory?.let { viewModel.deleteMemory(it.id) } }
+                )
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxSize()
                 ) {
-                    // 图谱区域（始终挂载，避免 isLoading 切换时重建 GraphVisualizer）
-                    GraphVisualizer(
-                        graph = uiState.graph,
-                        modifier = Modifier.fillMaxSize(),
-                        selectedNodeId = uiState.selectedNodeId,
-                        boxSelectedNodeIds = uiState.boxSelectedNodeIds, // 传递框选节点
-                        isBoxSelectionMode = uiState.isBoxSelectionMode, // 传递模式状态
-                        linkingNodeIds = uiState.linkingNodeIds,
-                        selectedEdgeId = uiState.selectedEdge?.id,
-                        onNodeClick = { node -> viewModel.selectNode(node) },
-                        onEdgeClick = { edge -> viewModel.selectEdge(edge) },
-                        onNodesSelected = { nodeIds -> viewModel.addNodesToSelection(nodeIds) } // 传递回调
-                    )
+                    when (displayMode) {
+                        MemoryDisplayMode.GRAPH -> {
+                            GraphVisualizer(
+                                graph = uiState.graph,
+                                modifier = Modifier.fillMaxSize(),
+                                selectedNodeId = uiState.selectedNodeId,
+                                boxSelectedNodeIds = uiState.boxSelectedNodeIds,
+                                isBoxSelectionMode = uiState.isBoxSelectionMode,
+                                linkingNodeIds = uiState.linkingNodeIds,
+                                selectedEdgeId = uiState.selectedEdge?.id,
+                                onNodeClick = { node -> viewModel.selectNode(node) },
+                                onEdgeClick = { edge -> viewModel.selectEdge(edge) },
+                                onNodesSelected = { nodeIds -> viewModel.addNodesToSelection(nodeIds) }
+                            )
+                        }
+
+                        MemoryDisplayMode.LIST -> {
+                            MemoryListPanel(
+                                memories = uiState.memories,
+                                selectedUuid = uiState.selectedMemory?.uuid,
+                                onMemoryClick = { memory -> viewModel.selectMemory(memory) }
+                            )
+                        }
+                    }
 
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -559,5 +595,229 @@ fun MemoryScreen() {
                 )
             }
         }
-    }}
+    }
+}
+
+@Composable
+private fun MemoryOverviewPanel(
+    uiState: MemoryUiState,
+    displayMode: MemoryDisplayMode,
+    onDisplayModeChange: (MemoryDisplayMode) -> Unit,
+    onEditSelected: () -> Unit,
+    onDeleteSelected: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                MemoryStatCard("节点", uiState.graph.nodes.size.toString(), Modifier.weight(1f))
+                MemoryStatCard("连线", uiState.graph.edges.size.toString(), Modifier.weight(1f))
+                MemoryStatCard("条目", uiState.memories.size.toString(), Modifier.weight(1f))
+            }
+
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = displayMode == MemoryDisplayMode.GRAPH,
+                    onClick = { onDisplayModeChange(MemoryDisplayMode.GRAPH) },
+                    label = { Text("图谱") }
+                )
+                FilterChip(
+                    selected = displayMode == MemoryDisplayMode.LIST,
+                    onClick = { onDisplayModeChange(MemoryDisplayMode.LIST) },
+                    label = { Text("条目") }
+                )
+                FilterChip(
+                    selected = uiState.selectedFolderPath.isNotBlank(),
+                    onClick = {},
+                    label = {
+                        Text(
+                            if (uiState.selectedFolderPath.isBlank()) "全部文件夹"
+                            else "文件夹: ${uiState.selectedFolderPath}"
+                        )
+                    }
+                )
+                uiState.searchQuery.takeIf { it.isNotBlank() }?.let { query ->
+                    FilterChip(
+                        selected = true,
+                        onClick = {},
+                        label = { Text("搜索: $query") }
+                    )
+                }
+            }
+
+            uiState.selectedMemory?.let { memory ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = memory.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = buildString {
+                                append(memory.contentType)
+                                if (!memory.folderPath.isNullOrBlank()) append(" · ${memory.folderPath}")
+                                if (memory.isDocumentNode) append(" · 文档")
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (memory.tags.isNotEmpty()) {
+                            Text(
+                                text = memory.tags.joinToString(" · ") { it.name },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Text(
+                            text = memory.content,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = onEditSelected) {
+                                Icon(Icons.Default.Edit, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("编辑")
+                            }
+                            TextButton(onClick = onDeleteSelected) {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("删除")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MemoryStatCard(title: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun MemoryListPanel(
+    memories: List<Memory>,
+    selectedUuid: String?,
+    onMemoryClick: (Memory) -> Unit
+) {
+    if (memories.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "当前没有可显示的记忆条目。",
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(memories, key = { it.uuid }) { memory ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (memory.uuid == selectedUuid) {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                    }
+                ),
+                onClick = { onMemoryClick(memory) }
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = memory.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        if (memory.isDocumentNode) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Text(
+                        text = buildString {
+                            append(memory.contentType)
+                            if (!memory.folderPath.isNullOrBlank()) append(" · ${memory.folderPath}")
+                            if (memory.tags.isNotEmpty()) append(" · ${memory.tags.joinToString { it.name }}")
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = memory.content,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    }
+}
 

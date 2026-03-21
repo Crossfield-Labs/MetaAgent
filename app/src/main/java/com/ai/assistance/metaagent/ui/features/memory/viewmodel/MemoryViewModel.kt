@@ -115,13 +115,29 @@ class MemoryViewModel(
         }
     }
 
+    private suspend fun refreshMemories(): List<Memory> {
+        val currentState = _uiState.value
+        val config = currentState.searchConfig
+        val folderPath = currentState.selectedFolderPath.takeIf { it.isNotBlank() }
+        return repository.searchMemories(
+            query = currentState.searchQuery,
+            folderPath = folderPath,
+            semanticThreshold = config.semanticThreshold,
+            scoreMode = config.scoreMode,
+            keywordWeight = config.keywordWeight,
+            semanticWeight = config.vectorWeight,
+            edgeWeight = config.edgeWeight
+        )
+    }
+
     /** Loads the entire memory graph from the repository. */
     fun loadMemoryGraph() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
+                val memories = refreshMemories()
                 val graphData = refreshGraph()
-                _uiState.update { it.copy(graph = graphData, isLoading = false) }
+                _uiState.update { it.copy(memories = memories, graph = graphData, isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, error = context.getString(R.string.memory_error_load_graph, e.message ?: "Unknown error"))
@@ -161,7 +177,7 @@ class MemoryViewModel(
                         )
                     }
                 val graphData = repository.getGraphForMemories(memories)
-                _uiState.update { it.copy(graph = graphData, isLoading = false) }
+                _uiState.update { it.copy(memories = memories, graph = graphData, isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, error = context.getString(R.string.memory_error_search, e.message ?: "Unknown error"))
@@ -374,8 +390,9 @@ class MemoryViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, selectedFolderPath = folderPath) }
             try {
+                val memories = refreshMemories()
                 val graphData = refreshGraph()
-                _uiState.update { it.copy(graph = graphData, isLoading = false) }
+                _uiState.update { it.copy(memories = memories, graph = graphData, isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, error = context.getString(R.string.memory_error_load_folder_graph, e.message ?: "Unknown error"))
@@ -400,9 +417,11 @@ class MemoryViewModel(
                 val success = repository.moveMemoriesToFolder(memoryIds, targetFolderPath)
                 if (success) {
                     loadFolderPaths()
+                    val memories = refreshMemories()
                     val graphData = refreshGraph()
                     _uiState.update {
                         it.copy(
+                            memories = memories,
                             graph = graphData,
                             isLoading = false,
                             boxSelectedNodeIds = emptySet(),
@@ -578,9 +597,10 @@ class MemoryViewModel(
                 val currentFolder = _uiState.value.selectedFolderPath
                 repository.createMemoryFromDocument(title, filePath, fileContent, currentFolder)
                 // 刷新图谱和文件夹列表
+                val memories = refreshMemories()
                 val updatedGraph = refreshGraph()
                 loadFolderPaths()
-                _uiState.update { it.copy(graph = updatedGraph, isLoading = false) }
+                _uiState.update { it.copy(memories = memories, graph = updatedGraph, isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, error = context.getString(R.string.memory_error_import_document, e.message ?: "Unknown error"))
@@ -596,10 +616,17 @@ class MemoryViewModel(
             try {
                 val currentFolder = _uiState.value.selectedFolderPath
                 repository.createMemory(title, content, contentType, folderPath = currentFolder)
+                val memories = refreshMemories()
                 val updatedGraph = refreshGraph()
                 loadFolderPaths()
                 _uiState.update {
-                    it.copy(isLoading = false, isEditing = false, editingMemory = null, graph = updatedGraph)
+                    it.copy(
+                        isLoading = false,
+                        isEditing = false,
+                        editingMemory = null,
+                        memories = memories,
+                        graph = updatedGraph
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -636,11 +663,19 @@ class MemoryViewModel(
                     newFolderPath = newFolderPath.ifBlank { null }, // 空字符串视为未分类
                     newTags = newTags
                 )
+                val memories = refreshMemories()
                 val updatedGraph = refreshGraph()
                 // 刷新文件夹列表（如果记忆移动到新文件夹或从文件夹移出）
                 loadFolderPaths()
                 _uiState.update {
-                    it.copy(isLoading = false, isEditing = false, editingMemory = null, graph = updatedGraph, isDocumentViewOpen = false)
+                    it.copy(
+                        isLoading = false,
+                        isEditing = false,
+                        editingMemory = null,
+                        memories = memories,
+                        graph = updatedGraph,
+                        isDocumentViewOpen = false
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -655,11 +690,19 @@ class MemoryViewModel(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 repository.deleteMemoryAndIndex(memoryId)
+                val memories = refreshMemories()
                 val updatedGraph = refreshGraph()
                 // 刷新文件夹列表（删除记忆可能导致文件夹变空）
                 loadFolderPaths()
                 _uiState.update {
-                    it.copy(isLoading = false, selectedMemory = null, selectedNodeId = null, graph = updatedGraph, isDocumentViewOpen = false)
+                    it.copy(
+                        isLoading = false,
+                        selectedMemory = null,
+                        selectedNodeId = null,
+                        memories = memories,
+                        graph = updatedGraph,
+                        isDocumentViewOpen = false
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -698,6 +741,7 @@ class MemoryViewModel(
             try {
                 com.ai.assistance.metaagent.util.AppLogger.d("MemoryViewModel", "Calling repository.deleteMemoriesByUuids with IDs: $selectedIds")
                 repository.deleteMemoriesByUuids(selectedIds)
+                val memories = refreshMemories()
                 val updatedGraph = refreshGraph()
                 com.ai.assistance.metaagent.util.AppLogger.d("MemoryViewModel", "Graph refreshed after deletion.")
                 // 刷新文件夹列表（批量删除可能导致文件夹变空）
@@ -705,6 +749,7 @@ class MemoryViewModel(
                 _uiState.update {
                     it.copy(
                             isLoading = false,
+                            memories = memories,
                             graph = updatedGraph,
                             isBoxSelectionMode = false,
                             boxSelectedNodeIds = emptySet()
