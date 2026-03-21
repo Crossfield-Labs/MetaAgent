@@ -133,3 +133,57 @@
 意味着：
 - 文档要记录关键结论、当前状态、模块定位、开发规则
 - 不需要复述所有聊天过程
+
+## 13. 电脑端远程控制走独立服务，不复用 WebView 本地文件服务
+
+结论：
+- 手机端远程控制能力已经开始落在独立的 `RemoteControlService + RemoteAgentServer`
+- 不继续把“电脑远控协议”塞进 `LocalWebServer`
+
+意味着：
+- WebView/workspace 文件服务和桌面端远控服务分开维护
+- 远控接口单独演进，避免和聊天网页代理逻辑搅在一起
+
+## 14. 远程记忆必须暴露为显式对象，不做黑箱 prompt 叠加
+
+结论：
+- 电脑端接入记忆时，应该读写 `Memory`、`MemoryLink`、`Graph` 这类显式对象
+- 不把“记忆”做成只给模型追加的一段隐藏 prompt
+
+意味着：
+- 桌面端可以直接浏览、查询、创建、更新、删除和连边
+- 记忆可调试、可导出、可被人检查，这比隐式 prompt 注入更符合当前项目方向
+
+## 15. 手机端远程服务保留，但主线切到“手机控制电脑端 `nanoclaw`”
+
+结论：
+- 这轮新增的 `RemoteControlService + RemoteAgentServer + 手机设置页入口` 保留
+- 但它不再是当前唯一主线
+- 现在更符合比赛目标的路径，是让手机去控制电脑端的 `nanoclaw` remote-control 会话
+
+意味着：
+- 手机控手机能力继续保留，作为底层演示能力和备用通道
+- 接下来新增工作应优先放在 `nanoclaw` 桌面控制 API 和手机端桌面控制 UI
+- 不要再默认假设“远程控制”只等于电脑端操控手机
+
+## 16. `nanoclaw` 侧采用轻量 HTTP 控制面，而不是重做一套桌面协议
+
+结论：
+- 邻接仓库 `../nanoclaw` 已经有 `startRemoteControl / stopRemoteControl / getActiveSession`
+- 当前最短路径不是重写 OpenClaw 式桌面程序，而是给它补一层很薄的 HTTP API
+
+意味着：
+- 桌面端先暴露 `health / session / start / stop`
+- 手机端通过 HTTP 直连局域网电脑，展示状态并触发桌面 remote-control
+- 这样能快速把“手机控制电脑”跑通，再决定是否继续扩展桌面能力
+
+## 17. 当前手机端远程服务的可用范围要按真机结果判断，不按接口清单想当然
+
+结论：
+- 真机联调已确认 `health`、`session/open`、`capabilities`、`heartbeat` 可用
+- 当前 `screenshot` 在测试机上失败，根因是 app 内 `DEBUGGER` 执行器不可用，且 `Shizuku` 未运行
+
+意味着：
+- 现阶段不能把“接口已经写了”当成“能力已经可用”
+- 如果继续走手机控手机链路，优先补截图/输入兜底
+- 但这不会阻止手机控电脑这条主线继续推进

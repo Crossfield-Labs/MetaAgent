@@ -11,6 +11,9 @@
 - `terminal` 已恢复并收编进主仓库
 - `Operit` 原仓库缺失的子模块已补齐，现在有了完整对照基线
 - 本地模型模块 `mnn`、`llama` 已从主工程依赖中剔除
+- 已新增独立远程控制服务骨架，电脑端可通过 HTTP 连接手机端远程服务
+- 手机端“远程控制”设置页入口已补上，并已在真机上确认可以启动前台服务
+- 当前方向已从“电脑端控制手机”为主，切换为“手机端控制电脑端 `nanoclaw`”，手机控电脑会保留手机控手机能力作为辅线
 
 ## 已完成
 
@@ -31,6 +34,18 @@
 - 多处 JNI 名称残留已修复
 - 当前 debug APK 可本地构建、安装和运行
 - 工具权限已偏向演示模式处理
+
+远程通信：
+- 已新增 `RemoteControlService` 独立前台服务，默认端口 `8095`
+- 已接通 session、capabilities、heartbeat、screenshot、input、app launch、UI agent、memory API
+- 当前远程协议文档见 [REMOTE_SERVICE.md](./REMOTE_SERVICE.md)
+- 手机端 UI 入口已接到设置页，可查看服务状态、地址、session、能力和任务
+- 真机联调已确认 `health`、`session/open`、`capabilities`、`heartbeat` 可用
+- 当前 `screenshot` 在这台测试机上仍失败，原因是 app 内 `DEBUGGER` 执行器不可用且 `Shizuku` 未运行
+
+桌面联动：
+- 邻接仓库 `../nanoclaw` 已开始加桌面端 HTTP 控制面，用于让手机直接控制电脑端 remote-control 会话
+- 当前已在 `nanoclaw` 侧落下 `desktop-remote-api` 骨架和主进程接入点，但还没完成手机侧对接和整体验证
 
 自动化链路：
 - `run_ui_subagent` 已被明确设为多步 App 内操作的优先路径
@@ -55,13 +70,19 @@
 - 多在脚本、注释、模板、许可证、少量历史文案中
 - 不影响演示，但影响整洁度
 
+4. 远程通信已打通一半，但主线方向刚切换
+- 手机作为 HTTP 服务端这条链已经能真机跑到基础接口
+- 但截图/输入能力还没有在当前测试机上完全跑通
+- 同时主目标已经切换为“手机端控制电脑端 `nanoclaw`”，所以还需要补桌面 API 和手机侧桌面控制 UI
+
 ## 当前建议优先级
 
 建议优先处理顺序：
 1. 自动化稳定性，优先是 QQ 指定群聊发消息
-2. 真机回归微信、QQ等关键自动化流程
-3. 低优先级命名清理
-4. 在验证完成前不要继续裁 `terminal` / Ubuntu 主链
+2. 完成手机端控制 `nanoclaw` 的闭环，包括桌面 API、手机配置页和启停状态
+3. 真机回归微信、QQ等关键自动化流程，以及手机端远程服务截图/输入链路
+4. 低优先级命名清理
+5. 在验证完成前不要继续裁 `terminal` / Ubuntu 主链
 
 ## 近期容易误判的点
 
@@ -70,6 +91,8 @@
 - QQ 问题不等于 UI 工具完全失效，通常是选错路径、选错会话、过早结束
 - GitHub Release 可以直接上传本地 APK，不需要强制走 CI 构建
 - Ubuntu 运行时包不在仓库里，需要从 `https://github.com/Crossfield-Labs/MetaAgent/releases/download/runtime-assets-v1/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz` 获取
+- 电脑访问手机局域网地址时，当前开发机可能被本地代理劫持成 `502 Bad Gateway`，联调时更稳的方式是先用 `adb forward tcp:18095 tcp:8095`
+- 当前远程服务的 `POST` JSON 解析问题已修过一轮，新的 debug 包已重新构建并安装到测试机
 
 ## 当前发布方式
 
