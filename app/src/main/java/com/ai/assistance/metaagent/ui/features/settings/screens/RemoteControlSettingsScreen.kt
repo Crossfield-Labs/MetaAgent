@@ -2,12 +2,17 @@
 
 package com.ai.assistance.metaagent.ui.features.settings.screens
 
+import android.graphics.BitmapFactory
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.text.format.DateFormat
+import android.util.Base64
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,13 +23,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -38,7 +44,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -48,20 +53,29 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ai.assistance.metaagent.remote.RemoteAgentTaskSnapshot
@@ -69,17 +83,16 @@ import com.ai.assistance.metaagent.ui.features.settings.viewmodel.RemoteControlU
 import com.ai.assistance.metaagent.ui.features.settings.viewmodel.RemoteControlViewModel
 import com.ai.assistance.metaagent.ui.features.settings.viewmodel.RemoteControlViewModelFactory
 import kotlinx.coroutines.delay
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
     val context = LocalContext.current
     val viewModel: RemoteControlViewModel = viewModel(
         factory = RemoteControlViewModelFactory(context)
     )
     val uiState by viewModel.uiState.collectAsState()
-
     LaunchedEffect(Unit) {
         while (true) {
             viewModel.refresh()
@@ -96,7 +109,54 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                HeaderCard(
+                DesktopConnectionCard(
+                    uiState = uiState,
+                    onRefresh = { viewModel.checkDesktopHealth() },
+                    onHostChanged = viewModel::updateDesktopHost,
+                    onPortChanged = viewModel::updateDesktopPort,
+                    onPasswordChanged = viewModel::updateDesktopPassword,
+                    onRequestConnection = { viewModel.requestDesktopConnection() },
+                    onRefreshPairing = { viewModel.refreshDesktopPairingStatus() },
+                    onConfirmPassword = { viewModel.confirmDesktopPassword() }
+                )
+            }
+
+            item {
+                DesktopSessionCard(
+                    uiState = uiState,
+                    onHeartbeat = { viewModel.heartbeatDesktopSession() },
+                    onCloseSession = { viewModel.closeDesktopSession() },
+                    onQuerySession = { viewModel.queryDesktopSession() }
+                )
+            }
+
+            item {
+                DesktopActionCard(
+                    uiState = uiState,
+                    onFetchScreenshot = { viewModel.fetchDesktopScreenshot() },
+                    onTogglePreviewAutoRefresh = viewModel::setDesktopPreviewAutoRefresh,
+                    onMoveXChanged = viewModel::updateDesktopMoveX,
+                    onMoveYChanged = viewModel::updateDesktopMoveY,
+                    onTypeChanged = viewModel::updateDesktopTypeText,
+                    onKeyChanged = viewModel::updateDesktopKeyText,
+                    onMove = { viewModel.testDesktopMove() },
+                    onClick = { viewModel.testDesktopClick() },
+                    onType = { viewModel.testDesktopType() },
+                    onKey = { viewModel.testDesktopKey() },
+                    onTouchpadMove = viewModel::touchpadMove,
+                    onTouchpadTap = { viewModel.touchpadTap() }
+                )
+            }
+
+            item {
+                DesktopEventsCard(
+                    uiState = uiState,
+                    onFetchEvents = { viewModel.fetchDesktopEvents() }
+                )
+            }
+
+            item {
+                LegacyPhoneServiceCard(
                     uiState = uiState,
                     onToggleService = {
                         if (uiState.isServiceRunning) viewModel.stopService() else viewModel.startService()
@@ -105,19 +165,6 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
                     onCopyAddress = {
                         val host = uiState.localIpAddress ?: "127.0.0.1"
                         copyText(context, "remote_url", "http://$host:${uiState.port}")
-                    }
-                )
-            }
-
-            item {
-                SessionCard(
-                    uiState = uiState,
-                    onCreateSession = { viewModel.createDebugSession() },
-                    onCloseSession = { viewModel.closeSession() },
-                    onCopyToken = {
-                        uiState.debugToken?.let { token ->
-                            copyText(context, "remote_token", token)
-                        }
                     }
                 )
             }
@@ -136,7 +183,7 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
 
             item {
                 Text(
-                    text = "远程任务",
+                    text = "兼容：手机远程任务",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -153,10 +200,430 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
             }
         }
     }
+
+    LaunchedEffect(
+        uiState.desktopPreviewAutoRefresh,
+        uiState.desktopSession?.id,
+        uiState.desktopHost,
+        uiState.desktopPort,
+        uiState.desktopToken
+    ) {
+        if (uiState.desktopPreviewAutoRefresh && uiState.desktopSession != null) {
+            viewModel.startDesktopStream()
+        } else {
+            viewModel.stopDesktopStream()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopDesktopStream()
+        }
+    }
 }
 
 @Composable
-private fun HeaderCard(
+private fun DesktopConnectionCard(
+    uiState: RemoteControlUiState,
+    onRefresh: () -> Unit,
+    onHostChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onRequestConnection: () -> Unit,
+    onRefreshPairing: () -> Unit,
+    onConfirmPassword: () -> Unit
+) {
+    InfoCard(
+        title = "手机控制电脑",
+        icon = Icons.Default.Devices,
+        action = {
+            IconButton(onClick = onRefresh, enabled = !uiState.desktopIsLoading) {
+                Icon(Icons.Default.Refresh, contentDescription = null)
+            }
+        }
+    ) {
+        Text(
+            text = "先填电脑地址并发起连接请求。电脑端确认后，再在手机上输入预设密码，系统会换取临时会话 token。",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = uiState.desktopHost,
+            onValueChange = onHostChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("电脑地址 / Host") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = uiState.desktopPort,
+            onValueChange = onPortChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("端口") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onRequestConnection, enabled = !uiState.desktopIsLoading) {
+                Text("请求连接")
+            }
+            OutlinedButton(onClick = onRefreshPairing, enabled = !uiState.desktopIsLoading && uiState.desktopPairingId != null) {
+                Text("刷新连接状态")
+            }
+        }
+        uiState.desktopPairingId?.let { pairingId ->
+            Spacer(modifier = Modifier.height(8.dp))
+            MetaRow(label = "Pairing ID", value = pairingId)
+        }
+        uiState.desktopPairingStatus?.let { pairingStatus ->
+            MetaRow(label = "状态", value = pairingStatus)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = uiState.desktopPassword,
+            onValueChange = onPasswordChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("电脑端配对密码") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = onConfirmPassword,
+            enabled = !uiState.desktopIsLoading && uiState.desktopPairingStatus == "approved"
+        ) {
+            Text("提交密码")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        uiState.desktopHealth?.let { health ->
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatusChip("服务", health.service, true)
+                StatusChip("桌面会话", if (health.hasDesktopSession) "已打开" else "未打开", health.hasDesktopSession)
+                StatusChip("远控会话", if (health.hasActiveSession) "运行中" else "未运行", health.hasActiveSession)
+                StatusChip("API", "v${health.apiVersion}", true)
+                uiState.desktopCapabilities?.let { caps ->
+                    StatusChip("平台", caps.platform, caps.supported)
+                    StatusChip("截图", if (caps.supportsScreenshot) "支持" else "不支持", caps.supportsScreenshot)
+                    StatusChip("鼠标", if (caps.supportsMouse) "支持" else "不支持", caps.supportsMouse)
+                    StatusChip("键盘", if (caps.supportsKeyboard) "支持" else "不支持", caps.supportsKeyboard)
+                }
+            }
+        }
+        uiState.desktopActionMessage?.let {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+        }
+        uiState.desktopLastError?.let {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+        }
+    }
+}
+
+@Composable
+private fun DesktopSessionCard(
+    uiState: RemoteControlUiState,
+    onHeartbeat: () -> Unit,
+    onCloseSession: () -> Unit,
+    onQuerySession: () -> Unit
+) {
+    InfoCard(title = "电脑会话", icon = Icons.Default.Key) {
+        val session = uiState.desktopSession
+        if (session == null) {
+            Text(
+                text = "当前还没有连接到桌面会话。先测 health，再点打开会话。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            MetaRow(label = "Session ID", value = session.id)
+            MetaRow(label = "Client", value = session.clientName)
+            MetaRow(label = "Opened", value = session.openedAt)
+            MetaRow(label = "Last Seen", value = session.lastSeenAt)
+            MetaRow(label = "Expires", value = session.expiresAt)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onHeartbeat, enabled = !uiState.desktopIsLoading) {
+                Text("发送心跳")
+            }
+            OutlinedButton(onClick = onQuerySession, enabled = !uiState.desktopIsLoading) {
+                Text("读取会话")
+            }
+            TextButton(onClick = onCloseSession, enabled = !uiState.desktopIsLoading) {
+                Text("关闭会话")
+            }
+        }
+    }
+}
+
+@Composable
+private fun DesktopActionCard(
+    uiState: RemoteControlUiState,
+    onFetchScreenshot: () -> Unit,
+    onTogglePreviewAutoRefresh: (Boolean) -> Unit,
+    onMoveXChanged: (String) -> Unit,
+    onMoveYChanged: (String) -> Unit,
+    onTypeChanged: (String) -> Unit,
+    onKeyChanged: (String) -> Unit,
+    onMove: () -> Unit,
+    onClick: () -> Unit,
+    onType: () -> Unit,
+    onKey: () -> Unit,
+    onTouchpadMove: (Float, Float) -> Unit,
+    onTouchpadTap: () -> Unit
+) {
+    InfoCard(title = "桌面预览与触控", icon = Icons.Default.Computer) {
+        val imageBitmap = remember(uiState.desktopPreviewBytes, uiState.desktopScreenshot?.base64) {
+            when {
+                uiState.desktopPreviewBytes != null -> decodeDesktopScreenshot(uiState.desktopPreviewBytes)
+                !uiState.desktopScreenshot?.base64.isNullOrEmpty() -> decodeDesktopScreenshot(
+                    Base64.decode(uiState.desktopScreenshot!!.base64, Base64.DEFAULT)
+                )
+                else -> null
+            }
+        }
+        val pointerOffset = remember { mutableStateOf(Offset.Zero) }
+        uiState.desktopScreenshot?.let { screenshot ->
+            MetaRow(label = "Screenshot", value = "${screenshot.width} x ${screenshot.height}")
+            MetaRow(label = "Mime", value = screenshot.mimeType)
+            MetaRow(label = "预览", value = if (uiState.desktopPreviewAutoRefresh) "自动刷新" else "手动刷新")
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "桌面实时预览",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    if (uiState.desktopStreaming) "流式预览中" else "自动刷新",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Switch(
+                    checked = uiState.desktopPreviewAutoRefresh,
+                    onCheckedChange = onTogglePreviewAutoRefresh
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (imageBitmap != null) {
+                Image(
+                    bitmap = imageBitmap,
+                    contentDescription = "Desktop Preview",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Text(
+                    text = "还没有桌面截图。先抓一次截图，或开启自动刷新后等待。",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "触控板",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(170.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f), RoundedCornerShape(18.dp))
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            pointerOffset.value = it
+                            onTouchpadTap()
+                        }
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        pointerOffset.value = change.position
+                        onTouchpadMove(dragAmount.x, dragAmount.y)
+                    }
+                }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Route,
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "单击 = 左键，拖动 = 相对移动",
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Box(
+                modifier = Modifier
+                    .offset {
+                        IntOffset(
+                            (pointerOffset.value.x - 10f).toInt().coerceAtLeast(0),
+                            (pointerOffset.value.y - 10f).toInt().coerceAtLeast(0)
+                        )
+                    }
+                    .size(20.dp)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.45f), RoundedCornerShape(999.dp))
+                    .align(Alignment.TopStart)
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onFetchScreenshot, enabled = !uiState.desktopIsLoading) {
+                Text("抓桌面截图")
+            }
+            OutlinedButton(onClick = onClick, enabled = !uiState.desktopIsLoading) { Text("当前点左键") }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "兼容调试：绝对坐标",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = uiState.desktopMoveX,
+                onValueChange = onMoveXChanged,
+                modifier = Modifier.weight(1f),
+                label = { Text("X") },
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = uiState.desktopMoveY,
+                onValueChange = onMoveYChanged,
+                modifier = Modifier.weight(1f),
+                label = { Text("Y") },
+                singleLine = true
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onMove, enabled = !uiState.desktopIsLoading) { Text("移动鼠标") }
+            OutlinedButton(onClick = onClick, enabled = !uiState.desktopIsLoading) { Text("绝对坐标点击") }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = uiState.desktopTypeText,
+            onValueChange = onTypeChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("发送文本") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(onClick = onType, enabled = !uiState.desktopIsLoading) {
+            Text("发送文本")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = uiState.desktopKeyText,
+            onValueChange = onKeyChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("按键名，例如 ENTER / ESC / TAB") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(onClick = onKey, enabled = !uiState.desktopIsLoading) {
+            Text("发送按键")
+        }
+    }
+}
+
+private fun decodeDesktopScreenshot(bytes: ByteArray) =
+    runCatching {
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+    }.getOrNull()
+
+@Composable
+private fun DesktopEventsCard(
+    uiState: RemoteControlUiState,
+    onFetchEvents: () -> Unit
+) {
+    InfoCard(
+        title = "桌面事件",
+        icon = Icons.Default.Route,
+        action = {
+            IconButton(onClick = onFetchEvents, enabled = !uiState.desktopIsLoading) {
+                Icon(Icons.Default.Refresh, contentDescription = null)
+            }
+        }
+    ) {
+        Text(
+            text = "这里直接看 MetaAgent-PC 最近事件，方便在手机上确认动作有没有真正打到电脑。",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        if (uiState.desktopEvents.isEmpty()) {
+            Text(
+                text = "还没有事件。先打开会话或点一次桌面动作。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                uiState.desktopEvents.take(8).forEach { event ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = event.type,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = event.createdAt,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (event.data.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = event.data.entries.joinToString(" | ") { "${it.key}=${it.value}" },
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegacyPhoneServiceCard(
     uiState: RemoteControlUiState,
     onToggleService: () -> Unit,
     onRefresh: () -> Unit,
@@ -164,7 +631,7 @@ private fun HeaderCard(
 ) {
     val host = uiState.localIpAddress ?: "未获取到局域网地址"
     InfoCard(
-        title = "远程控制",
+        title = "兼容模式：电脑控制手机",
         icon = Icons.Default.Devices,
         action = {
             IconButton(onClick = onRefresh) {
@@ -173,7 +640,7 @@ private fun HeaderCard(
         }
     ) {
         Text(
-            text = "把手机作为独立远程服务暴露给电脑端。当前协议是 HTTP JSON，默认端口 ${uiState.port}。",
+            text = "保留原来的手机本地 HTTP 服务。只有你还需要电脑直接调手机 screenshot/input/agent/memory 时，才需要这一块。",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -214,52 +681,6 @@ private fun HeaderCard(
                 Icon(Icons.Default.ContentCopy, contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("复制地址")
-            }
-        }
-    }
-}
-
-@Composable
-private fun SessionCard(
-    uiState: RemoteControlUiState,
-    onCreateSession: () -> Unit,
-    onCloseSession: () -> Unit,
-    onCopyToken: () -> Unit
-) {
-    InfoCard(title = "会话与鉴权", icon = Icons.Default.Key) {
-        val session = uiState.session
-        if (session == null) {
-            Text(
-                text = "当前没有活跃桌面会话。你可以在手机上先创建一个调试 session，或让桌面端直接调用 `session/open`。",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(onClick = onCreateSession) {
-                Icon(Icons.Default.Security, contentDescription = null)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("创建调试会话")
-            }
-        } else {
-            MetaRow(label = "Session ID", value = session.sessionId)
-            MetaRow(label = "Client", value = session.clientName)
-            MetaRow(label = "Created", value = formatTime(session.createdAtEpochMs))
-            MetaRow(label = "Last Seen", value = formatTime(session.lastSeenAtEpochMs))
-            uiState.debugToken?.let { token ->
-                MetaRow(label = "Token", value = token.take(12) + "...")
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onCopyToken, enabled = uiState.debugToken != null) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("复制 Token")
-                }
-                TextButton(onClick = onCloseSession) {
-                    Icon(Icons.Default.Cancel, contentDescription = null)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("关闭会话")
-                }
             }
         }
     }
@@ -470,10 +891,6 @@ private fun CodeBlock(text: String) {
     ) {
         Text(text = text, style = MaterialTheme.typography.bodySmall)
     }
-}
-
-private fun formatTime(timestamp: Long): String {
-    return DateFormat.format("MM-dd HH:mm:ss", Date(timestamp)).toString()
 }
 
 private fun copyText(context: Context, label: String, value: String) {
