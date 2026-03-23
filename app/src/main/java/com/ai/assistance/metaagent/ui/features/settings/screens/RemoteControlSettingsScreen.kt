@@ -8,12 +8,16 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.util.Base64
 import android.widget.Toast
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -77,6 +81,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ai.assistance.metaagent.remote.RemoteAgentTaskSnapshot
 import com.ai.assistance.metaagent.ui.features.settings.viewmodel.RemoteControlUiState
@@ -131,16 +136,33 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
             }
 
             item {
+                DesktopAgentCard(
+                    uiState = uiState,
+                    onProviderChanged = viewModel::updateDesktopAgentProvider,
+                    onCwdChanged = viewModel::updateDesktopAgentCwd,
+                    onPromptChanged = viewModel::updateDesktopAgentPrompt,
+                    onRun = { viewModel.runDesktopAgent() },
+                    onRefreshState = { viewModel.fetchDesktopAgentState() },
+                    onFetchLogs = { viewModel.fetchDesktopAgentLogs() },
+                    onStop = { viewModel.stopDesktopAgent() }
+                )
+            }
+
+            item {
+                DesktopVideoCard(
+                    uiState = uiState,
+                    onOpen = { viewModel.openDesktopVideoSession() },
+                    onClose = { viewModel.closeDesktopVideoSession() },
+                    onRefresh = { viewModel.pollDesktopRuntime() }
+                )
+            }
+
+            item {
                 DesktopActionCard(
                     uiState = uiState,
                     onFetchScreenshot = { viewModel.fetchDesktopScreenshot() },
-                    onTogglePreviewAutoRefresh = viewModel::setDesktopPreviewAutoRefresh,
-                    onMoveXChanged = viewModel::updateDesktopMoveX,
-                    onMoveYChanged = viewModel::updateDesktopMoveY,
                     onTypeChanged = viewModel::updateDesktopTypeText,
                     onKeyChanged = viewModel::updateDesktopKeyText,
-                    onMove = { viewModel.testDesktopMove() },
-                    onClick = { viewModel.testDesktopClick() },
                     onType = { viewModel.testDesktopType() },
                     onKey = { viewModel.testDesktopKey() },
                     onTouchpadMove = viewModel::touchpadMove,
@@ -202,24 +224,174 @@ fun RemoteControlSettingsScreen(onBackPressed: () -> Unit) {
     }
 
     LaunchedEffect(
-        uiState.desktopPreviewAutoRefresh,
+        uiState.desktopPairingId,
+        uiState.desktopPairingStatus,
+        uiState.desktopHost,
+        uiState.desktopPort
+    ) {
+        val pairingStatus = uiState.desktopPairingStatus
+        if (uiState.desktopPairingId != null && pairingStatus != null && pairingStatus !in setOf("approved", "connected", "rejected", "expired")) {
+            while (true) {
+                delay(2000)
+                viewModel.pollDesktopPairingStatus()
+            }
+        }
+    }
+
+    LaunchedEffect(
+        uiState.desktopToken,
         uiState.desktopSession?.id,
         uiState.desktopHost,
-        uiState.desktopPort,
-        uiState.desktopToken
+        uiState.desktopPort
     ) {
-        if (uiState.desktopPreviewAutoRefresh && uiState.desktopSession != null) {
-            viewModel.startDesktopStream()
-        } else {
-            viewModel.stopDesktopStream()
+        viewModel.stopDesktopHeartbeat()
+        if (uiState.desktopToken.isNotBlank() && uiState.desktopSession != null) {
+            viewModel.startDesktopHeartbeat()
+            while (true) {
+                viewModel.pollDesktopRuntime()
+                delay(2500)
+            }
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.stopDesktopStream()
+            viewModel.stopDesktopHeartbeat()
         }
     }
+}
+
+@Composable
+private fun DesktopVideoCard(
+    uiState: RemoteControlUiState,
+    onOpen: () -> Unit,
+    onClose: () -> Unit,
+    onRefresh: () -> Unit
+) {
+    InfoCard(title = "远程桌面视频流", icon = Icons.Default.Computer) {
+        Text(
+            text = "这里是独立的视频流链路，不再和截图轮询混在一起。当前这轮已经把视频会话、WebRTC 信令壳和状态跟踪拆出来，后面会直接替换成真正的桌面采集与编码管线。",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        val video = uiState.desktopVideoSession
+        if (video == null) {
+            Text(
+                text = "当前没有活跃的视频流会话。",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            MetaRow(label = "Session", value = video.id)
+            MetaRow(label = "Viewer", value = video.viewerName)
+            MetaRow(label = "Transport", value = video.transport)
+            MetaRow(label = "Codec", value = video.codec)
+            MetaRow(label = "状态", value = video.status)
+            MetaRow(label = "分辨率", value = "${video.preferredWidth} x ${video.preferredHeight}")
+            MetaRow(label = "FPS", value = video.preferredFps.toString())
+            MetaRow(label = "Candidates", value = video.candidateCount.toString())
+            video.lastError?.takeIf { it.isNotBlank() }?.let {
+                MetaRow(label = "Error", value = it)
+            }
+            if (video.notes.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = video.notes.takeLast(3).joinToString("\n"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onOpen, enabled = !uiState.desktopIsLoading) {
+                Text("创建视频会话")
+            }
+            OutlinedButton(onClick = onRefresh, enabled = !uiState.desktopIsLoading) {
+                Text("刷新视频状态")
+            }
+            TextButton(onClick = onClose, enabled = !uiState.desktopIsLoading && uiState.desktopVideoSession != null) {
+                Text("关闭视频会话")
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        DesktopVideoWebView(
+            uiState = uiState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(
+                    run {
+                        val width = video?.preferredWidth?.takeIf { it > 0 } ?: 16
+                        val height = video?.preferredHeight?.takeIf { it > 0 } ?: 9
+                        width.toFloat() / height.toFloat()
+                    }
+                )
+        )
+    }
+}
+
+@Composable
+private fun DesktopVideoWebView(
+    uiState: RemoteControlUiState,
+    modifier: Modifier = Modifier
+) {
+    val baseUrl = remember(uiState.desktopHost, uiState.desktopPort) {
+        val host = uiState.desktopHost.trim()
+        val port = uiState.desktopPort.trim().ifBlank { "3210" }
+        if (host.isBlank()) null else "http://$host:$port"
+    }
+    val token = uiState.desktopToken
+    val videoSession = uiState.desktopVideoSession
+
+    if (baseUrl == null || videoSession == null) {
+        Box(
+            modifier = modifier
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f), RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "创建视频会话后，这里会直接显示电脑桌面视频流。",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
+    }
+
+    val configHash = remember(baseUrl, token, videoSession.id) {
+        val json = org.json.JSONObject()
+            .put("baseUrl", baseUrl)
+            .put("token", token)
+            .put("sessionId", videoSession.id)
+            .toString()
+        java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+    }
+
+    AndroidView(
+        modifier = modifier
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
+        factory = { context ->
+            WebView(context).apply {
+                settings.javaScriptEnabled = true
+                settings.mediaPlaybackRequiresUserGesture = false
+                settings.domStorageEnabled = true
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                webChromeClient = WebChromeClient()
+                tag = configHash
+                loadUrl("file:///android_asset/desktop_viewer.html#$configHash")
+            }
+        },
+        update = { webView ->
+            if (webView.tag != configHash) {
+                webView.tag = configHash
+                webView.loadUrl("file:///android_asset/desktop_viewer.html#$configHash")
+            }
+        }
+    )
 }
 
 @Composable
@@ -362,13 +534,8 @@ private fun DesktopSessionCard(
 private fun DesktopActionCard(
     uiState: RemoteControlUiState,
     onFetchScreenshot: () -> Unit,
-    onTogglePreviewAutoRefresh: (Boolean) -> Unit,
-    onMoveXChanged: (String) -> Unit,
-    onMoveYChanged: (String) -> Unit,
     onTypeChanged: (String) -> Unit,
     onKeyChanged: (String) -> Unit,
-    onMove: () -> Unit,
-    onClick: () -> Unit,
     onType: () -> Unit,
     onKey: () -> Unit,
     onTouchpadMove: (Float, Float) -> Unit,
@@ -388,35 +555,24 @@ private fun DesktopActionCard(
         uiState.desktopScreenshot?.let { screenshot ->
             MetaRow(label = "Screenshot", value = "${screenshot.width} x ${screenshot.height}")
             MetaRow(label = "Mime", value = screenshot.mimeType)
-            MetaRow(label = "预览", value = if (uiState.desktopPreviewAutoRefresh) "自动刷新" else "手动刷新")
             Spacer(modifier = Modifier.height(8.dp))
         }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "桌面实时预览",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
-            )
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    if (uiState.desktopStreaming) "流式预览中" else "自动刷新",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Switch(
-                    checked = uiState.desktopPreviewAutoRefresh,
-                    onCheckedChange = onTogglePreviewAutoRefresh
-                )
-            }
-        }
+        Text(
+            text = "静态截图预览",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold
+        )
         Spacer(modifier = Modifier.height(10.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .aspectRatio(
+                    run {
+                        val width = uiState.desktopScreenshot?.width?.takeIf { it > 0 } ?: 16
+                        val height = uiState.desktopScreenshot?.height?.takeIf { it > 0 } ?: 9
+                        width.toFloat() / height.toFloat()
+                    }
+                )
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
@@ -430,7 +586,7 @@ private fun DesktopActionCard(
                 )
             } else {
                 Text(
-                    text = "还没有桌面截图。先抓一次截图，或开启自动刷新后等待。",
+                    text = "这里只有手动抓取的静态截图。实时桌面请看上面的“远程桌面视频流”。",
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -500,35 +656,6 @@ private fun DesktopActionCard(
             Button(onClick = onFetchScreenshot, enabled = !uiState.desktopIsLoading) {
                 Text("抓桌面截图")
             }
-            OutlinedButton(onClick = onClick, enabled = !uiState.desktopIsLoading) { Text("当前点左键") }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = "兼容调试：绝对坐标",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = uiState.desktopMoveX,
-                onValueChange = onMoveXChanged,
-                modifier = Modifier.weight(1f),
-                label = { Text("X") },
-                singleLine = true
-            )
-            OutlinedTextField(
-                value = uiState.desktopMoveY,
-                onValueChange = onMoveYChanged,
-                modifier = Modifier.weight(1f),
-                label = { Text("Y") },
-                singleLine = true
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onMove, enabled = !uiState.desktopIsLoading) { Text("移动鼠标") }
-            OutlinedButton(onClick = onClick, enabled = !uiState.desktopIsLoading) { Text("绝对坐标点击") }
         }
         Spacer(modifier = Modifier.height(12.dp))
         OutlinedTextField(
@@ -553,6 +680,96 @@ private fun DesktopActionCard(
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedButton(onClick = onKey, enabled = !uiState.desktopIsLoading) {
             Text("发送按键")
+        }
+    }
+}
+
+@Composable
+private fun DesktopAgentCard(
+    uiState: RemoteControlUiState,
+    onProviderChanged: (String) -> Unit,
+    onCwdChanged: (String) -> Unit,
+    onPromptChanged: (String) -> Unit,
+    onRun: () -> Unit,
+    onRefreshState: () -> Unit,
+    onFetchLogs: () -> Unit,
+    onStop: () -> Unit
+) {
+    InfoCard(title = "电脑端 Agent", icon = Icons.Default.Hub) {
+        Text(
+            text = "这条链是“手机给电脑发任务，电脑本地用 Codex/Claude CLI 执行”。当前优先走 Codex。",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        uiState.desktopAgentSettings?.let { settings ->
+            MetaRow(label = "Provider", value = settings.provider)
+            MetaRow(label = "Executable", value = settings.executable.ifBlank { "(default)" })
+            MetaRow(label = "Args", value = settings.args.ifBlank { "(default)" })
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = uiState.desktopAgentProvider,
+            onValueChange = onProviderChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Provider，例如 codex / claude") },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = uiState.desktopAgentCwd,
+            onValueChange = onCwdChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("电脑端执行目录，可留空") },
+            singleLine = true
+        )
+        uiState.desktopAgentState?.let { state ->
+            Spacer(modifier = Modifier.height(8.dp))
+            MetaRow(label = "状态", value = state.status)
+            MetaRow(label = "PID", value = state.pid?.toString() ?: "无")
+            MetaRow(label = "Started", value = state.startedAt ?: "未开始")
+            state.lastOutput?.takeIf { it.isNotBlank() }?.let {
+                MetaRow(label = "Last", value = it)
+            }
+            state.lastError?.takeIf { it.isNotBlank() }?.let {
+                MetaRow(label = "Error", value = it)
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedTextField(
+            value = uiState.desktopAgentPrompt,
+            onValueChange = onPromptChanged,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("发给电脑端 Agent 的任务") }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onRun, enabled = !uiState.desktopIsLoading) { Text("运行 Codex 任务") }
+            OutlinedButton(onClick = onRefreshState, enabled = !uiState.desktopIsLoading) { Text("刷新状态") }
+            OutlinedButton(onClick = onFetchLogs, enabled = !uiState.desktopIsLoading) { Text("查看日志") }
+            TextButton(onClick = onStop, enabled = !uiState.desktopIsLoading) { Text("停止") }
+        }
+        if (uiState.desktopAgentLogs.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                uiState.desktopAgentLogs.take(10).forEach { log ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "${log.stream} · ${log.at}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(text = log.line, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        color: #fff;
+        font-family: sans-serif;
+      }
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #000;
+      }
+      #status {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        z-index: 2;
+        background: rgba(0,0,0,0.5);
+        padding: 6px 10px;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="status">准备连接视频流</div>
+    <video id="video" autoplay playsinline muted></video>
+    <script>
+      (async () => {
+        const config = JSON.parse(decodeURIComponent(location.hash.slice(1) || '{}'));
+        const status = document.getElementById('status');
+        const video = document.getElementById('video');
+        const endpoint = `${config.baseUrl}`;
+        const authHeaders = config.token ? { Authorization: `Bearer ${config.token}` } : {};
+        const appliedHostCandidates = new Set();
+        let hostCandidateTimer = null;
+
+        const setStatus = (text) => { status.textContent = text; };
+
+        const postJson = async (path, body) => {
+          const response = await fetch(`${endpoint}${path}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...authHeaders,
+            },
+            body: JSON.stringify(body),
+          });
+          return response.json();
+        };
+
+        const getJson = async (path) => {
+          const response = await fetch(`${endpoint}${path}`, {
+            headers: authHeaders,
+          });
+          return response.json();
+        };
+
+        const stopHostCandidatePolling = () => {
+          if (hostCandidateTimer) {
+            clearInterval(hostCandidateTimer);
+            hostCandidateTimer = null;
+          }
+        };
+
+        let session = null;
+        if (config.sessionId) {
+          setStatus('读取现有视频会话');
+          const statePayload = await getJson('/api/desktop/video/session');
+          session = statePayload?.data?.session;
+        }
+
+        if (!session?.id) {
+          setStatus('创建视频会话');
+          const sessionPayload = await postJson('/api/desktop/video/session/open', {
+            viewerName: 'MetaAgent Android WebView',
+            codec: 'h264',
+            preferredWidth: 1280,
+            preferredHeight: 720,
+            preferredFps: 30,
+          });
+          session = sessionPayload?.data?.session;
+        }
+
+        if (!session?.id) {
+          throw new Error('无法创建视频会话');
+        }
+
+        const pc = new RTCPeerConnection({
+          iceServers: [],
+          bundlePolicy: 'max-bundle',
+        });
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.ontrack = (event) => {
+          const [stream] = event.streams;
+          if (stream) {
+            video.srcObject = stream;
+            setStatus('视频流已连接');
+          }
+        };
+        pc.onconnectionstatechange = () => {
+          setStatus(`连接状态: ${pc.connectionState}`);
+          if (['closed', 'failed', 'disconnected'].includes(pc.connectionState)) {
+            stopHostCandidatePolling();
+          }
+        };
+        pc.onicecandidate = async (event) => {
+          if (!event.candidate) return;
+          await postJson('/api/desktop/video/session/candidate', {
+            sessionId: session.id,
+            source: 'viewer',
+            candidate: JSON.stringify(event.candidate.toJSON()),
+          });
+        };
+
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: false,
+          offerToReceiveVideo: true,
+        });
+        await pc.setLocalDescription(offer);
+
+        await new Promise((resolve) => {
+          if (pc.iceGatheringState === 'complete') {
+            resolve();
+            return;
+          }
+          const onChange = () => {
+            if (pc.iceGatheringState === 'complete') {
+              pc.removeEventListener('icegatheringstatechange', onChange);
+              resolve();
+            }
+          };
+          pc.addEventListener('icegatheringstatechange', onChange);
+          setTimeout(resolve, 1500);
+        });
+
+        setStatus('发送 viewer offer');
+        await postJson('/api/desktop/video/session/offer', {
+          sessionId: session.id,
+          sdp: pc.localDescription.sdp,
+        });
+
+        let answerSdp = null;
+        for (let i = 0; i < 20; i += 1) {
+          const statePayload = await getJson('/api/desktop/video/session');
+          const current = statePayload?.data?.session;
+          if (current?.hostAnswerSdp) {
+            answerSdp = current.hostAnswerSdp;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+
+        if (!answerSdp) {
+          throw new Error('电脑端没有返回视频 answer');
+        }
+
+        setStatus('应用 host answer');
+        await pc.setRemoteDescription({
+          type: 'answer',
+          sdp: answerSdp,
+        });
+
+        const syncHostCandidates = async () => {
+          const statePayload = await getJson('/api/desktop/video/session');
+          const current = statePayload?.data?.session;
+          const hostCandidates = Array.isArray(current?.hostCandidates) ? current.hostCandidates : [];
+          for (const rawCandidate of hostCandidates) {
+            if (!rawCandidate || appliedHostCandidates.has(rawCandidate)) {
+              continue;
+            }
+            await pc.addIceCandidate(JSON.parse(rawCandidate));
+            appliedHostCandidates.add(rawCandidate);
+          }
+        };
+
+        hostCandidateTimer = setInterval(() => {
+          syncHostCandidates().catch((error) => console.error('host candidate sync failed', error));
+        }, 500);
+        await syncHostCandidates();
+      })().catch((error) => {
+        const status = document.getElementById('status');
+        status.textContent = error?.message || '视频流初始化失败';
+        console.error(error);
+      });
+    </script>
+  </body>
+</html>

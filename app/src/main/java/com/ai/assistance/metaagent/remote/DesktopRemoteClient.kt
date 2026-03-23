@@ -57,7 +57,90 @@ data class DesktopHealthPayload(
     val service: String,
     val hasActiveSession: Boolean,
     val hasDesktopSession: Boolean,
-    val apiVersion: Int = 1
+    val apiVersion: Int = 1,
+    val agent: DesktopAgentHealthPayload? = null,
+    val video: DesktopVideoHealthPayload? = null
+)
+
+@Serializable
+data class DesktopVideoHealthPayload(
+    val session: DesktopVideoSessionPayload? = null,
+    val transport: String,
+    val capturePipeline: String
+)
+
+@Serializable
+data class DesktopVideoSessionPayload(
+    val id: String,
+    val viewerName: String,
+    val transport: String,
+    val codec: String,
+    val preferredWidth: Int,
+    val preferredHeight: Int,
+    val preferredFps: Int,
+    val status: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val lastError: String? = null,
+    val viewerOfferSdp: String? = null,
+    val hostAnswerSdp: String? = null,
+    val candidateCount: Int = 0,
+    val notes: List<String> = emptyList()
+)
+
+@Serializable
+data class DesktopVideoSessionEnvelopePayload(
+    val session: DesktopVideoSessionPayload? = null,
+    val transport: String,
+    val capturePipeline: String
+)
+
+@Serializable
+data class DesktopAgentHealthPayload(
+    val settings: DesktopAgentSettingsPayload,
+    val state: DesktopAgentStatePayload
+)
+
+@Serializable
+data class DesktopAgentSettingsPayload(
+    val provider: String,
+    val executable: String,
+    val args: String,
+    val cwd: String
+)
+
+@Serializable
+data class DesktopAgentStatePayload(
+    val status: String,
+    val provider: String,
+    val prompt: String? = null,
+    val pid: Int? = null,
+    val startedAt: String? = null,
+    val finishedAt: String? = null,
+    val exitCode: Int? = null,
+    val cwd: String,
+    val executable: String,
+    val args: String,
+    val lastError: String? = null,
+    val lastOutput: String? = null
+)
+
+@Serializable
+data class DesktopAgentLogsPayload(
+    val logs: List<DesktopAgentLogEntryPayload>
+)
+
+@Serializable
+data class DesktopAgentLogEntryPayload(
+    val at: String,
+    val stream: String,
+    val line: String
+)
+
+@Serializable
+data class DesktopAgentStateEnvelopePayload(
+    val settings: DesktopAgentSettingsPayload,
+    val state: DesktopAgentStatePayload
 )
 
 @Serializable
@@ -176,6 +259,34 @@ private data class DesktopTypeRequest(
 @Serializable
 private data class DesktopKeyRequest(
     val key: String
+)
+
+@Serializable
+private data class DesktopAgentRunRequest(
+    val prompt: String,
+    val provider: String? = null,
+    val cwd: String? = null
+)
+
+@Serializable
+private data class DesktopVideoOpenRequest(
+    val viewerName: String = "MetaAgent Android",
+    val codec: String = "h264",
+    val preferredWidth: Int = 1280,
+    val preferredHeight: Int = 720,
+    val preferredFps: Int = 30
+)
+
+@Serializable
+private data class DesktopVideoSdpRequest(
+    val sessionId: String,
+    val sdp: String
+)
+
+@Serializable
+private data class DesktopVideoCandidateRequest(
+    val sessionId: String,
+    val candidate: String
 )
 
 private val desktopJson = Json {
@@ -310,8 +421,104 @@ class DesktopRemoteClient(
         return postEnvelope("/api/desktop/input/key", config, DesktopKeyRequest(key))
     }
 
+    suspend fun agentState(config: DesktopRemoteConfig): DesktopAgentStateEnvelopePayload {
+        return getEnvelope("/api/desktop/agent/state", config)
+    }
+
+    suspend fun agentLogs(
+        config: DesktopRemoteConfig,
+        limit: Int = 80
+    ): DesktopAgentLogsPayload {
+        return getEnvelope("/api/desktop/agent/logs?limit=$limit", config)
+    }
+
+    suspend fun runAgent(
+        config: DesktopRemoteConfig,
+        prompt: String,
+        provider: String? = null,
+        cwd: String? = null
+    ): DesktopAgentStateEnvelopePayload {
+        return postEnvelope(
+            "/api/desktop/agent/run",
+            config,
+            DesktopAgentRunRequest(prompt = prompt, provider = provider, cwd = cwd)
+        )
+    }
+
+    suspend fun stopAgent(config: DesktopRemoteConfig): DesktopActionPayload {
+        return postEnvelope("/api/desktop/agent/stop", config, emptyMap<String, String>())
+    }
+
+    suspend fun videoSession(config: DesktopRemoteConfig): DesktopVideoSessionEnvelopePayload {
+        return getEnvelope("/api/desktop/video/session", config)
+    }
+
+    suspend fun openVideoSession(
+        config: DesktopRemoteConfig,
+        viewerName: String = "MetaAgent Android",
+        codec: String = "h264",
+        preferredWidth: Int = 1280,
+        preferredHeight: Int = 720,
+        preferredFps: Int = 30
+    ): DesktopVideoSessionEnvelopePayload {
+        return postEnvelope(
+            "/api/desktop/video/session/open",
+            config,
+            DesktopVideoOpenRequest(
+                viewerName = viewerName,
+                codec = codec,
+                preferredWidth = preferredWidth,
+                preferredHeight = preferredHeight,
+                preferredFps = preferredFps
+            )
+        )
+    }
+
+    suspend fun closeVideoSession(config: DesktopRemoteConfig): DesktopActionPayload {
+        return postEnvelope("/api/desktop/video/session/close", config, emptyMap<String, String>())
+    }
+
+    suspend fun submitVideoOffer(
+        config: DesktopRemoteConfig,
+        sessionId: String,
+        sdp: String
+    ): DesktopVideoSessionEnvelopePayload {
+        return postEnvelope(
+            "/api/desktop/video/session/offer",
+            config,
+            DesktopVideoSdpRequest(sessionId, sdp)
+        )
+    }
+
+    suspend fun submitVideoAnswer(
+        config: DesktopRemoteConfig,
+        sessionId: String,
+        sdp: String
+    ): DesktopVideoSessionEnvelopePayload {
+        return postEnvelope(
+            "/api/desktop/video/session/answer",
+            config,
+            DesktopVideoSdpRequest(sessionId, sdp)
+        )
+    }
+
+    suspend fun submitVideoCandidate(
+        config: DesktopRemoteConfig,
+        sessionId: String,
+        candidate: String
+    ): DesktopVideoSessionEnvelopePayload {
+        return postEnvelope(
+            "/api/desktop/video/session/candidate",
+            config,
+            DesktopVideoCandidateRequest(sessionId, candidate)
+        )
+    }
+
     fun createDesktopStreamCall(config: DesktopRemoteConfig): Call {
-        val request = requestBuilder("/api/desktop/stream", config).get().build()
+        val request = requestBuilder(
+            "/api/desktop/stream?format=jpeg&quality=68&scalePercent=60&fps=8",
+            config
+        ).get().build()
         return httpClient.newCall(request)
     }
 

@@ -5,14 +5,17 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import okhttp3.Call
 import com.ai.assistance.metaagent.remote.DesktopCapabilitiesPayload
 import com.ai.assistance.metaagent.remote.DesktopControlSessionPayload
 import com.ai.assistance.metaagent.remote.DesktopEventPayload
 import com.ai.assistance.metaagent.remote.DesktopHealthPayload
+import com.ai.assistance.metaagent.remote.DesktopAgentLogEntryPayload
+import com.ai.assistance.metaagent.remote.DesktopAgentSettingsPayload
+import com.ai.assistance.metaagent.remote.DesktopAgentStatePayload
 import com.ai.assistance.metaagent.remote.DesktopRemoteClient
 import com.ai.assistance.metaagent.remote.DesktopRemoteConfig
 import com.ai.assistance.metaagent.remote.DesktopScreenshotPayload
+import com.ai.assistance.metaagent.remote.DesktopVideoSessionPayload
 import com.ai.assistance.metaagent.remote.RemoteAgentServer
 import com.ai.assistance.metaagent.remote.RemoteAgentTaskManager
 import com.ai.assistance.metaagent.remote.RemoteAgentTaskSnapshot
@@ -23,6 +26,7 @@ import com.ai.assistance.metaagent.remote.RemoteSessionManager
 import com.ai.assistance.metaagent.remote.RemoteSessionPublicSnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +41,13 @@ data class RemoteControlUiState(
     val desktopPairingStatus: String? = null,
     val desktopPassword: String = "",
     val desktopHealth: DesktopHealthPayload? = null,
+    val desktopAgentSettings: DesktopAgentSettingsPayload? = null,
+    val desktopAgentState: DesktopAgentStatePayload? = null,
+    val desktopAgentLogs: List<DesktopAgentLogEntryPayload> = emptyList(),
+    val desktopAgentProvider: String = "codex",
+    val desktopAgentCwd: String = "",
+    val desktopAgentPrompt: String = "请分析当前工程并给出下一步修改建议",
+    val desktopVideoSession: DesktopVideoSessionPayload? = null,
     val desktopCapabilities: DesktopCapabilitiesPayload? = null,
     val desktopSession: DesktopControlSessionPayload? = null,
     val desktopEvents: List<DesktopEventPayload> = emptyList(),
@@ -45,10 +56,7 @@ data class RemoteControlUiState(
     val desktopActionMessage: String? = null,
     val desktopLastError: String? = null,
     val desktopIsLoading: Boolean = false,
-    val desktopPreviewAutoRefresh: Boolean = true,
-    val desktopStreaming: Boolean = false,
-    val desktopMoveX: String = "960",
-    val desktopMoveY: String = "540",
+    val desktopPreviewAutoRefresh: Boolean = false,
     val desktopTypeText: String = "MetaAgent-PC",
     val desktopKeyText: String = "ENTER",
     val isServiceRunning: Boolean = false,
@@ -65,8 +73,12 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
     private val preferences: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val desktopClient = DesktopRemoteClient()
-    private var desktopStreamJob: Job? = null
-    private var desktopStreamCall: Call? = null
+    private var desktopHeartbeatJob: Job? = null
+    private var touchpadFlushJob: Job? = null
+    @Volatile
+    private var pendingTouchpadDeltaX: Int = 0
+    @Volatile
+    private var pendingTouchpadDeltaY: Int = 0
     private val _uiState = MutableStateFlow(RemoteControlUiState())
     val uiState: StateFlow<RemoteControlUiState> = _uiState.asStateFlow()
 
@@ -130,20 +142,24 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
         updateDesktopConfig(port = value)
     }
 
-    fun updateDesktopMoveX(value: String) {
-        _uiState.update { it.copy(desktopMoveX = value) }
-    }
-
-    fun updateDesktopMoveY(value: String) {
-        _uiState.update { it.copy(desktopMoveY = value) }
-    }
-
     fun updateDesktopTypeText(value: String) {
         _uiState.update { it.copy(desktopTypeText = value) }
     }
 
     fun updateDesktopKeyText(value: String) {
         _uiState.update { it.copy(desktopKeyText = value) }
+    }
+
+    fun updateDesktopAgentPrompt(value: String) {
+        _uiState.update { it.copy(desktopAgentPrompt = value) }
+    }
+
+    fun updateDesktopAgentProvider(value: String) {
+        _uiState.update { it.copy(desktopAgentProvider = value.trim().ifBlank { "codex" }) }
+    }
+
+    fun updateDesktopAgentCwd(value: String) {
+        _uiState.update { it.copy(desktopAgentCwd = value) }
     }
 
     fun setDesktopPreviewAutoRefresh(enabled: Boolean) {
@@ -162,6 +178,11 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
             _uiState.update {
                 it.copy(
                     desktopHealth = health,
+                    desktopAgentSettings = health.agent?.settings,
+                    desktopAgentState = health.agent?.state,
+                    desktopAgentProvider = health.agent?.settings?.provider ?: it.desktopAgentProvider,
+                    desktopAgentCwd = health.agent?.settings?.cwd ?: it.desktopAgentCwd,
+                    desktopVideoSession = health.video?.session,
                     desktopCapabilities = capabilities,
                     desktopActionMessage = "已连接到 ${health.service}",
                     desktopLastError = null
@@ -291,6 +312,34 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    fun startDesktopHeartbeat() {
+        if (desktopHeartbeatJob?.isActive == true) return
+        desktopHeartbeatJob = viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                delay(15000)
+                val sessionId = _uiState.value.desktopSession?.id ?: break
+                runCatching {
+                    val payload = desktopClient.heartbeat(currentDesktopConfig(), sessionId)
+                    _uiState.update {
+                        it.copy(
+                            desktopSession = payload.session,
+                            desktopLastError = null
+                        )
+                    }
+                }.onFailure { error ->
+                    _uiState.update {
+                        it.copy(desktopLastError = error.message ?: error.javaClass.simpleName)
+                    }
+                }
+            }
+        }
+    }
+
+    fun stopDesktopHeartbeat() {
+        desktopHeartbeatJob?.cancel()
+        desktopHeartbeatJob = null
+    }
+
     fun fetchDesktopEvents(limit: Int = 20) {
         runDesktopAction {
             val payload = desktopClient.events(currentDesktopConfig(), limit)
@@ -298,6 +347,139 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
                 it.copy(
                     desktopEvents = payload.events.reversed(),
                     desktopActionMessage = "已拉取 ${payload.events.size} 条事件",
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun pollDesktopPairingStatus() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pairingId = _uiState.value.desktopPairingId ?: return@launch
+            runCatching {
+                val payload = desktopClient.pairingStatus(currentDesktopConfig(), pairingId)
+                _uiState.update {
+                    it.copy(
+                        desktopPairingStatus = payload.request.status,
+                        desktopLastError = null
+                    )
+                }
+            }
+        }
+    }
+
+    fun fetchDesktopAgentState() {
+        runDesktopAction {
+            val payload = desktopClient.agentState(currentDesktopConfig())
+            _uiState.update {
+                it.copy(
+                    desktopAgentSettings = payload.settings,
+                    desktopAgentState = payload.state,
+                    desktopActionMessage = "已刷新桌面 Agent 状态",
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun pollDesktopRuntime() {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val config = currentDesktopConfig()
+                val statePayload = desktopClient.agentState(config)
+                val logsPayload = desktopClient.agentLogs(config, 20)
+                val eventsPayload = desktopClient.events(config, 12)
+                val videoPayload = desktopClient.videoSession(config)
+                _uiState.update {
+                    it.copy(
+                        desktopAgentSettings = statePayload.settings,
+                        desktopAgentState = statePayload.state,
+                        desktopAgentProvider = statePayload.settings.provider,
+                        desktopAgentCwd = statePayload.settings.cwd,
+                        desktopAgentLogs = logsPayload.logs.reversed(),
+                        desktopVideoSession = videoPayload.session,
+                        desktopEvents = eventsPayload.events.reversed(),
+                        desktopLastError = null
+                    )
+                }
+            }.onFailure { error ->
+                _uiState.update {
+                    it.copy(desktopLastError = error.message ?: error.javaClass.simpleName)
+                }
+            }
+        }
+    }
+
+    fun fetchDesktopAgentLogs(limit: Int = 80) {
+        runDesktopAction {
+            val payload = desktopClient.agentLogs(currentDesktopConfig(), limit)
+            _uiState.update {
+                it.copy(
+                    desktopAgentLogs = payload.logs.reversed(),
+                    desktopActionMessage = "已拉取 ${payload.logs.size} 条 Agent 日志",
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun runDesktopAgent() {
+        runDesktopAction {
+            val prompt = _uiState.value.desktopAgentPrompt.trim()
+            require(prompt.isNotEmpty()) { "请先输入要发送到电脑的 Agent 任务" }
+            val provider = _uiState.value.desktopAgentProvider.trim().ifBlank { "codex" }
+            val cwd = _uiState.value.desktopAgentCwd.trim().ifBlank { null }
+            val payload = desktopClient.runAgent(
+                currentDesktopConfig(),
+                prompt = prompt,
+                provider = provider,
+                cwd = cwd
+            )
+            _uiState.update {
+                it.copy(
+                    desktopAgentSettings = payload.settings,
+                    desktopAgentState = payload.state,
+                    desktopAgentProvider = payload.settings.provider,
+                    desktopAgentCwd = payload.settings.cwd,
+                    desktopActionMessage = "已向电脑端发送 ${payload.settings.provider} 任务",
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun openDesktopVideoSession() {
+        runDesktopAction {
+            val payload = desktopClient.openVideoSession(currentDesktopConfig())
+            _uiState.update {
+                it.copy(
+                    desktopVideoSession = payload.session,
+                    desktopActionMessage = "桌面视频流会话已创建",
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun closeDesktopVideoSession() {
+        runDesktopAction {
+            val payload = desktopClient.closeVideoSession(currentDesktopConfig())
+            _uiState.update {
+                it.copy(
+                    desktopVideoSession = null,
+                    desktopActionMessage = payload.message,
+                    desktopLastError = null
+                )
+            }
+        }
+    }
+
+    fun stopDesktopAgent() {
+        runDesktopAction {
+            val payload = desktopClient.stopAgent(currentDesktopConfig())
+            _uiState.update {
+                it.copy(
+                    desktopActionMessage = payload.message,
                     desktopLastError = null
                 )
             }
@@ -318,85 +500,50 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun startDesktopStream() {
-        if (desktopStreamJob?.isActive == true) return
-        desktopStreamJob = viewModelScope.launch(Dispatchers.IO) {
-            runCatching {
-                val call = desktopClient.createDesktopStreamCall(currentDesktopConfig())
-                desktopStreamCall = call
-                _uiState.update { it.copy(desktopStreaming = true, desktopLastError = null) }
-                desktopClient.consumeDesktopStream(call) { frame ->
-                    _uiState.update {
-                        it.copy(
-                            desktopStreaming = true,
-                            desktopPreviewBytes = frame.bytes,
-                            desktopScreenshot = DesktopScreenshotPayload(
-                                mimeType = frame.mimeType,
-                                base64 = "",
-                                width = frame.width ?: it.desktopScreenshot?.width ?: 0,
-                                height = frame.height ?: it.desktopScreenshot?.height ?: 0
-                            )
-                        )
-                    }
-                }
-            }.onFailure { error ->
-                if (error !is java.io.InterruptedIOException) {
-                    _uiState.update {
-                        it.copy(
-                            desktopStreaming = false,
-                            desktopLastError = error.message ?: error.javaClass.simpleName
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    fun stopDesktopStream() {
-        desktopStreamCall?.cancel()
-        desktopStreamCall = null
-        desktopStreamJob?.cancel()
-        desktopStreamJob = null
-        _uiState.update { it.copy(desktopStreaming = false) }
-    }
-
     fun touchpadMove(deltaX: Float, deltaY: Float) {
-        runDesktopAction {
-            val scaledX = (deltaX * 1.6f).toInt()
-            val scaledY = (deltaY * 1.6f).toInt()
-            if (scaledX == 0 && scaledY == 0) return@runDesktopAction
-            val result = desktopClient.moveRelative(currentDesktopConfig(), scaledX, scaledY)
-            _uiState.update {
-                it.copy(desktopActionMessage = result.message, desktopLastError = null)
+        val scaledX = (deltaX * 1.35f).toInt()
+        val scaledY = (deltaY * 1.35f).toInt()
+        if (scaledX == 0 && scaledY == 0) return
+
+        pendingTouchpadDeltaX += scaledX
+        pendingTouchpadDeltaY += scaledY
+
+        if (touchpadFlushJob?.isActive == true) return
+        touchpadFlushJob = viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                delay(16)
+                val deltaXToSend = pendingTouchpadDeltaX
+                val deltaYToSend = pendingTouchpadDeltaY
+                pendingTouchpadDeltaX = 0
+                pendingTouchpadDeltaY = 0
+                if (deltaXToSend == 0 && deltaYToSend == 0) break
+
+                val result = runCatching {
+                    desktopClient.moveRelative(currentDesktopConfig(), deltaXToSend, deltaYToSend)
+                }
+                if (result.isFailure) {
+                    val error = result.exceptionOrNull()
+                    val message = error?.message ?: error?.javaClass?.simpleName ?: "Unknown error"
+                    _uiState.update {
+                        it.copy(desktopLastError = message)
+                    }
+                    break
+                }
             }
         }
     }
 
     fun touchpadTap() {
-        runDesktopAction {
-            val result = desktopClient.click(currentDesktopConfig())
-            _uiState.update {
-                it.copy(desktopActionMessage = result.message, desktopLastError = null)
-            }
-        }
-    }
-
-    fun testDesktopMove() {
-        runDesktopAction {
-            val (x, y) = requireDesktopPoint()
-            val result = desktopClient.move(currentDesktopConfig(), x, y)
-            _uiState.update {
-                it.copy(desktopActionMessage = result.message, desktopLastError = null)
-            }
-        }
-    }
-
-    fun testDesktopClick() {
-        runDesktopAction {
-            val (x, y) = requireDesktopPoint()
-            val result = desktopClient.click(currentDesktopConfig(), x, y)
-            _uiState.update {
-                it.copy(desktopActionMessage = result.message, desktopLastError = null)
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val result = desktopClient.click(currentDesktopConfig())
+                _uiState.update {
+                    it.copy(desktopActionMessage = result.message, desktopLastError = null)
+                }
+            }.onFailure { error ->
+                _uiState.update {
+                    it.copy(desktopLastError = error.message ?: error.javaClass.simpleName)
+                }
             }
         }
     }
@@ -460,14 +607,6 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
         )
     }
 
-    private fun requireDesktopPoint(): Pair<Int, Int> {
-        val state = _uiState.value
-        val x = state.desktopMoveX.trim().toIntOrNull()
-        val y = state.desktopMoveY.trim().toIntOrNull()
-        require(x != null && y != null) { "请输入有效坐标" }
-        return x to y
-    }
-
     private fun runDesktopAction(action: suspend () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update {
@@ -490,7 +629,8 @@ class RemoteControlViewModel(private val context: Context) : ViewModel() {
     }
 
     override fun onCleared() {
-        stopDesktopStream()
+        stopDesktopHeartbeat()
+        touchpadFlushJob?.cancel()
         super.onCleared()
     }
 
