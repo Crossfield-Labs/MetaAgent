@@ -436,6 +436,11 @@
             android:permission="android.permission.BIND_VOICE_INTERACTION"
             android:exported="true" />
         
+        <!-- uCrop 裁剪 Activity -->
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        
     </application>
 
 </manifest>

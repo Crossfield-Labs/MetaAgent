@@ -59,25 +59,65 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
-private val DarkColorScheme =
-        darkColorScheme(primary = Purple80, secondary = PurpleGrey80, tertiary = Pink80)
+private val DarkColorScheme = darkColorScheme(
+        primary = BluePrimaryDark,
+        onPrimary = BlueOnPrimaryDark,
+        primaryContainer = BluePrimaryContainerDark,
+        onPrimaryContainer = BlueOnPrimaryContainerDark,
+        secondary = BlueSecondaryDark,
+        onSecondary = BlueOnSecondaryDark,
+        secondaryContainer = BlueSecondaryContainerDark,
+        onSecondaryContainer = BlueOnSecondaryContainerDark,
+        tertiary = BlueTertiaryDark,
+        onTertiary = BlueOnTertiaryDark,
+        tertiaryContainer = BlueTertiaryContainerDark,
+        onTertiaryContainer = BlueOnTertiaryContainerDark,
+        error = BlueError,
+        onError = BlueOnError,
+        errorContainer = BlueErrorContainer,
+        onErrorContainer = BlueOnErrorContainer,
+        background = BlueBackgroundDark,
+        onBackground = BlueOnBackgroundDark,
+        surface = BlueSurfaceDark,
+        onSurface = BlueOnSurfaceDark,
+        surfaceVariant = BlueSurfaceVariantDark,
+        onSurfaceVariant = BlueOnSurfaceVariantDark,
+)
 
-private val LightColorScheme =
-        lightColorScheme(
-                primary = Purple40,
-                secondary = PurpleGrey40,
-                tertiary = Pink40,
-
-                /* Other default colors to override
-                background = Color(0xFFFFFBFE),
-                surface = Color(0xFFFFFBFE),
-                onPrimary = Color.White,
-                onSecondary = Color.White,
-                onTertiary = Color.White,
-                onBackground = Color(0xFF1C1B1F),
-                onSurface = Color(0xFF1C1B1F),
-                */
-                )
+private val LightColorScheme = lightColorScheme(
+        primary = BluePrimary,
+        onPrimary = BlueOnPrimary,
+        primaryContainer = BluePrimaryContainer,
+        onPrimaryContainer = BlueOnPrimaryContainer,
+        secondary = BlueSecondary,
+        onSecondary = BlueOnSecondary,
+        secondaryContainer = BlueSecondaryContainer,
+        onSecondaryContainer = BlueOnSecondaryContainer,
+        tertiary = BlueTertiary,
+        onTertiary = BlueOnTertiary,
+        tertiaryContainer = BlueTertiaryContainer,
+        onTertiaryContainer = BlueOnTertiaryContainer,
+        error = BlueError,
+        onError = BlueOnError,
+        errorContainer = BlueErrorContainer,
+        onErrorContainer = BlueOnErrorContainer,
+        background = BlueBackground,
+        onBackground = BlueOnBackground,
+        surface = BlueSurface,
+        onSurface = BlueOnSurface,
+        surfaceVariant = BlueSurfaceVariant,
+        onSurfaceVariant = BlueOnSurfaceVariant,
+        outline = BlueOutline,
+        outlineVariant = BlueOutlineVariant,
+        inverseSurface = BlueInverseSurface,
+        inverseOnSurface = BlueInverseOnSurface,
+        inversePrimary = BlueInversePrimary,
+        surfaceContainerLowest = BlueSurfaceContainerLowest,
+        surfaceContainerLow = BlueSurfaceContainerLow,
+        surfaceContainer = BlueSurfaceContainer,
+        surfaceContainerHigh = BlueSurfaceContainerHigh,
+        surfaceContainerHighest = BlueSurfaceContainerHighest,
+)
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -156,16 +196,12 @@ fun MetaAgentTheme(content: @Composable () -> Unit) {
                 themeMode == UserPreferencesManager.THEME_MODE_DARK
             }
 
-    // Dynamic color is available on Android 12+
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    // MetaAgent 使用品牌蓝色系，不使用系统动态取色
+    // val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     // 基础主题色调
     var colorScheme =
             when {
-                dynamicColor -> {
-                    if (darkTheme) dynamicDarkColorScheme(context)
-                    else dynamicLightColorScheme(context)
-                }
                 darkTheme -> DarkColorScheme
                 else -> LightColorScheme
             }
@@ -210,7 +246,7 @@ fun MetaAgentTheme(content: @Composable () -> Unit) {
                     statusBarTransparent -> Color.Transparent.toArgb()
                     useBackgroundImage && backgroundImageUri != null -> Color.Transparent.toArgb()  // 有背景时透明
                     useCustomStatusBarColor && customStatusBarColorValue != null -> customStatusBarColorValue!!.toInt()
-                    else -> colorScheme.primary.toArgb()
+                    else -> Color.Transparent.toArgb()  // 默认透明，让 Compose TopAppBar/Spacer 控制视觉背景
                 }
                 window.statusBarColor = statusBarColor
 

@@ -53,7 +53,7 @@ val LocalTopBarActions = compositionLocalOf<(@Composable (RowScope.() -> Unit)) 
 data class NavGroup(@StringRes val titleResId: Int, val items: List<NavItem>)
 
 @Composable
-fun MetaAgentApp(initialNavItem: NavItem = NavItem.AiChat, toolHandler: AIToolHandler? = null) {
+fun MetaAgentApp(initialNavItem: NavItem = NavItem.MetaHome, toolHandler: AIToolHandler? = null) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -127,11 +127,11 @@ fun MetaAgentApp(initialNavItem: NavItem = NavItem.AiChat, toolHandler: AIToolHa
             currentScreen = previousScreen
             // Update the selected NavItem if the previous screen has one.
             previousScreen.navItem?.let { navItem -> selectedItem = navItem }
-        } else if (currentScreen !is Screen.AiChat) {
-            // 一级页面（如设置）在无返回栈时，返回到聊天首页而不是直接退出应用
+        } else if (currentScreen !is Screen.MetaHome) {
+            // 一级页面在无返回栈时，返回到首页而不是直接退出应用
             isNavigatingBack = true
-            currentScreen = Screen.AiChat
-            selectedItem = NavItem.AiChat
+            currentScreen = Screen.MetaHome
+            selectedItem = NavItem.MetaHome
         }
     }
 
@@ -178,6 +178,7 @@ fun MetaAgentApp(initialNavItem: NavItem = NavItem.AiChat, toolHandler: AIToolHa
         NavGroup(
             R.string.nav_group_ai_features,
             listOf(
+                NavItem.MetaHome,
                 NavItem.AiChat,
                 NavItem.AssistantConfig,
                 NavItem.Packages,

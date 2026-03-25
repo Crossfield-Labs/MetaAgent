@@ -263,6 +263,9 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.compose)
     
+    // uCrop — 头像裁剪
+    implementation("com.github.yalantis:ucrop:2.2.8")
+    
     // LaTeX rendering libraries
     implementation(libs.jlatexmath)
     implementation(libs.renderx) // RenderX library for LaTeX rendering

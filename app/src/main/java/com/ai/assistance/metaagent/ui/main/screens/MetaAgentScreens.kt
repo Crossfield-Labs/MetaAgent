@@ -27,6 +27,9 @@ import com.ai.assistance.metaagent.ui.common.NavItem
 import com.ai.assistance.metaagent.ui.features.about.screens.AboutScreen
 import com.ai.assistance.metaagent.ui.features.assistant.screens.AssistantConfigScreen
 import com.ai.assistance.metaagent.ui.features.chat.screens.AIChatScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.MetaAgentHomeScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.CourseSpaceScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.TaskCenterScreen
 import com.ai.assistance.metaagent.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.metaagent.ui.features.help.screens.HelpScreen
 import com.ai.assistance.metaagent.ui.features.memory.screens.MemoryScreen
@@ -118,6 +121,146 @@ sealed class Screen(
     }
 
     // Main screens (primary)
+    data object MetaHome : Screen(navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            // 从 CompositionLocal 获取抽屉打开回调
+            val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
+
+            MetaAgentHomeScreen(
+                    onConversationClick = { /* TODO: navigate to chat detail */ },
+                    onMenuClick = openDrawer,
+                    onBottomNavClick = { route ->
+                        when (route) {
+                            "meta_home" -> { /* already here */ }
+                            "course_space" -> {
+                                navigateTo(CourseSpace)
+                                updateNavItem(NavItem.MetaHome)
+                            }
+                            "task_center" -> {
+                                navigateTo(TaskCenter)
+                                updateNavItem(NavItem.MetaHome)
+                            }
+                            "ai_chat" -> {
+                                navigateTo(AiChat)
+                                updateNavItem(NavItem.AiChat)
+                            }
+                            "assistant_config" -> {
+                                navigateTo(AssistantConfig)
+                                updateNavItem(NavItem.AssistantConfig)
+                            }
+                            "toolbox" -> {
+                                navigateTo(Toolbox)
+                                updateNavItem(NavItem.Toolbox)
+                            }
+                            "packages" -> {
+                                navigateTo(Packages)
+                                updateNavItem(NavItem.Packages)
+                            }
+                            "memory_base" -> {
+                                navigateTo(MemoryBase)
+                                updateNavItem(NavItem.MemoryBase)
+                            }
+                            "shizuku_commands" -> {
+                                navigateTo(ShizukuCommands)
+                                updateNavItem(NavItem.ShizukuCommands)
+                            }
+                            "settings" -> {
+                                navigateTo(Settings)
+                                updateNavItem(NavItem.Settings)
+                            }
+                            "about" -> {
+                                navigateTo(About)
+                                updateNavItem(NavItem.About)
+                            }
+                            else -> {
+                                // MoreBottomSheet etc
+                                navigateTo(AiChat)
+                                updateNavItem(NavItem.AiChat)
+                            }
+                        }
+                    },
+                    onNewChatClick = {
+                        navigateTo(AiChat)
+                        updateNavItem(NavItem.AiChat)
+                    },
+                    onAvatarClick = {
+                        navigateTo(UserProfile)
+                        updateNavItem(NavItem.MetaHome)
+                    }
+            )
+        }
+    }
+
+    data object UserProfile : Screen(navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            com.ai.assistance.metaagent.ui.features.home.screens.UserProfileScreen(
+                    onClose = onGoBack,
+                    onNavigate = { route ->
+                        when (route) {
+                            "settings" -> { navigateTo(Settings); updateNavItem(NavItem.Settings) }
+                            else -> { /* TODO */ }
+                        }
+                    }
+            )
+        }
+    }
+
+    data object CourseSpace : Screen(navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            CourseSpaceScreen(
+                    onCourseClick = { /* TODO: course detail */ }
+            )
+        }
+    }
+
+    data object TaskCenter : Screen(navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            TaskCenterScreen(
+                    onTaskClick = { /* TODO: task detail */ }
+            )
+        }
+    }
+
     data object AiChat : Screen(navItem = NavItem.AiChat) {
         @Composable
         override fun Content(
@@ -1436,6 +1579,7 @@ object MetaAgentRouter {
     // 根据NavItem获取对应的Screen
     fun getScreenForNavItem(navItem: NavItem): Screen {
         return when (navItem) {
+            NavItem.MetaHome -> Screen.MetaHome
             NavItem.AiChat -> Screen.AiChat
             NavItem.MemoryBase -> Screen.MemoryBase
             NavItem.Packages -> Screen.Packages

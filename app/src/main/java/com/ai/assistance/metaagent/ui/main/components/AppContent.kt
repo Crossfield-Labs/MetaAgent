@@ -75,6 +75,9 @@ import com.ai.assistance.metaagent.api.chat.AIForegroundService
 // 定义一个 CompositionLocal，用于向下传递当前屏幕是否可见的状态
 val LocalIsCurrentScreen = compositionLocalOf { true }
 
+// 定义一个 CompositionLocal，用于让子屏幕打开侧边栏抽屉
+val LocalDrawerOpener = compositionLocalOf<() -> Unit> { {} }
+
 // 用于屏幕切换动画的状态
 private enum class ScreenVisibility {
     VISIBLE,
@@ -193,12 +196,27 @@ fun AppContent(
         previousScreenState.value = currentScreen
     }
 
-    CompositionLocalProvider(LocalAppBarContentColor provides appBarContentColor) {
+    // 创建抽屉打开回调
+    val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
+
+    CompositionLocalProvider(
+        LocalAppBarContentColor provides appBarContentColor,
+        LocalDrawerOpener provides openDrawer
+    ) {
         // 使用Scaffold来正确处理顶部栏和内容的布局
         // contentWindowInsets = WindowInsets(0) 让内容可以延伸到系统栏下方，使背景能够完全填充
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
+                // MetaHome 自己管理顶部栏（搜索+汉堡菜单），不需要外层TopAppBar
+                if (currentScreen is Screen.MetaHome) {
+                    // 只保留状态栏高度的空间，使用 surface 颜色避免底色穿透
+                    Spacer(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
+                        .background(MaterialTheme.colorScheme.surface)
+                    )
+                } else {
                 // 单一工具栏 - 使用小型化的设计
                 // 使用 windowInsets 参数让 TopAppBar 自己处理状态栏的 insets
                 SmallTopAppBar(
@@ -289,15 +307,18 @@ fun AppContent(
                     ),
                     // Scaffold会处理 insets, 这里不再需要手动添加 modifier
                 )
+                }
             },
             containerColor = Color.Transparent
         ) { innerPadding ->
             // 主内容区域
-            // 添加底部导航栏的 padding，确保内容不会被导航栏遮挡
+            // MetaHome 自带悬浮底栏（已含 navigationBarsPadding），不需要额外 bottom padding
+            val extraBottomPadding = if (currentScreen is Screen.MetaHome) 0.dp
+                else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             Surface(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                    .padding(bottom = extraBottomPadding)
                     .fillMaxSize(),
                 color =
                 if (hasBackgroundImage) Color.Transparent
