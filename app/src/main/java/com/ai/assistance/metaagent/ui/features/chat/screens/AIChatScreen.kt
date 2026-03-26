@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
@@ -113,7 +114,8 @@ fun AIChatScreen(
         onNavigateToModelConfig: () -> Unit = {},
         onNavigateToModelPrompts: () -> Unit = {},
         onNavigateToPackageManager: () -> Unit = {},
-        onGestureConsumed: (Boolean) -> Unit = {}
+        onGestureConsumed: (Boolean) -> Unit = {},
+        onGoBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -680,6 +682,9 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     val showWebView by actualViewModel.showWebView.collectAsState()
     // 收集AI电脑显示状态
     val showAiComputer by actualViewModel.showAiComputer.collectAsState()
+    // 收集编排树显示状态
+    val showPlanTree by actualViewModel.showPlanTree.collectAsState()
+    val taskSession by actualViewModel.taskSession.collectAsState()
     val manifestSoftInputMode = remember(hostActivity) { hostActivity?.manifestSoftInputMode() }
     LaunchedEffect(inputStyle, showWebView, showAiComputer, hostActivity) {
         val window = hostActivity?.window
@@ -751,11 +756,25 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     val isCurrentScreen = LocalIsCurrentScreen.current
 
 
-    // 当showWebView或showAiComputer状态改变时，更新TopAppBar的actions
-    // 使用DisposableEffect确保当AIChatScreen离开组合时，actions被清空
-    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, isWorkspacePreparing, appBarContentColor) {
+    // 当showWebView、showAiComputer或showPlanTree状态改变时，更新TopAppBar的actions
+    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, showPlanTree, isWorkspacePreparing, appBarContentColor) {
         if (isCurrentScreen) {
             setTopBarActions {
+                // 编排树按钮
+                IconButton(
+                        onClick = {
+                            actualViewModel.onPlanTreeButtonClick()
+                        }
+                ) {
+                    Icon(
+                            imageVector = Icons.Default.AccountTree,
+                            contentDescription = "任务编排",
+                            tint =
+                            if (showPlanTree) MaterialTheme.colorScheme.primaryContainer
+                            else appBarContentColor
+                    )
+                }
+
                 // AI电脑模式切换按钮
                 IconButton(
                         enabled = !isWorkspacePreparing,
@@ -1192,6 +1211,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                 bubbleAiContentPaddingLeft = bubbleAiContentPaddingLeft,
                                 bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
                                 showChatFloatingDotsAnimation = showChatFloatingDotsAnimation,
+                                onGoBack = onGoBack,
                         )
 
                         if (inputStyle == UserPreferencesManager.INPUT_STYLE_CLASSIC) {
@@ -1387,6 +1407,35 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
             ) {
                 ComputerScreen()
             }
+        }
+
+        // 编排树面板 — 与 AI 电脑采用相同模式
+        if (showPlanTree) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                PlanTreePanel(
+                    taskSession = taskSession,
+                    onCreatePlan = { goal -> actualViewModel.createPlanFromGoal(goal) },
+                    onApprove = { actualViewModel.approvePlan() },
+                    onReject = { feedback -> actualViewModel.rejectPlan(feedback) },
+                    onPause = { actualViewModel.pausePlan() },
+                    onResume = { actualViewModel.resumePlan() },
+                    onCancel = { actualViewModel.cancelPlan() },
+                    onClear = { actualViewModel.clearPlan() }
+                )
+            }
+        }
+
+        // 任务进度条 — 浮在聊天内容上方（仅在编排树面板关闭且有活跃任务时显示）
+        if (!showPlanTree) {
+            TaskProgressBar(
+                taskSession = taskSession,
+                onClick = { actualViewModel.onPlanTreeButtonClick() },
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
 
         AnimatedVisibility(

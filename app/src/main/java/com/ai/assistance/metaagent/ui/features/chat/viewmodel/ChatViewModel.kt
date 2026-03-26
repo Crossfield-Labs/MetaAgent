@@ -16,6 +16,9 @@ import androidx.core.content.FileProvider
 import com.ai.assistance.metaagent.ui.features.chat.components.ChatStyle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ai.assistance.metaagent.core.plan.PlanTreeExecutor
+import com.ai.assistance.metaagent.core.plan.model.TaskSession
+import com.ai.assistance.metaagent.core.plan.model.TaskSessionStatus
 import com.ai.assistance.metaagent.api.chat.EnhancedAIService
 import com.ai.assistance.metaagent.core.chat.AIMessageManager
 import com.ai.assistance.metaagent.core.tools.AIToolHandler
@@ -43,6 +46,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
@@ -407,6 +411,15 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     // 添加AI电脑显示状态的状态流
     private val _showAiComputer = MutableStateFlow(false)
     val showAiComputer: StateFlow<Boolean> = _showAiComputer
+
+    // ---- Plan Tree 编排树 ----
+    private val _showPlanTree = MutableStateFlow(false)
+    val showPlanTree: StateFlow<Boolean> = _showPlanTree.asStateFlow()
+
+    private var planTreeExecutor: PlanTreeExecutor? = null
+    private var planTaskSessionJob: Job? = null
+    private val _taskSession = MutableStateFlow<TaskSession?>(null)
+    val taskSession: StateFlow<TaskSession?> = _taskSession.asStateFlow()
 
     // 添加WebView刷新控制流 - 使用Int计数器避免重复刷新问题
     private val _webViewRefreshCounter = MutableStateFlow(0)
@@ -1692,6 +1705,9 @@ class ChatViewModel(private val context: Context) : ViewModel() {
                     _showAiComputer.value = false
                     AppLogger.d(TAG, "AI电脑已关闭（由于打开工作区）")
                 }
+                if (_showPlanTree.value) {
+                    _showPlanTree.value = false
+                }
 
                 val chatId = awaitWorkspaceChatId()
                 if (chatId != null) {
@@ -1887,7 +1903,8 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     override fun onCleared() {
-        super.onCleared()
+        releasePlanTreeExecution()
+
         // 清理悬浮窗资源
         floatingWindowDelegate.cleanup()
         
@@ -1897,6 +1914,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
         // 不再在这里停止Web服务器，因为使用的是单例模式
         // 服务器应在应用退出时由Application类或专门的服务管理类关闭
         // 这样可以在界面切换时保持服务器的连续运行
+        super.onCleared()
     }
 
     /** 更新指定聊天的标题 */
@@ -2265,13 +2283,20 @@ class ChatViewModel(private val context: Context) : ViewModel() {
         toggleAiComputer()
     }
 
+    fun onPlanTreeButtonClick() {
+        togglePlanTree()
+    }
+
     // AI电脑控制方法
     fun toggleAiComputer() {
         viewModelScope.launch {
-            // 如果要显示AI电脑，先关闭工作区
+            // 如果要显示AI电脑，先关闭工作区和编排树
             if (!_showAiComputer.value && _showWebView.value) {
                 _showWebView.value = false
                 AppLogger.d(TAG, "工作区已关闭（由于打开AI电脑）")
+            }
+            if (!_showAiComputer.value && _showPlanTree.value) {
+                _showPlanTree.value = false
             }
             
             val newShowState = !_showAiComputer.value
@@ -2292,6 +2317,89 @@ class ChatViewModel(private val context: Context) : ViewModel() {
                 AppLogger.d(TAG, "AI电脑已关闭")
             }
         }
+    }
+
+    // ---- Plan Tree 控制方法 ----
+    fun togglePlanTree() {
+        if (!_showPlanTree.value) {
+            // 打开编排树面板时关闭其他面板
+            if (_showWebView.value) {
+                _showWebView.value = false
+            }
+            if (_showAiComputer.value) {
+                _showAiComputer.value = false
+            }
+        }
+        _showPlanTree.value = !_showPlanTree.value
+    }
+
+    private fun releasePlanTreeExecution(resetSession: Boolean = true) {
+        planTaskSessionJob?.cancel()
+        planTaskSessionJob = null
+        planTreeExecutor?.dispose()
+        planTreeExecutor = null
+        if (resetSession) {
+            _taskSession.value = null
+        }
+    }
+
+    fun createPlanFromGoal(goal: String) {
+        val normalizedGoal = goal.trim()
+        if (normalizedGoal.isBlank()) {
+            uiStateDelegate.showToast("请输入任务目标")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                releasePlanTreeExecution()
+
+                val executor = PlanTreeExecutor(context)
+                planTreeExecutor = executor
+
+                // 观察 task session 变化
+                planTaskSessionJob = launch {
+                    executor.taskSession.collect { session ->
+                        _taskSession.value = session
+                    }
+                }
+
+                // 创建任务
+                executor.createTask(normalizedGoal)
+
+                // 确保面板打开
+                _showPlanTree.value = true
+            } catch (e: Exception) {
+                AppLogger.e(TAG, "创建编排树失败", e)
+                releasePlanTreeExecution()
+                uiStateDelegate.showErrorMessage("创建编排树失败: ${e.message}")
+            }
+        }
+    }
+
+    fun approvePlan() {
+        planTreeExecutor?.approvePlan()
+    }
+
+    fun rejectPlan(feedback: String = "") {
+        planTreeExecutor?.rejectPlan(feedback)
+    }
+
+    fun pausePlan() {
+        planTreeExecutor?.pauseExecution()
+    }
+
+    fun resumePlan() {
+        planTreeExecutor?.resumeExecution()
+    }
+
+    fun cancelPlan() {
+        planTreeExecutor?.cancelTask()
+    }
+
+    fun clearPlan() {
+        releasePlanTreeExecution()
+        _showPlanTree.value = false
     }
 
 

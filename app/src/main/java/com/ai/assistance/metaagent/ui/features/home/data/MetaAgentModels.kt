@@ -1,24 +1,14 @@
 package com.ai.assistance.metaagent.ui.features.home.data
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.ImportContacts
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.ai.assistance.metaagent.data.model.ChatHistory
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * 对话项（MetaAgent 专用）
@@ -77,8 +67,113 @@ enum class TaskStatus(val label: String) {
     FAILED("失败")
 }
 
+// ══════════════════════════════════════════
+// ChatHistory → MetaConversation 转换
+// ══════════════════════════════════════════
+
 /**
- * 模拟数据 — 后续接入真实数据源
+ * 可选的图标列表（用于图标选择器 Tooltip）
+ */
+data class IconOption(
+    val name: String,
+    val icon: ImageVector
+)
+
+val availableIcons: List<IconOption> = listOf(
+    IconOption("对话", Icons.AutoMirrored.Filled.Chat),
+    IconOption("学习", Icons.Default.School),
+    IconOption("编辑", Icons.Default.Edit),
+    IconOption("代码", Icons.Default.Code),
+    IconOption("搜索", Icons.Default.Search),
+    IconOption("收藏", Icons.Default.Star),
+    IconOption("闪电", Icons.Default.FlashOn),
+    IconOption("科学", Icons.Default.Science),
+    IconOption("计算", Icons.Default.Calculate),
+    IconOption("构建", Icons.Default.Build),
+    IconOption("文档", Icons.Default.Description),
+    IconOption("书本", Icons.Default.ImportContacts),
+    IconOption("通知", Icons.Default.Notifications),
+    IconOption("灯泡", Icons.Default.Lightbulb),
+    IconOption("游戏", Icons.Default.SportsEsports),
+    IconOption("音乐", Icons.Default.MusicNote),
+    IconOption("相机", Icons.Default.CameraAlt),
+    IconOption("面孔", Icons.Default.Face),
+    IconOption("设置", Icons.Default.Settings),
+    IconOption("工具", Icons.Default.Handyman),
+    IconOption("日程", Icons.Default.CalendarToday),
+    IconOption("图表", Icons.Default.BarChart),
+    IconOption("地球", Icons.Default.Public),
+    IconOption("心形", Icons.Default.Favorite),
+    IconOption("任务", Icons.Default.TaskAlt),
+    IconOption("终端", Icons.Default.Terminal),
+    IconOption("画笔", Icons.Default.Brush),
+    IconOption("翻译", Icons.Default.Translate),
+    IconOption("机器人", Icons.Default.SmartToy),
+    IconOption("安全", Icons.Default.Security),
+)
+
+/**
+ * 根据 characterCardName 映射一个默认图标
+ */
+fun getIconForCharacterCard(characterCardName: String?): ImageVector {
+    if (characterCardName == null) return Icons.AutoMirrored.Filled.Chat
+    val lower = characterCardName.lowercase()
+    return when {
+        lower.contains("code") || lower.contains("编程") || lower.contains("dev") -> Icons.Default.Code
+        lower.contains("学") || lower.contains("learn") || lower.contains("study") -> Icons.Default.School
+        lower.contains("写") || lower.contains("write") || lower.contains("edit") -> Icons.Default.Edit
+        lower.contains("搜") || lower.contains("search") -> Icons.Default.Search
+        lower.contains("翻译") || lower.contains("translat") -> Icons.Default.Translate
+        lower.contains("画") || lower.contains("art") || lower.contains("draw") -> Icons.Default.Brush
+        lower.contains("音乐") || lower.contains("music") -> Icons.Default.MusicNote
+        lower.contains("游戏") || lower.contains("game") -> Icons.Default.SportsEsports
+        lower.contains("科学") || lower.contains("science") -> Icons.Default.Science
+        else -> Icons.AutoMirrored.Filled.Chat
+    }
+}
+
+/**
+ * 将 LocalDateTime 格式化为"刚才"/"x分钟前"/"今天 HH:mm"/"昨天"/"MM-dd"
+ */
+fun formatRelativeTime(dateTime: LocalDateTime): String {
+    val now = LocalDateTime.now()
+    val minutesDiff = ChronoUnit.MINUTES.between(dateTime, now)
+    val hoursDiff = ChronoUnit.HOURS.between(dateTime, now)
+    val daysDiff = ChronoUnit.DAYS.between(dateTime.toLocalDate(), now.toLocalDate())
+
+    return when {
+        minutesDiff < 1 -> "刚才"
+        minutesDiff < 60 -> "${minutesDiff}分钟前"
+        hoursDiff < 24 && daysDiff == 0L -> "今天 ${String.format("%02d:%02d", dateTime.hour, dateTime.minute)}"
+        daysDiff == 1L -> "昨天"
+        daysDiff < 7 -> "${daysDiff}天前"
+        else -> "${String.format("%02d", dateTime.monthValue)}-${String.format("%02d", dateTime.dayOfMonth)}"
+    }
+}
+
+/**
+ * 将 ChatHistory 转换为首页列表使用的 MetaConversation
+ *
+ * @param lastMessagePreview 最后一条消息的预览文本（需从外部传入，因为
+ *   chatHistoriesFlow 中的 ChatHistory.messages 为空列表以优化性能）
+ */
+fun ChatHistory.toMetaConversation(
+    lastMessagePreview: String = ""
+): MetaConversation {
+    return MetaConversation(
+        id = this.id,
+        title = this.title,
+        icon = getIconForCharacterCard(this.characterCardName),
+        lastMessage = lastMessagePreview.ifEmpty { "暂无消息" },
+        timestamp = formatRelativeTime(this.updatedAt),
+        isUnread = false, // TODO: 后续可扩展未读状态
+        hasGreenDot = false
+    )
+}
+
+
+/**
+ * 模拟数据 — 保留用于开发/测试
  */
 object MetaSampleData {
 

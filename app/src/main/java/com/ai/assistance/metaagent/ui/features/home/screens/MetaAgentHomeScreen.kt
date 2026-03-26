@@ -20,7 +20,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
@@ -46,7 +48,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -54,26 +58,36 @@ import com.ai.assistance.metaagent.ui.features.home.components.SwipeableMessageI
 import com.ai.assistance.metaagent.ui.features.home.components.calculateGroupCorners
 import com.ai.assistance.metaagent.ui.features.home.components.ChatBottomBar
 import com.ai.assistance.metaagent.ui.features.home.components.MoreBottomSheet
-import com.ai.assistance.metaagent.ui.features.home.data.MetaSampleData
+import com.ai.assistance.metaagent.ui.features.home.data.MetaConversation
 import com.ai.assistance.metaagent.ui.theme.SearchBarBackground
 import kotlinx.coroutines.launch
 
 /**
  * MetaAgent 主页 — 重新设计的聊天首页
+ *
+ * @param conversations 真实聊天列表（从 ChatHistoryManager 转换而来）
+ * @param onConversationClick 点击会话 → 导航到对应聊天
+ * @param onDeleteChat 删除会话回调
  */
 @Composable
 fun MetaAgentHomeScreen(
+    conversations: List<MetaConversation>,
     onConversationClick: (String) -> Unit,
     onBottomNavClick: (String) -> Unit = {},
     onAvatarClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     onNewChatClick: () -> Unit = {},
+    onDeleteChat: (String) -> Unit = {},
     avatarUri: Uri? = null,
     modifier: Modifier = Modifier
 ) {
     var selectedFilter by remember { mutableStateOf("全部") }
     val filters = listOf("全部", "学习", "任务", "复习", "闲聊")
     var showMoreSheet by remember { mutableStateOf(false) }
+
+    // 搜索状态
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearchActive by remember { mutableStateOf(false) }
 
     // "更多"上拉弹窗
     if (showMoreSheet) {
@@ -85,6 +99,30 @@ fun MetaAgentHomeScreen(
             }
         )
     }
+
+    // 基于搜索和筛选过滤对话列表
+    val filteredConversations = remember(conversations, searchQuery, selectedFilter) {
+        conversations.filter { conv ->
+            // 搜索过滤
+            val matchesSearch = searchQuery.isEmpty() ||
+                conv.title.contains(searchQuery, ignoreCase = true) ||
+                conv.lastMessage.contains(searchQuery, ignoreCase = true)
+
+            // 标签过滤（目前 "全部" 不过滤，其它后续可扩展）
+            val matchesFilter = selectedFilter == "全部" || conv.tag == selectedFilter
+
+            matchesSearch && matchesFilter
+        }
+    }
+
+    // 可变绘制列表（用于支持左滑标记读/未读等本地状态操作）
+    val displayConversations = remember(filteredConversations) {
+        mutableStateListOf(*filteredConversations.toTypedArray())
+    }
+
+    val dragProgressMap = remember { mutableStateMapOf<Int, Float>() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier
@@ -109,13 +147,13 @@ fun MetaAgentHomeScreen(
                 )
             }
 
-            // 搜索栏
+            // 搜索栏 — 可输入
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(28.dp))
                     .background(SearchBarBackground)
-                    .clickable { }
+                    .clickable { isSearchActive = true }
                     .padding(horizontal = 14.dp, vertical = 10.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -126,11 +164,47 @@ fun MetaAgentHomeScreen(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "搜索对话...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                isSearchActive = true
+                            },
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            decorationBox = { innerTextField ->
+                                if (searchQuery.isEmpty()) {
+                                    Text(
+                                        text = "搜索对话...",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        )
+                    }
+
+                    // 清除按钮
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { searchQuery = "" },
+                            modifier = Modifier.size(20.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "清除搜索",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
 
@@ -139,8 +213,11 @@ fun MetaAgentHomeScreen(
             // 通知铃铛
             BadgedBox(
                 badge = {
-                    Badge(containerColor = MaterialTheme.colorScheme.error) {
-                        Text("2")
+                    val unreadCount = conversations.count { it.isUnread }
+                    if (unreadCount > 0) {
+                        Badge(containerColor = MaterialTheme.colorScheme.error) {
+                            Text("$unreadCount")
+                        }
                     }
                 }
             ) {
@@ -214,76 +291,93 @@ fun MetaAgentHomeScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ── 对话列表 — Android 16 分组堆叠 ──
-        val conversations = remember {
-            mutableStateListOf(*MetaSampleData.conversations.toTypedArray())
-        }
-
-        val dragProgressMap = remember { mutableStateMapOf<Int, Float>() }
-        val snackbarHostState = remember { SnackbarHostState() }
-        val snackScope = rememberCoroutineScope()
-
+        // ── 对话列表 ──
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                items(
-                    count = conversations.size,
-                    key = { conversations[it].id }
-                ) { index ->
-                    val conversation = conversations[index]
+            if (displayConversations.isEmpty()) {
+                // 空状态
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) "🔍" else "💬",
+                            style = MaterialTheme.typography.displaySmall
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = if (searchQuery.isNotEmpty()) "未找到匹配的对话"
+                            else "还没有对话\n点击右下角 + 开始新对话",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 88.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    items(
+                        count = displayConversations.size,
+                        key = { displayConversations[it].id }
+                    ) { index ->
+                        val conversation = displayConversations[index]
 
-                    val prevProgress = if (index > 0) dragProgressMap[index - 1] ?: 0f else 0f
-                    val nextProgress = if (index < conversations.size - 1) dragProgressMap[index + 1] ?: 0f else 0f
+                        val prevProgress = if (index > 0) dragProgressMap[index - 1] ?: 0f else 0f
+                        val nextProgress = if (index < displayConversations.size - 1) dragProgressMap[index + 1] ?: 0f else 0f
 
-                    val (topCorner, bottomCorner) = calculateGroupCorners(
-                        index = index,
-                        total = conversations.size,
-                        prevDragProgress = prevProgress,
-                        nextDragProgress = nextProgress
-                    )
+                        val (topCorner, bottomCorner) = calculateGroupCorners(
+                            index = index,
+                            total = displayConversations.size,
+                            prevDragProgress = prevProgress,
+                            nextDragProgress = nextProgress
+                        )
 
-                    SwipeableMessageItem(
-                        conversation = conversation,
-                        topCorner = topCorner,
-                        bottomCorner = bottomCorner,
-                        onClick = { onConversationClick(conversation.id) },
-                        onDragProgressChanged = { progress ->
-                            dragProgressMap[index] = progress
-                        },
-                        onMarkRead = {
-                            conversations[index] = conversation.copy(isUnread = false)
-                            snackScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已标记为已读",
-                                    duration = SnackbarDuration.Short
-                                )
+                        SwipeableMessageItem(
+                            conversation = conversation,
+                            topCorner = topCorner,
+                            bottomCorner = bottomCorner,
+                            onClick = { onConversationClick(conversation.id) },
+                            onDragProgressChanged = { progress ->
+                                dragProgressMap[index] = progress
+                            },
+                            onMarkRead = {
+                                displayConversations[index] = conversation.copy(isUnread = false)
+                                snackScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已标记为已读",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            },
+                            onMarkUnread = {
+                                displayConversations[index] = conversation.copy(isUnread = true)
+                                snackScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已标记为未读",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            },
+                            onMute = { /* TODO */ },
+                            onDelete = {
+                                val title = conversation.title
+                                val chatId = conversation.id
+                                displayConversations.removeAt(index)
+                                dragProgressMap.remove(index)
+                                onDeleteChat(chatId)
+                                snackScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "已删除「$title」",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
-                        },
-                        onMarkUnread = {
-                            conversations[index] = conversation.copy(isUnread = true)
-                            snackScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已标记为未读",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        },
-                        onMute = { /* TODO */ },
-                        onDelete = {
-                            val title = conversation.title
-                            conversations.removeAt(index)
-                            dragProgressMap.remove(index)
-                            snackScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "已屏蔽「$title」",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
 

@@ -208,8 +208,8 @@ fun AppContent(
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
-                // MetaHome 自己管理顶部栏（搜索+汉堡菜单），不需要外层TopAppBar
-                if (currentScreen is Screen.MetaHome) {
+                // MetaHome / AiChat 自己管理顶部栏，不需要外层TopAppBar
+                if (currentScreen is Screen.MetaHome || currentScreen is Screen.AiChat) {
                     // 只保留状态栏高度的空间，使用 surface 颜色避免底色穿透
                     Spacer(modifier = Modifier
                         .fillMaxWidth()
@@ -313,7 +313,7 @@ fun AppContent(
         ) { innerPadding ->
             // 主内容区域
             // MetaHome 自带悬浮底栏（已含 navigationBarsPadding），不需要额外 bottom padding
-            val extraBottomPadding = if (currentScreen is Screen.MetaHome) 0.dp
+            val extraBottomPadding = if (currentScreen is Screen.MetaHome || currentScreen is Screen.AiChat) 0.dp
                 else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             Surface(
                 modifier = Modifier

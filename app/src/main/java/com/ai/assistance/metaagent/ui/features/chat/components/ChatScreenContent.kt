@@ -79,6 +79,8 @@ import androidx.compose.ui.res.stringResource
 import com.ai.assistance.metaagent.R
 import com.ai.assistance.metaagent.ui.features.chat.components.MessageEditor
 import kotlin.math.roundToInt
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.ui.text.font.FontWeight
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,6 +133,7 @@ fun ChatScreenContent(
         bubbleAiContentPaddingLeft: Float = 12f,
         bubbleAiContentPaddingRight: Float = 12f,
         showChatFloatingDotsAnimation: Boolean = true,
+        onGoBack: () -> Unit = {},
 ) {
     val density = LocalDensity.current
     var headerHeight by remember { mutableStateOf(0.dp) }
@@ -301,6 +304,55 @@ fun ChatScreenContent(
     }
 
     Box(modifier = modifier.fillMaxSize().padding(paddingValues)) {
+        // Google Chat 风格的顶部标题栏 + 下方内容
+        Column(modifier = Modifier.fillMaxSize()) {
+            // ── Google Chat 风格顶部标题栏 ──
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 1.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // ← 返回按钮
+                    IconButton(onClick = onGoBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.app_content_navigate_back),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // 聊天标题
+                    Column(
+                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = currentChat?.title ?: stringResource(R.string.new_conversation),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+
+                    // ⋮ 更多菜单
+                    IconButton(onClick = { /* TODO: more menu */ }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // 下方内容区域
         if (chatHeaderOverlayMode && chatHeaderTransparent) {
             // 覆盖模式：Header浮动在ChatArea之上
             Box(modifier = Modifier.fillMaxSize()) {
@@ -438,6 +490,7 @@ fun ChatScreenContent(
                         bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
                 )
             }
+        }
         }
 
         // 多选模式底部操作栏

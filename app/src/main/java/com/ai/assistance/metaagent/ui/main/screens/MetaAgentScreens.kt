@@ -90,6 +90,14 @@ import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import android.net.Uri
 import com.ai.assistance.metaagent.data.preferences.GitHubAuthPreferences
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import com.ai.assistance.metaagent.ui.features.home.data.toMetaConversation
+import kotlinx.coroutines.launch
 
 // 路由配置类
 typealias ScreenNavigationHandler = (Screen) -> Unit
@@ -135,10 +143,54 @@ sealed class Screen(
         ) {
             // 从 CompositionLocal 获取抽屉打开回调
             val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
+            val context = LocalContext.current
+            val chatHistoryManager = com.ai.assistance.metaagent.data.repository.ChatHistoryManager.getInstance(context)
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+            // 收集真实聊天历史
+            val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
+
+            // 为每个 chat 加载最后一条消息预览
+            var lastMessagePreviews by remember { mutableStateOf(mapOf<String, String>()) }
+            LaunchedEffect(chatHistories) {
+                val previews = mutableMapOf<String, String>()
+                for (chat in chatHistories) {
+                    try {
+                        val lastMessages = chatHistoryManager.loadChatMessages(chat.id, order = "desc", limit = 1)
+                        val preview = lastMessages.firstOrNull()?.content?.take(80)?.replace("\n", " ") ?: ""
+                        previews[chat.id] = preview
+                    } catch (_: Exception) {
+                        previews[chat.id] = ""
+                    }
+                }
+                lastMessagePreviews = previews
+            }
+
+            // 转换为 MetaConversation 列表
+            val conversations = remember(chatHistories, lastMessagePreviews) {
+                chatHistories.map { chat ->
+                    chat.toMetaConversation(
+                        lastMessagePreview = lastMessagePreviews[chat.id] ?: ""
+                    )
+                }
+            }
 
             MetaAgentHomeScreen(
-                    onConversationClick = { /* TODO: navigate to chat detail */ },
+                    conversations = conversations,
+                    onConversationClick = { chatId ->
+                        // 设置当前聊天ID并导航到聊天界面
+                        scope.launch {
+                            chatHistoryManager.setCurrentChatId(chatId)
+                        }
+                        navigateTo(AiChat)
+                        updateNavItem(NavItem.AiChat)
+                    },
                     onMenuClick = openDrawer,
+                    onDeleteChat = { chatId ->
+                        scope.launch {
+                            chatHistoryManager.deleteChatHistory(chatId)
+                        }
+                    },
                     onBottomNavClick = { route ->
                         when (route) {
                             "meta_home" -> { /* already here */ }
@@ -190,6 +242,10 @@ sealed class Screen(
                         }
                     },
                     onNewChatClick = {
+                        // 创建新对话并导航
+                        scope.launch {
+                            chatHistoryManager.createNewChat()
+                        }
                         navigateTo(AiChat)
                         updateNavItem(NavItem.AiChat)
                     },
@@ -289,7 +345,8 @@ sealed class Screen(
                     onNavigateToPackageManager = { navigateTo(Packages) },
                     onLoading = onLoading,
                     onError = onError,
-                    onGestureConsumed = onGestureConsumed
+                    onGestureConsumed = onGestureConsumed,
+                    onGoBack = onGoBack
             )
         }
     }
