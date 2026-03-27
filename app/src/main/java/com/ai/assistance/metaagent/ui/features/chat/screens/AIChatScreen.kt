@@ -682,8 +682,8 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     val showWebView by actualViewModel.showWebView.collectAsState()
     // 收集AI电脑显示状态
     val showAiComputer by actualViewModel.showAiComputer.collectAsState()
-    // 收集编排树显示状态
-    val showPlanTree by actualViewModel.showPlanTree.collectAsState()
+    // 收集 Agent 模式状态
+    val agentMode by actualViewModel.agentMode.collectAsState()
     val taskSession by actualViewModel.taskSession.collectAsState()
     val manifestSoftInputMode = remember(hostActivity) { hostActivity?.manifestSoftInputMode() }
     LaunchedEffect(inputStyle, showWebView, showAiComputer, hostActivity) {
@@ -756,8 +756,8 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     val isCurrentScreen = LocalIsCurrentScreen.current
 
 
-    // 当showWebView、showAiComputer或showPlanTree状态改变时，更新TopAppBar的actions
-    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, showPlanTree, isWorkspacePreparing, appBarContentColor) {
+    // 当showWebView、showAiComputer或agentMode状态改变时，更新TopAppBar的actions
+    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, agentMode, isWorkspacePreparing, appBarContentColor) {
         if (isCurrentScreen) {
             setTopBarActions {
                 // 编排树按钮
@@ -770,7 +770,7 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                             imageVector = Icons.Default.AccountTree,
                             contentDescription = "任务编排",
                             tint =
-                            if (showPlanTree) MaterialTheme.colorScheme.primaryContainer
+                            if (agentMode) MaterialTheme.colorScheme.primary
                             else appBarContentColor
                     )
                 }
@@ -1409,34 +1409,13 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
             }
         }
 
-        // 编排树面板 — 与 AI 电脑采用相同模式
-        if (showPlanTree) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                PlanTreePanel(
-                    taskSession = taskSession,
-                    onCreatePlan = { goal -> actualViewModel.createPlanFromGoal(goal) },
-                    onApprove = { actualViewModel.approvePlan() },
-                    onReject = { feedback -> actualViewModel.rejectPlan(feedback) },
-                    onPause = { actualViewModel.pausePlan() },
-                    onResume = { actualViewModel.resumePlan() },
-                    onCancel = { actualViewModel.cancelPlan() },
-                    onClear = { actualViewModel.clearPlan() }
-                )
-            }
-        }
-
-        // 任务进度条 — 浮在聊天内容上方（仅在编排树面板关闭且有活跃任务时显示）
-        if (!showPlanTree) {
-            TaskProgressBar(
-                taskSession = taskSession,
-                onClick = { actualViewModel.onPlanTreeButtonClick() },
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
+        // 编排树卡片嵌入消息流（通过 ChatMessage.planSessionId）
+        // TaskProgressBar 保留作为任务进度指示
+        TaskProgressBar(
+            taskSession = taskSession,
+            onClick = { actualViewModel.setAgentMode(true) },
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
 
         AnimatedVisibility(
             visible = isWorkspacePreparing,

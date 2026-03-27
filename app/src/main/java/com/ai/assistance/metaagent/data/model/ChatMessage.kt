@@ -16,8 +16,14 @@ data class ChatMessage(
         val modelName: String = "", // 模型名称
         @Transient
         var contentStream: Stream<String>? =
-                null // 修改为Stream<String>类型，与EnhancedAIService.sendMessage返回类型匹配
+                null, // 修改为Stream<String>类型，与EnhancedAIService.sendMessage返回类型匹配
+        /** 非空时表示这条消息是一个编排树卡片，值为 TaskSession.taskId */
+        val planSessionId: String? = null
 ) : Parcelable {
+
+    /** 是否为编排树卡片消息 */
+    val isPlanCard: Boolean get() = planSessionId != null
+
     constructor(
             parcel: Parcel
     ) : this(
@@ -26,7 +32,9 @@ data class ChatMessage(
         parcel.readLong(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readString() ?: ""
+        parcel.readString() ?: "",
+        null,
+        parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -37,6 +45,7 @@ data class ChatMessage(
         parcel.writeString(provider)
         parcel.writeString(modelName)
         // 不需要序列化contentStream，因为它是暂时性的
+        parcel.writeString(planSessionId)
     }
 
     override fun describeContents(): Int {

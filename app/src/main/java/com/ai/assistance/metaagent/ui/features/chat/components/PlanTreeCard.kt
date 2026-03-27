@@ -154,6 +154,26 @@ fun PlanTreeCard(
                             )
                         }
                     }
+
+                    if (taskSession.events.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = "执行日志",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        taskSession.events.takeLast(if (expanded) 8 else 3).forEach { event ->
+                            Text(
+                                text = "• ${event.message.ifBlank { event.type.name }}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -206,7 +226,11 @@ private fun PlanNodeRow(
             )
 
             // 详情/说明
-            val detailText = node.detail.ifBlank { node.explainToUser }
+            val detailText = when {
+                node.status == PlanNodeStatus.DONE && node.resultSummary.isNotBlank() -> node.resultSummary
+                node.detail.isNotBlank() -> node.detail
+                else -> node.explainToUser
+            }
             if (detailText.isNotBlank()) {
                 Text(
                     text = detailText,

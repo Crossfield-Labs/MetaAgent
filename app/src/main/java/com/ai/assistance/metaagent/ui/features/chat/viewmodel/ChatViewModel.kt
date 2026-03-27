@@ -1,4 +1,4 @@
-package com.ai.assistance.metaagent.ui.features.chat.viewmodel
+﻿package com.ai.assistance.metaagent.ui.features.chat.viewmodel
 
 import android.Manifest
 import android.content.Context
@@ -412,14 +412,18 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     private val _showAiComputer = MutableStateFlow(false)
     val showAiComputer: StateFlow<Boolean> = _showAiComputer
 
-    // ---- Plan Tree 编排树 ----
-    private val _showPlanTree = MutableStateFlow(false)
-    val showPlanTree: StateFlow<Boolean> = _showPlanTree.asStateFlow()
+    // ---- Agent 模式（编排树） ----
+    private val _agentMode = MutableStateFlow(false)
+    val agentMode: StateFlow<Boolean> = _agentMode.asStateFlow()
 
     private var planTreeExecutor: PlanTreeExecutor? = null
     private var planTaskSessionJob: Job? = null
     private val _taskSession = MutableStateFlow<TaskSession?>(null)
     val taskSession: StateFlow<TaskSession?> = _taskSession.asStateFlow()
+    private var reportedPlanTerminalTaskId: String? = null
+
+    fun toggleAgentMode() { _agentMode.value = !_agentMode.value }
+    fun setAgentMode(enabled: Boolean) { _agentMode.value = enabled }
 
     // 添加WebView刷新控制流 - 使用Int计数器避免重复刷新问题
     private val _webViewRefreshCounter = MutableStateFlow(0)
@@ -1297,10 +1301,25 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     fun sendUserMessage(promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
+        if (_agentMode.value && promptFunctionType == PromptFunctionType.CHAT) {
+            val text = userMessage.value.text.trim()
+            if (text.isNotBlank()) {
+                updateUserMessage(TextFieldValue(""))
+                handleAgentMessage(text)
+                return
+            }
+        }
         messageCoordinationDelegate.sendUserMessage(promptFunctionType)
     }
 
     fun sendTextMessage(text: String, promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
+        if (_agentMode.value && promptFunctionType == PromptFunctionType.CHAT) {
+            val normalized = text.trim()
+            if (normalized.isNotBlank()) {
+                handleAgentMessage(normalized)
+                return
+            }
+        }
         messageCoordinationDelegate.sendUserMessage(
             promptFunctionType = promptFunctionType,
             messageTextOverride = text
@@ -1705,9 +1724,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
                     _showAiComputer.value = false
                     AppLogger.d(TAG, "AI电脑已关闭（由于打开工作区）")
                 }
-                if (_showPlanTree.value) {
-                    _showPlanTree.value = false
-                }
+                // Agent mode stays active as a toggle, no need to reset on workspace open
 
                 val chatId = awaitWorkspaceChatId()
                 if (chatId != null) {
@@ -2284,7 +2301,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     fun onPlanTreeButtonClick() {
-        togglePlanTree()
+        toggleAgentMode()
     }
 
     // AI电脑控制方法
@@ -2295,9 +2312,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
                 _showWebView.value = false
                 AppLogger.d(TAG, "工作区已关闭（由于打开AI电脑）")
             }
-            if (!_showAiComputer.value && _showPlanTree.value) {
-                _showPlanTree.value = false
-            }
+            // Agent mode stays as a toggle, not a panel — no need to close it
             
             val newShowState = !_showAiComputer.value
             _showAiComputer.value = newShowState
@@ -2320,19 +2335,6 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     // ---- Plan Tree 控制方法 ----
-    fun togglePlanTree() {
-        if (!_showPlanTree.value) {
-            // 打开编排树面板时关闭其他面板
-            if (_showWebView.value) {
-                _showWebView.value = false
-            }
-            if (_showAiComputer.value) {
-                _showAiComputer.value = false
-            }
-        }
-        _showPlanTree.value = !_showPlanTree.value
-    }
-
     private fun releasePlanTreeExecution(resetSession: Boolean = true) {
         planTaskSessionJob?.cancel()
         planTaskSessionJob = null
@@ -2343,7 +2345,8 @@ class ChatViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    fun createPlanFromGoal(goal: String) {
+    /** Agent 模式下处理用户消息：创建编排任务 + 在 chat 中插入卡片消息 */
+    fun handleAgentMessage(goal: String) {
         val normalizedGoal = goal.trim()
         if (normalizedGoal.isBlank()) {
             uiStateDelegate.showToast("请输入任务目标")
@@ -2352,54 +2355,84 @@ class ChatViewModel(private val context: Context) : ViewModel() {
 
         viewModelScope.launch {
             try {
+                val chatId = currentChatId.value ?: return@launch
                 releasePlanTreeExecution()
+                reportedPlanTerminalTaskId = null
+
+                val userMsg = ChatMessage(sender = "user", content = normalizedGoal)
+                chatHistoryDelegate.addMessageToChat(userMsg, chatId)
 
                 val executor = PlanTreeExecutor(context)
                 planTreeExecutor = executor
 
-                // 观察 task session 变化
+                var planCardInserted = false
                 planTaskSessionJob = launch {
                     executor.taskSession.collect { session ->
                         _taskSession.value = session
+
+                        if (session != null && !planCardInserted) {
+                            planCardInserted = true
+                            chatHistoryDelegate.addMessageToChat(
+                                ChatMessage(
+                                    sender = "ai",
+                                    content = "\u23F3 正在生成编排计划...",
+                                    planSessionId = session.taskId
+                                ),
+                                chatId
+                            )
+                        }
+
+                        if (session != null && session.isTerminal && reportedPlanTerminalTaskId != session.taskId) {
+                            reportedPlanTerminalTaskId = session.taskId
+                            val resultText = when (session.status) {
+                                TaskSessionStatus.COMPLETED -> {
+                                    session.planNodes
+                                        .filter { it.status == com.ai.assistance.metaagent.core.plan.model.PlanNodeStatus.DONE }
+                                        .mapNotNull { it.resultSummary.takeIf { summary -> summary.isNotBlank() } }
+                                        .lastOrNull()
+                                        ?: session.resultSummary.ifBlank { "任务已完成" }
+                                }
+                                TaskSessionStatus.CANCELLED -> "任务已取消"
+                                TaskSessionStatus.FAILED -> {
+                                    session.events.lastOrNull { it.message.isNotBlank() }?.message
+                                        ?: "任务执行失败"
+                                }
+                                else -> session.resultSummary.ifBlank { "任务状态已更新" }
+                            }
+
+                            val resultTitle = when (session.status) {
+                                TaskSessionStatus.COMPLETED -> "\uD83D\uDCCB **任务完成**"
+                                TaskSessionStatus.CANCELLED -> "\u26A0\uFE0F **任务已取消**"
+                                TaskSessionStatus.FAILED -> "\u274C **任务失败**"
+                                else -> "\uD83D\uDCCC **任务状态更新**"
+                            }
+
+                            chatHistoryDelegate.addMessageToChat(
+                                ChatMessage(
+                                    sender = "ai",
+                                    content = "$resultTitle\n\n$resultText"
+                                ),
+                                chatId
+                            )
+                        }
                     }
                 }
 
-                // 创建任务
                 executor.createTask(normalizedGoal)
-
-                // 确保面板打开
-                _showPlanTree.value = true
             } catch (e: Exception) {
-                AppLogger.e(TAG, "创建编排树失败", e)
+                AppLogger.e(TAG, "创建编排任务失败", e)
                 releasePlanTreeExecution()
-                uiStateDelegate.showErrorMessage("创建编排树失败: ${e.message}")
+                uiStateDelegate.showErrorMessage("创建编排任务失败: ${e.message}")
             }
         }
     }
-
-    fun approvePlan() {
-        planTreeExecutor?.approvePlan()
-    }
-
-    fun rejectPlan(feedback: String = "") {
-        planTreeExecutor?.rejectPlan(feedback)
-    }
-
-    fun pausePlan() {
-        planTreeExecutor?.pauseExecution()
-    }
-
-    fun resumePlan() {
-        planTreeExecutor?.resumeExecution()
-    }
-
-    fun cancelPlan() {
-        planTreeExecutor?.cancelTask()
-    }
-
+    fun approvePlan() { planTreeExecutor?.approvePlan() }
+    fun rejectPlan(feedback: String = "") { planTreeExecutor?.rejectPlan(feedback) }
+    fun pausePlan() { planTreeExecutor?.pauseExecution() }
+    fun resumePlan() { planTreeExecutor?.resumeExecution() }
+    fun cancelPlan() { planTreeExecutor?.cancelTask() }
     fun clearPlan() {
         releasePlanTreeExecution()
-        _showPlanTree.value = false
     }
 
 
@@ -2548,4 +2581,5 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
 }
+
 

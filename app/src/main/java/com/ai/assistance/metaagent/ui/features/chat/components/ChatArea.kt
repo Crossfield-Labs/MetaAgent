@@ -69,6 +69,7 @@ import androidx.compose.material.icons.filled.Summarize
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.draw.alpha
 import com.ai.assistance.metaagent.api.chat.llmprovider.MediaLinkParser
+import com.ai.assistance.metaagent.core.plan.model.TaskSession
 import com.ai.assistance.metaagent.ui.features.chat.components.style.cursor.CursorStyleChatMessage
 import com.ai.assistance.metaagent.ui.features.chat.components.style.bubble.BubbleImageStyleConfig
 import com.ai.assistance.metaagent.ui.features.chat.components.style.bubble.BubbleStyleChatMessage
@@ -227,6 +228,12 @@ fun ChatArea(
     bubbleAiContentPaddingLeft: Float = 12f,
     bubbleAiContentPaddingRight: Float = 12f,
     showChatFloatingDotsAnimation: Boolean = true,
+    taskSession: TaskSession? = null,
+    onApprovePlan: () -> Unit = {},
+    onRejectPlan: (String) -> Unit = {},
+    onPausePlan: () -> Unit = {},
+    onResumePlan: () -> Unit = {},
+    onCancelPlan: () -> Unit = {},
 ) {
     // 记住当前深度状态，但当chatHistory发生变化时重置为1
     var currentDepth = remember(chatHistory) { mutableStateOf(1) }
@@ -323,6 +330,12 @@ fun ChatArea(
                         bubbleUserContentPaddingRight = bubbleUserContentPaddingRight,
                         bubbleAiContentPaddingLeft = bubbleAiContentPaddingLeft,
                         bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
+                        taskSession = taskSession,
+                        onApprovePlan = onApprovePlan,
+                        onRejectPlan = onRejectPlan,
+                        onPausePlan = onPausePlan,
+                        onResumePlan = onResumePlan,
+                        onCancelPlan = onCancelPlan,
                     )
                 }
 
@@ -406,6 +419,12 @@ private fun MessageItem(
     bubbleUserContentPaddingRight: Float = 12f,
     bubbleAiContentPaddingLeft: Float = 12f,
     bubbleAiContentPaddingRight: Float = 12f,
+    taskSession: TaskSession? = null,
+    onApprovePlan: () -> Unit = {},
+    onRejectPlan: (String) -> Unit = {},
+    onPausePlan: () -> Unit = {},
+    onResumePlan: () -> Unit = {},
+    onCancelPlan: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var showContextMenu by remember { mutableStateOf(false) }
@@ -439,6 +458,19 @@ private fun MessageItem(
                 },
             ),
     ) {
+        if (message.isPlanCard && taskSession != null && message.planSessionId == taskSession.taskId) {
+            PlanTreeCard(
+                taskSession = taskSession,
+                onApprove = onApprovePlan,
+                onReject = onRejectPlan,
+                onPause = onPausePlan,
+                onResume = onResumePlan,
+                onCancel = onCancelPlan,
+                modifier = Modifier.fillMaxWidth()
+            )
+            return
+        }
+
         when (chatStyle) {
             ChatStyle.CURSOR -> {
                 CursorStyleChatMessage(

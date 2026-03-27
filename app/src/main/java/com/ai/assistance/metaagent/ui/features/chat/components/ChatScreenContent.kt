@@ -80,6 +80,9 @@ import com.ai.assistance.metaagent.R
 import com.ai.assistance.metaagent.ui.features.chat.components.MessageEditor
 import kotlin.math.roundToInt
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.ui.text.font.FontWeight
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -151,6 +154,7 @@ fun ChatScreenContent(
 
     // 获取WebView状态
     val showWebView = actualViewModel.showWebView.collectAsState().value
+    val taskSession by actualViewModel.taskSession.collectAsState()
     
     // 使用 rememberLocal 持久化历史记录显示设置
     var historyDisplayMode by rememberLocal(
@@ -341,13 +345,53 @@ fun ChatScreenContent(
                         )
                     }
 
-                    // ⋮ 更多菜单
-                    IconButton(onClick = { /* TODO: more menu */ }) {
+                    // ── 右侧功能按钮（原全局 TopAppBar actions） ──
+
+                    // 编排树按钮
+                    val agentMode by actualViewModel.agentMode.collectAsState()
+                    IconButton(onClick = { actualViewModel.onPlanTreeButtonClick() }) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            imageVector = Icons.Default.AccountTree,
+                            contentDescription = "任务编排",
+                            tint = if (agentMode) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+
+                    // 终端 / AI 电脑按钮
+                    val showAiComputer by actualViewModel.showAiComputer.collectAsState()
+                    val isWorkspacePreparing by actualViewModel.isWorkspacePreparing.collectAsState()
+                    IconButton(
+                        enabled = !isWorkspacePreparing,
+                        onClick = { actualViewModel.onAiComputerButtonClick() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Terminal,
+                            contentDescription = stringResource(R.string.ai_computer),
+                            tint = if (showAiComputer) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // 代码工作区按钮
+                    IconButton(
+                        enabled = !isWorkspacePreparing,
+                        onClick = { actualViewModel.onWorkspaceButtonClick() }
+                    ) {
+                        if (isWorkspacePreparing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = stringResource(R.string.code_editor),
+                                tint = if (showWebView) MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -410,6 +454,12 @@ fun ChatScreenContent(
                         bubbleAiContentPaddingLeft = bubbleAiContentPaddingLeft,
                         bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
                         showChatFloatingDotsAnimation = showChatFloatingDotsAnimation,
+                        taskSession = taskSession,
+                        onApprovePlan = { actualViewModel.approvePlan() },
+                        onRejectPlan = { feedback -> actualViewModel.rejectPlan(feedback) },
+                        onPausePlan = { actualViewModel.pausePlan() },
+                        onResumePlan = { actualViewModel.resumePlan() },
+                        onCancelPlan = { actualViewModel.cancelPlan() },
                 )
                 ChatScreenHeader(
                         modifier =
@@ -488,6 +538,12 @@ fun ChatScreenContent(
                         bubbleUserContentPaddingRight = bubbleUserContentPaddingRight,
                         bubbleAiContentPaddingLeft = bubbleAiContentPaddingLeft,
                         bubbleAiContentPaddingRight = bubbleAiContentPaddingRight,
+                        taskSession = taskSession,
+                        onApprovePlan = { actualViewModel.approvePlan() },
+                        onRejectPlan = { feedback -> actualViewModel.rejectPlan(feedback) },
+                        onPausePlan = { actualViewModel.pausePlan() },
+                        onResumePlan = { actualViewModel.resumePlan() },
+                        onCancelPlan = { actualViewModel.cancelPlan() },
                 )
             }
         }
