@@ -432,15 +432,7 @@ class PhoneAgent(
             AppLogger.d("PhoneAgent", "[$agentId] run: starting first step for task='$task', hasShowerDisplayAtStart=$hasShowerDisplayAtStart")
             awaitIfPaused()
             var result = _executeStep(task, isFirst = true)
-            val firstAction = result.action
-            val firstStatusText = when {
-                result.finished -> result.message ?: context.getString(R.string.phone_agent_completed)
-                firstAction != null && firstAction.metadata == "do" -> {
-                    val actionName = firstAction.actionName ?: ""
-                    if (actionName.isNotEmpty()) context.getString(R.string.phone_agent_executing_action, actionName) else context.getString(R.string.phone_agent_executing)
-                }
-                else -> context.getString(R.string.phone_agent_thinking)
-            }
+            val firstStatusText = buildOverlayStatusText(result)
 
             if (!useShowerUi) {
                 val hasShowerNow = hasShowerDisplay("Error re-checking Shower virtual display state after first step")
@@ -501,15 +493,7 @@ class PhoneAgent(
             while (_stepCount < config.maxSteps) {
                 awaitIfPaused()
                 result = _executeStep(null, isFirst = false)
-                val action = result.action
-                val statusText = when {
-                    result.finished -> result.message ?: context.getString(R.string.phone_agent_completed)
-                    action != null && action.metadata == "do" -> {
-                        val actionName = action.actionName ?: ""
-                        if (actionName.isNotEmpty()) context.getString(R.string.phone_agent_executing_action, actionName) else context.getString(R.string.phone_agent_executing)
-                    }
-                    else -> context.getString(R.string.phone_agent_thinking)
-                }
+                val statusText = buildOverlayStatusText(result)
 
                 if (!useShowerUi) {
                     val hasShowerNow = hasShowerDisplay("Error re-checking Shower state in loop")
@@ -681,6 +665,59 @@ class PhoneAgent(
             return thinkTag to (answerTag ?: full)
         }
         return null to full
+    }
+
+    private fun buildOverlayStatusText(result: StepResult): String {
+        val messageLine = result.message
+            ?.lineSequence()
+            ?.map { it.trim() }
+            ?.firstOrNull { it.isNotBlank() }
+        val thinkingLine = result.thinking
+            ?.lineSequence()
+            ?.map { it.trim().removePrefix("<think>").removeSuffix("</think>") }
+            ?.firstOrNull { it.isNotBlank() }
+
+        if (result.finished && !messageLine.isNullOrBlank()) {
+            return messageLine.take(72)
+        }
+
+        if (!thinkingLine.isNullOrBlank() && !isGenericOverlayText(thinkingLine)) {
+            return thinkingLine.take(72)
+        }
+
+        if (!messageLine.isNullOrBlank() && !isGenericOverlayText(messageLine)) {
+            return messageLine.take(72)
+        }
+
+        val action = result.action
+        if (action != null && action.metadata == "do") {
+            val actionName = action.actionName ?: ""
+            if (actionName.isNotEmpty()) {
+                return context.getString(R.string.phone_agent_executing_action, actionName)
+            }
+            return context.getString(R.string.phone_agent_executing)
+        }
+
+        if (result.finished) {
+            return context.getString(R.string.phone_agent_completed)
+        }
+
+        return context.getString(R.string.phone_agent_thinking)
+    }
+
+    private fun isGenericOverlayText(text: String): Boolean {
+        val normalized = text.trim().lowercase()
+        return normalized == "thinking" ||
+            normalized == "task completed" ||
+            normalized == "task finished." ||
+            normalized == "task finished" ||
+            normalized.startsWith("tap") ||
+            normalized.startsWith("type") ||
+            normalized.startsWith("swipe") ||
+            normalized.startsWith("back") ||
+            normalized.startsWith("home") ||
+            normalized.startsWith("launch") ||
+            normalized.startsWith("executing")
     }
 
     private fun parseAgentAction(raw: String): ParsedAgentAction {

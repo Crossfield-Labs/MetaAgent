@@ -145,7 +145,14 @@ sealed class Screen(
             val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
             val context = LocalContext.current
             val chatHistoryManager = com.ai.assistance.metaagent.data.repository.ChatHistoryManager.getInstance(context)
+            val displayPreferencesManager = com.ai.assistance.metaagent.data.preferences.DisplayPreferencesManager.getInstance(context)
             val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+            // 收集用户全局头像 URI
+            val globalUserAvatarUriString by displayPreferencesManager.globalUserAvatarUri.collectAsState(initial = null)
+            val avatarUri = remember(globalUserAvatarUriString) {
+                globalUserAvatarUriString?.let { android.net.Uri.parse(it) }
+            }
 
             // 收集真实聊天历史
             val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
@@ -177,6 +184,7 @@ sealed class Screen(
 
             MetaAgentHomeScreen(
                     conversations = conversations,
+                    avatarUri = avatarUri,
                     onConversationClick = { chatId ->
                         // 设置当前聊天ID并导航到聊天界面
                         scope.launch {
@@ -269,8 +277,46 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
+            val context = LocalContext.current
+            val displayPreferencesManager = com.ai.assistance.metaagent.data.preferences.DisplayPreferencesManager.getInstance(context)
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+            // 收集当前已保存的头像 URI
+            val globalUserAvatarUriString by displayPreferencesManager.globalUserAvatarUri.collectAsState(initial = null)
+            val avatarUri = remember(globalUserAvatarUriString) {
+                globalUserAvatarUriString?.let { android.net.Uri.parse(it) }
+            }
+
             com.ai.assistance.metaagent.ui.features.home.screens.UserProfileScreen(
                     onClose = onGoBack,
+                    avatarUri = avatarUri,
+                    onAvatarChanged = { croppedUri ->
+                        scope.launch {
+                            try {
+                                // 将裁剪结果复制到 app 内部私有目录，避免缓存文件被清理
+                                val destFile = java.io.File(
+                                    context.filesDir,
+                                    "user_avatar_${System.currentTimeMillis()}.jpg"
+                                )
+                                context.contentResolver.openInputStream(croppedUri)?.use { input ->
+                                    destFile.outputStream().use { output -> input.copyTo(output) }
+                                }
+                                // 删除旧头像文件（避免无限累积）
+                                globalUserAvatarUriString?.let { oldUriStr ->
+                                    val oldFile = java.io.File(android.net.Uri.parse(oldUriStr).path ?: "")
+                                    if (oldFile.exists() && oldFile.absolutePath.startsWith(context.filesDir.absolutePath)) {
+                                        oldFile.delete()
+                                    }
+                                }
+                                // 持久化保存到 DataStore
+                                displayPreferencesManager.saveDisplaySettings(
+                                    globalUserAvatarUri = android.net.Uri.fromFile(destFile).toString()
+                                )
+                            } catch (e: Exception) {
+                                com.ai.assistance.metaagent.util.AppLogger.e("UserProfile", "保存头像失败", e)
+                            }
+                        }
+                    },
                     onNavigate = { route ->
                         when (route) {
                             "settings" -> { navigateTo(Settings); updateNavItem(NavItem.Settings) }

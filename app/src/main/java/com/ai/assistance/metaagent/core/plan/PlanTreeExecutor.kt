@@ -13,6 +13,8 @@ import com.ai.assistance.metaagent.core.plan.model.TaskSessionStatus
 import com.ai.assistance.metaagent.core.tools.AIToolHandler
 import com.ai.assistance.metaagent.core.tools.AutomationExecutionResult
 import com.ai.assistance.metaagent.core.tools.MessageSendResultData
+import com.ai.assistance.metaagent.core.tools.agent.StepResult
+import com.ai.assistance.metaagent.core.tools.agent.UiAutomationStepCallbackRegistry
 import com.ai.assistance.metaagent.data.model.AITool
 import com.ai.assistance.metaagent.data.model.FunctionType
 import com.ai.assistance.metaagent.data.model.ToolParameter
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 class PlanTreeExecutor(
     private val context: Context
@@ -425,6 +428,8 @@ class PlanTreeExecutor(
 
     private suspend fun executeAndroidNode(node: PlanNode): Boolean {
         val session = _taskSession.value ?: return false
+        val callbackId = "plan-ui-${session.taskId}-${node.id}"
+        var observedStepCount = 0
         return try {
             val originalIntent = buildAndroidIntent(node, session)
             val maxSteps = resolveAndroidMaxSteps(node, session)
@@ -437,6 +442,16 @@ class PlanTreeExecutor(
             var lastFailureText = ""
             val maxAttempts = 2
 
+            UiAutomationStepCallbackRegistry.register(callbackId) { step ->
+                observedStepCount += 1
+                val latestMessage = summarizeUiAutomationStep(step)
+                val pseudoProgress = max(
+                    node.progress,
+                    (0.12f + observedStepCount * 0.06f).coerceAtMost(0.92f)
+                )
+                emitNodeProgress(node, pseudoProgress, latestMessage)
+            }
+
             for (attempt in 1..maxAttempts) {
                 emitNodeProgress(
                     node,
@@ -446,7 +461,8 @@ class PlanTreeExecutor(
 
                 val params = mutableListOf(
                     ToolParameter(name = "intent", value = currentIntent),
-                    ToolParameter(name = "max_steps", value = maxSteps.toString())
+                    ToolParameter(name = "max_steps", value = maxSteps.toString()),
+                    ToolParameter(name = "step_callback_id", value = callbackId)
                 )
                 if (!explicitAgentId.isNullOrBlank()) {
                     params += ToolParameter(name = "agent_id", value = explicitAgentId)
@@ -479,24 +495,26 @@ class PlanTreeExecutor(
                 val output = extractToolResultText(result.result)
 
                 if (automationResult == null) {
+                    val summary = summarizeResult(output, "UI automation task completed")
                     recordNodeResult(
                         nodeId = node.id,
-                        summary = summarizeResult(output, "UI automation task completed"),
+                        summary = summary,
                         detail = output.ifBlank { "UI automation completed the task" }.take(320),
                         rawData = output
                     )
-                    emitNodeProgress(node, 1f, "UI automation task completed")
+                    emitNodeProgress(node, 1f, summary)
                     return true
                 }
 
                 if (automationResult.executionSuccess) {
+                    val summary = extractAutomationDisplaySummary(automationResult)
                     recordNodeResult(
                         nodeId = node.id,
-                        summary = summarizeResult(output, "UI automation task completed"),
+                        summary = summary,
                         detail = output.ifBlank { "UI automation completed the task" }.take(320),
                         rawData = output
                     )
-                    emitNodeProgress(node, 1f, "UI automation task completed")
+                    emitNodeProgress(node, 1f, summary)
                     return true
                 }
 
@@ -542,6 +560,7 @@ class PlanTreeExecutor(
             recordNodeResult(node.id, "", e.message ?: "UI automation failed", e.stackTraceToString())
             false
         } finally {
+            UiAutomationStepCallbackRegistry.unregister(callbackId)
             returnToMetaAgentIfNeeded(node)
         }
     }
@@ -704,6 +723,57 @@ class PlanTreeExecutor(
             is AutomationExecutionResult -> buildAutomationResultText(resultData)
             null -> ""
             else -> resultData.toString().trim()
+        }
+    }
+
+    private fun summarizeUiAutomationStep(step: StepResult): String {
+        val messageLine = step.message
+            ?.lineSequence()
+            ?.map { it.trim() }
+            ?.firstOrNull { it.isNotBlank() }
+
+        val actionLine = step.action?.let { action ->
+            action.fields["text"]
+                ?.takeIf { it.isNotBlank() }
+                ?.let { text -> "${action.actionName ?: action.metadata}: $text" }
+                ?: (action.actionName ?: action.metadata)
+        }
+
+        return when {
+            step.finished && !messageLine.isNullOrBlank() -> messageLine.take(80)
+            !messageLine.isNullOrBlank() -> messageLine.take(80)
+            !actionLine.isNullOrBlank() -> "Running: ${actionLine.take(64)}"
+            !step.thinking.isNullOrBlank() -> step.thinking.trim().lineSequence().first().take(72)
+            else -> "UI automation is running"
+        }
+    }
+
+    private fun extractAutomationDisplaySummary(resultData: AutomationExecutionResult): String {
+        val finalBlock = resultData.executionMessage
+            .substringAfter("Final message:", "")
+            .substringBefore("\n\nFull conversation history:")
+            .trim()
+
+        val finalLines = finalBlock
+            .lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toList()
+
+        val preferredLine = when {
+            finalLines.isEmpty() -> null
+            finalLines.size > 1 && finalLines.first().length <= 10 -> finalLines[1]
+            else -> finalLines.first()
+        }
+
+        if (!preferredLine.isNullOrBlank()) {
+            return preferredLine.take(96)
+        }
+
+        return if (resultData.executionSuccess) {
+            "UI automation completed the task"
+        } else {
+            resultData.executionError?.take(96) ?: "UI automation did not complete the task"
         }
     }
 

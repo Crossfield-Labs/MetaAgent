@@ -34,6 +34,7 @@ import com.ai.assistance.metaagent.core.tools.agent.AgentConfig
 import com.ai.assistance.metaagent.core.tools.agent.PhoneAgent
 import com.ai.assistance.metaagent.core.tools.agent.ShowerController
 import com.ai.assistance.metaagent.core.tools.agent.ToolImplementations
+import com.ai.assistance.metaagent.core.tools.agent.UiAutomationStepCallbackRegistry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -411,6 +412,7 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
         val maxSteps = tool.parameters.find { it.name == "max_steps" }?.value?.toIntOrNull() ?: 20
         val requestedAgentId = tool.parameters.find { it.name == "agent_id" }?.value
         val targetApp = tool.parameters.find { it.name == "target_app" }?.value
+        val stepCallbackId = tool.parameters.find { it.name == "step_callback_id" }?.value
 
         if (intent.isNullOrBlank()) {
             return ToolResult(
@@ -470,10 +472,12 @@ open class StandardUITools(protected val context: Context) : ToolImplementations
             )
 
             val pausedState = MutableStateFlow(false)
+            val stepCallback = stepCallbackId?.let { UiAutomationStepCallbackRegistry.get(it) }
 
             val finalMessage = agent.run(
                 task = intent,
                 systemPrompt = systemPrompt,
+                onStep = stepCallback,
                 isPausedFlow = pausedState,
                 targetApp = targetApp
             )
