@@ -1,6 +1,7 @@
 package com.ai.assistance.metaagent.core.plan
 
 import android.content.Context
+import android.content.Intent
 import com.ai.assistance.metaagent.api.chat.EnhancedAIService
 import com.ai.assistance.metaagent.core.plan.model.PlanNode
 import com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter
@@ -10,6 +11,7 @@ import com.ai.assistance.metaagent.core.plan.model.TaskEventType
 import com.ai.assistance.metaagent.core.plan.model.TaskSession
 import com.ai.assistance.metaagent.core.plan.model.TaskSessionStatus
 import com.ai.assistance.metaagent.core.tools.AIToolHandler
+import com.ai.assistance.metaagent.core.tools.AutomationExecutionResult
 import com.ai.assistance.metaagent.core.tools.MessageSendResultData
 import com.ai.assistance.metaagent.data.model.AITool
 import com.ai.assistance.metaagent.data.model.FunctionType
@@ -424,55 +426,123 @@ class PlanTreeExecutor(
     private suspend fun executeAndroidNode(node: PlanNode): Boolean {
         val session = _taskSession.value ?: return false
         return try {
-            val intent = buildAndroidIntent(node, session)
+            val originalIntent = buildAndroidIntent(node, session)
             val maxSteps = resolveAndroidMaxSteps(node, session)
             val targetApp = node.toolParams["target_app"]?.let { resolvePlanParameterValue(it, session) }
+            val explicitAgentId = node.toolParams["agent_id"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
 
-            emitNodeProgress(node, 0.15f, "准备手机端操作")
-            emitNodeProgress(node, 0.42f, "启动 UI 子代理")
+            var currentIntent = originalIntent
+            var lastFailureText = ""
+            val maxAttempts = 2
 
-            val params = mutableListOf(
-                ToolParameter(name = "intent", value = intent),
-                ToolParameter(name = "max_steps", value = maxSteps.toString()),
-                ToolParameter(name = "agent_id", value = "plan_${node.id}")
-            )
-            if (!targetApp.isNullOrBlank()) {
-                params += ToolParameter(name = "target_app", value = targetApp)
+            for (attempt in 1..maxAttempts) {
+                emitNodeProgress(
+                    node,
+                    if (attempt == 1) 0.12f else 0.18f,
+                    "Starting UI automation attempt $attempt/$maxAttempts"
+                )
+
+                val params = mutableListOf(
+                    ToolParameter(name = "intent", value = currentIntent),
+                    ToolParameter(name = "max_steps", value = maxSteps.toString())
+                )
+                if (!explicitAgentId.isNullOrBlank()) {
+                    params += ToolParameter(name = "agent_id", value = explicitAgentId)
+                }
+                if (!targetApp.isNullOrBlank()) {
+                    params += ToolParameter(name = "target_app", value = targetApp)
+                }
+
+                val result = toolHandler.executeTool(
+                    AITool(
+                        name = node.toolName.ifBlank { "run_ui_subagent" },
+                        parameters = params,
+                        description = node.title
+                    )
+                )
+
+                if (!result.success) {
+                    val detail = result.error ?: result.result.toString().trim().ifBlank { "UI automation failed" }
+                    lastFailureText = detail
+                    recordNodeResult(
+                        nodeId = node.id,
+                        summary = "",
+                        detail = detail,
+                        rawData = result.error ?: result.result.toString()
+                    )
+                    return false
+                }
+
+                val automationResult = result.result as? AutomationExecutionResult
+                val output = extractToolResultText(result.result)
+
+                if (automationResult == null) {
+                    recordNodeResult(
+                        nodeId = node.id,
+                        summary = summarizeResult(output, "UI automation task completed"),
+                        detail = output.ifBlank { "UI automation completed the task" }.take(320),
+                        rawData = output
+                    )
+                    emitNodeProgress(node, 1f, "UI automation task completed")
+                    return true
+                }
+
+                if (automationResult.executionSuccess) {
+                    recordNodeResult(
+                        nodeId = node.id,
+                        summary = summarizeResult(output, "UI automation task completed"),
+                        detail = output.ifBlank { "UI automation completed the task" }.take(320),
+                        rawData = output
+                    )
+                    emitNodeProgress(node, 1f, "UI automation task completed")
+                    return true
+                }
+
+                lastFailureText = output.ifBlank {
+                    automationResult.executionError
+                        ?: "UI automation attempt $attempt did not finish the task"
+                }
+
+                if (attempt >= maxAttempts) {
+                    recordNodeResult(
+                        nodeId = node.id,
+                        summary = "",
+                        detail = lastFailureText,
+                        rawData = output
+                    )
+                    return false
+                }
+
+                updateSession(
+                    (_taskSession.value ?: session).appendEvent(
+                        TaskEventType.NODE_PROGRESS,
+                        nodeId = node.id,
+                        progress = 0.5f,
+                        message = "UI automation attempt $attempt did not finish. Retrying with a follow-up instruction."
+                    )
+                )
+
+                currentIntent = buildUiAutomationRetryIntent(
+                    node = node,
+                    originalIntent = originalIntent,
+                    previousIntent = currentIntent,
+                    previousResult = automationResult,
+                    failureSummary = lastFailureText
+                )
             }
 
-            val result = toolHandler.executeTool(
-                AITool(
-                    name = node.toolName.ifBlank { "run_ui_subagent" },
-                    parameters = params,
-                    description = node.title
-                )
-            )
-
-            if (!result.success) {
-                recordNodeResult(
-                    nodeId = node.id,
-                    summary = "",
-                    detail = result.error ?: result.result.toString().trim().ifBlank { "手机端任务执行失败" },
-                    rawData = result.error ?: result.result.toString()
-                )
-                return false
-            }
-
-            val output = extractToolResultText(result.result)
-            recordNodeResult(
-                nodeId = node.id,
-                summary = summarizeResult(output, "手机端任务完成"),
-                detail = output.ifBlank { "UI 子代理已完成任务" }.take(320),
-                rawData = output
-            )
-            emitNodeProgress(node, 1f, "手机端任务完成")
-            true
+            recordNodeResult(node.id, "", lastFailureText.ifBlank { "UI automation failed" }, lastFailureText)
+            false
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             AppLogger.e(TAG, "Android node failed: ${node.id}", e)
-            recordNodeResult(node.id, "", e.message ?: "手机端任务执行失败", e.stackTraceToString())
+            recordNodeResult(node.id, "", e.message ?: "UI automation failed", e.stackTraceToString())
             false
+        } finally {
+            returnToMetaAgentIfNeeded(node)
         }
     }
 
@@ -631,8 +701,85 @@ class PlanTreeExecutor(
     private fun extractToolResultText(resultData: Any?): String {
         return when (resultData) {
             is MessageSendResultData -> resultData.aiResponse ?: resultData.message
+            is AutomationExecutionResult -> buildAutomationResultText(resultData)
             null -> ""
             else -> resultData.toString().trim()
+        }
+    }
+
+    private fun buildAutomationResultText(resultData: AutomationExecutionResult): String {
+        val summary = buildString {
+            append(
+                if (resultData.executionSuccess) {
+                    "UI automation finished after ${resultData.executionSteps} steps."
+                } else {
+                    "UI automation did not finish after ${resultData.executionSteps} steps."
+                }
+            )
+            if (!resultData.executionError.isNullOrBlank()) {
+                append("\nFailure reason: ${resultData.executionError}")
+            }
+            if (resultData.executionMessage.isNotBlank()) {
+                append("\n${resultData.executionMessage}")
+            }
+        }
+        return summary.trim()
+    }
+
+    private fun buildUiAutomationRetryIntent(
+        node: PlanNode,
+        originalIntent: String,
+        previousIntent: String,
+        previousResult: AutomationExecutionResult,
+        failureSummary: String
+    ): String = buildString {
+        appendLine("The previous UI automation attempt did not fully complete.")
+        appendLine("Continue from the current phone state instead of restarting unless restart is required.")
+        appendLine()
+        appendLine("Task goal:")
+        appendLine(node.goal.ifBlank { node.title })
+        appendLine()
+        appendLine("Original intent:")
+        appendLine(originalIntent)
+        appendLine()
+        appendLine("Previous attempt intent:")
+        appendLine(previousIntent)
+        appendLine()
+        appendLine("Failure summary:")
+        appendLine(failureSummary)
+        if (!previousResult.executionError.isNullOrBlank()) {
+            appendLine()
+            appendLine("Execution error:")
+            appendLine(previousResult.executionError)
+        }
+        appendLine()
+        appendLine("Execution trace:")
+        appendLine(previousResult.executionMessage.take(1600))
+        appendLine()
+        appendLine("Finish the task. If the app is already open, continue from the current screen.")
+    }
+
+    private fun returnToMetaAgentIfNeeded(node: PlanNode) {
+        val session = _taskSession.value ?: return
+        val shouldReturn = node.toolParams["return_to_metaagent"]
+            ?.let { value ->
+                when (resolvePlanParameterValue(value, session).trim().lowercase()) {
+                    "false", "0", "no" -> false
+                    else -> true
+                }
+            }
+            ?: true
+
+        if (!shouldReturn) return
+
+        try {
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+            }
+        } catch (e: Exception) {
+            AppLogger.w(TAG, "Failed to return MetaAgent to foreground", e)
         }
     }
 

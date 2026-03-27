@@ -8,6 +8,7 @@ import com.ai.assistance.metaagent.core.plan.model.PlanNodeKind
 import com.ai.assistance.metaagent.core.plan.model.PlanNodeParameterValue
 import com.ai.assistance.metaagent.data.model.FunctionType
 import com.ai.assistance.metaagent.util.AppLogger
+import java.util.UUID
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -15,11 +16,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.floatOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import java.util.UUID
 
 object PlanTreeGenerator {
     private const val TAG = "PlanTreeGenerator"
@@ -34,13 +33,13 @@ object PlanTreeGenerator {
         PlanningToolHint("visit_web", "url or visit_key+link_number", "Open a page or visit a searched result"),
         PlanningToolHint("http_request", "url, method, body?", "Fetch structured web data or API responses"),
         PlanningToolHint("execute_intent", "action?, package?, component?, type?", "Open an Android app or jump to a screen"),
-        PlanningToolHint("run_ui_subagent", "intent, max_steps, target_app?", "Drive complex Android UI actions"),
+        PlanningToolHint("run_ui_subagent", "intent, max_steps, target_app?", "Take over a full Android UI task inside one app"),
         PlanningToolHint("execute_shell", "command", "Run shell commands in the local workspace"),
         PlanningToolHint("trigger_workflow", "workflow_id", "Run an existing workflow"),
         PlanningToolHint("list_files", "path", "Inspect workspace files"),
         PlanningToolHint("read_file", "path", "Read a file"),
         PlanningToolHint("write_file", "path, content", "Write a file"),
-        PlanningToolHint("send_message_to_ai", "message, chat_id?", "Send a message to another chat/agent")
+        PlanningToolHint("send_message_to_ai", "message, chat_id?", "Send a message to another chat or agent")
     )
 
     suspend fun generatePlan(
@@ -72,17 +71,17 @@ object PlanTreeGenerator {
                 fullResponse.append(chunk)
             }
 
-            parsePlanNodes(fullResponse.toString())
+            normalizePlanNodes(parsePlanNodes(fullResponse.toString()))
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to generate plan", e)
             listOf(
                 PlanNode(
-                    title = "执行目标",
+                    title = "Handle goal directly",
                     kind = PlanNodeKind.EXEC,
                     goal = goal,
                     adapter = PlanNodeAdapter.CHAT,
                     requiresApproval = true,
-                    explainToUser = "自动规划失败，先由对话节点直接处理整个目标"
+                    explainToUser = "Planning failed, so the goal falls back to a single chat node."
                 )
             )
         }
@@ -119,7 +118,7 @@ object PlanTreeGenerator {
                 fullResponse.append(chunk)
             }
 
-            parsePlanNodes(fullResponse.toString())
+            normalizePlanNodes(parsePlanNodes(fullResponse.toString()))
         } catch (e: Exception) {
             AppLogger.e(TAG, "Failed to replan", e)
             emptyList()
@@ -127,77 +126,66 @@ object PlanTreeGenerator {
     }
 
     private fun buildPlanPrompt(goal: String, hint: String): String = buildString {
-        appendLine("你是 MetaAgent 的编排引擎。")
-        appendLine("请把用户目标拆成一组可执行节点，输出 JSON 数组，不要输出任何额外解释。")
+        appendLine("You are MetaAgent's planning engine.")
+        appendLine("Break the user goal into a JSON array of executable plan nodes. Return JSON only.")
         appendLine()
-        appendLine("规则：")
-        appendLine("1. 节点数量控制在 3 到 8 个。")
-        appendLine("2. 使用 dependsOn 描述依赖关系。")
-        appendLine("3. 优先使用 TOOL 节点调用现成系统工具；只有在需要总结、解释、判断时才用 CHAT。")
-        appendLine("4. 需要复杂安卓界面操作时使用 ANDROID。")
-        appendLine("5. 复杂或高风险节点设置 requiresApproval=true。")
-        appendLine("6. explainToUser 必须是给用户看的简洁中文说明。")
-        appendLine("7. 如果后续节点要引用前序节点结果，在 toolParams 中使用引用对象：{\"type\":\"ref\",\"nodeId\":\"前序节点id\"}。")
-        appendLine("8. toolParams 的静态值可以直接写字符串，也可以写 {\"type\":\"static\",\"value\":\"...\"}。")
+        appendLine("Rules:")
+        appendLine("1. Keep the plan between 2 and 6 nodes.")
+        appendLine("2. Use dependsOn to express dependencies.")
+        appendLine("3. Prefer TOOL nodes for concrete system actions. Use CHAT only for analysis, summarization, or explanation.")
+        appendLine("4. If the task requires multiple Android UI actions inside one app, prefer a single ANDROID main node.")
+        appendLine("5. The default toolName for an ANDROID main node should be run_ui_subagent.")
+        appendLine("6. Do not split 'open app' into execute_intent and then another ANDROID node unless the task is only to open the app.")
+        appendLine("7. For Android UI automation nodes, include target_app whenever possible.")
+        appendLine("8. Set requiresApproval=true for risky nodes.")
+        appendLine("9. explainToUser must be a short user-facing sentence.")
+        appendLine("10. If a later node depends on an earlier result, use a ref object inside toolParams: {\"type\":\"ref\",\"nodeId\":\"n1\"}.")
+        appendLine("11. Static parameter values can be plain strings or {\"type\":\"static\",\"value\":\"...\"}.")
         appendLine()
-        appendLine("可用工具白名单：")
+        appendLine("Available planning tool hints:")
         planningToolHints.forEach { hintItem ->
             appendLine("- ${hintItem.name}: params=${hintItem.params}; use=${hintItem.useCase}")
         }
         appendLine()
-        appendLine("输出格式示例：")
+        appendLine("Example output:")
         appendLine(
             """
             [
               {
                 "id": "n1",
-                "title": "打开小红书",
-                "goal": "启动小红书并进入搜索界面",
-                "adapter": "TOOL",
-                "toolName": "execute_intent",
-                "toolParams": {
-                  "package": "com.xingin.xhs",
-                  "type": "activity"
-                },
-                "dependsOn": [],
-                "requiresApproval": false,
-                "explainToUser": "先把目标应用打开",
-                "confidence": 0.9
-              },
-              {
-                "id": "n2",
-                "title": "搜索保研帖子",
-                "goal": "在小红书搜索最新保研信息帖子并提取重点",
+                "title": "Run UI automation in Xiaohongshu",
+                "goal": "Open Xiaohongshu, search for the newest recommendation-postgraduate posts, and extract 3 key points",
                 "adapter": "ANDROID",
                 "toolName": "run_ui_subagent",
                 "toolParams": {
-                  "intent": "打开小红书并搜索最新保研信息帖子，整理3条重点",
+                  "intent": "Open Xiaohongshu, search for the newest recommendation-postgraduate posts, and extract 3 key points",
+                  "target_app": "com.xingin.xhs",
                   "max_steps": "14"
                 },
-                "dependsOn": ["n1"],
+                "dependsOn": [],
                 "requiresApproval": false,
-                "explainToUser": "让手机自动完成界面搜索和收集",
-                "confidence": 0.78
+                "explainToUser": "Let the UI automation sub-agent take over the phone and collect the result.",
+                "confidence": 0.82
               },
               {
-                "id": "n3",
-                "title": "整理结果",
-                "goal": "根据搜索结果整理一段可直接发送给用户的摘要",
+                "id": "n2",
+                "title": "Summarize the findings",
+                "goal": "Turn the collected result into a short user-facing summary",
                 "adapter": "CHAT",
-                "dependsOn": ["n2"],
+                "dependsOn": ["n1"],
                 "requiresApproval": false,
-                "explainToUser": "把收集到的信息整理成可读结论",
+                "explainToUser": "Summarize the collected information into a readable answer.",
                 "confidence": 0.92
               }
             ]
             """.trimIndent()
         )
         appendLine()
-        appendLine("用户目标：")
+        appendLine("User goal:")
         appendLine(goal)
         if (hint.isNotBlank()) {
             appendLine()
-            appendLine("额外信息：")
+            appendLine("Additional hint:")
             appendLine(hint)
         }
     }
@@ -208,25 +196,26 @@ object PlanTreeGenerator {
         failedNode: PlanNode,
         failureReason: String
     ): String = buildString {
-        appendLine("你是 MetaAgent 的重新规划引擎。")
-        appendLine("请基于已完成进度和失败原因，生成新的后续节点 JSON 数组。")
-        appendLine("要求与正常规划一致：可以使用 TOOL / CHAT / ANDROID / CLI，支持 toolName 和 toolParams。")
-        appendLine("不要重复已完成节点。")
+        appendLine("You are MetaAgent's replanning engine.")
+        appendLine("Based on the completed progress and failure reason, output a new JSON array of follow-up plan nodes.")
+        appendLine("You may use TOOL, CHAT, ANDROID, and CLI nodes with toolName and toolParams.")
+        appendLine("If the failed step belongs to a complex in-app UI task, prefer regenerating one ANDROID main node instead of many tiny tool nodes.")
+        appendLine("Do not repeat completed nodes.")
         appendLine()
-        appendLine("原始目标：")
+        appendLine("Original goal:")
         appendLine(originalGoal)
         appendLine()
-        appendLine("已完成节点：")
+        appendLine("Completed nodes:")
         completedNodes.forEach { node ->
-            appendLine("- ${node.id} ${node.title}: ${node.resultSummary.ifBlank { "完成" }}")
+            appendLine("- ${node.id} ${node.title}: ${node.resultSummary.ifBlank { "done" }}")
         }
         appendLine()
-        appendLine("失败节点：")
+        appendLine("Failed node:")
         appendLine("- ${failedNode.id} ${failedNode.title}")
         appendLine("  goal=${failedNode.goal}")
         appendLine("  reason=$failureReason")
         appendLine()
-        appendLine("注意：新节点的 dependsOn 可以引用已完成节点 id；如果需要消费前序节点结果，用 toolParams 中的 ref 对象。")
+        appendLine("Note: new dependsOn values may point to completed node ids, and toolParams may use ref objects.")
     }
 
     internal fun parsePlanNodes(response: String): List<PlanNode> {
@@ -251,11 +240,74 @@ object PlanTreeGenerator {
         }
     }
 
+    private fun normalizePlanNodes(nodes: List<PlanNode>): List<PlanNode> {
+        if (nodes.isEmpty()) return nodes
+
+        val nodesById = nodes.associateBy { it.id }
+        val dependentCount = nodes
+            .flatMap { node -> node.dependsOn.map { dependency -> dependency to node.id } }
+            .groupingBy { it.first }
+            .eachCount()
+
+        val launchNodesToRemove = mutableSetOf<String>()
+
+        val normalized = nodes.map { node ->
+            if (node.adapter != PlanNodeAdapter.ANDROID) {
+                return@map node
+            }
+
+            val launchNode = node.dependsOn
+                .mapNotNull { nodesById[it] }
+                .firstOrNull { dependency ->
+                    dependency.adapter == PlanNodeAdapter.TOOL &&
+                        dependency.toolName == "execute_intent" &&
+                        (dependentCount[dependency.id] ?: 0) == 1
+                } ?: return@map node
+
+            launchNodesToRemove += launchNode.id
+
+            val targetPackage = (launchNode.toolParams["package"] as? PlanNodeParameterValue.StaticValue)
+                ?.value
+                ?.takeIf { it.isNotBlank() }
+            val currentIntent = (node.toolParams["intent"] as? PlanNodeParameterValue.StaticValue)
+                ?.value
+                ?.trim()
+                .orEmpty()
+            val launchInstruction = launchNode.goal.ifBlank { launchNode.title }.trim()
+            val mergedIntent = when {
+                currentIntent.isBlank() -> launchInstruction
+                currentIntent.startsWith("Open ") || currentIntent.contains(launchInstruction) -> currentIntent
+                else -> "$launchInstruction, then $currentIntent"
+            }
+
+            node.copy(
+                toolName = node.toolName.ifBlank { "run_ui_subagent" },
+                dependsOn = node.dependsOn.filterNot { it == launchNode.id },
+                toolParams = buildMap {
+                    putAll(node.toolParams)
+                    put("intent", PlanNodeParameterValue.StaticValue(mergedIntent))
+                    if (!targetPackage.isNullOrBlank() && !containsKey("target_app")) {
+                        put("target_app", PlanNodeParameterValue.StaticValue(targetPackage))
+                    }
+                }
+            )
+        }
+
+        return normalized
+            .filterNot { launchNodesToRemove.contains(it.id) }
+            .map { node ->
+                if (launchNodesToRemove.isEmpty()) {
+                    node
+                } else {
+                    node.copy(dependsOn = node.dependsOn.filterNot { launchNodesToRemove.contains(it) })
+                }
+            }
+    }
+
     private fun parseNodeFromJson(obj: JsonObject): PlanNode {
         return PlanNode(
-            id = obj["id"]?.jsonPrimitive?.contentOrNull?.ifBlank { null }
-                ?: generateStableNodeId(),
-            title = obj["title"]?.jsonPrimitive?.contentOrNull ?: "未命名任务",
+            id = obj["id"]?.jsonPrimitive?.contentOrNull?.ifBlank { null } ?: generateStableNodeId(),
+            title = obj["title"]?.jsonPrimitive?.contentOrNull ?: "Untitled task",
             kind = PlanNodeKind.EXEC,
             goal = obj["goal"]?.jsonPrimitive?.contentOrNull ?: "",
             adapter = parseAdapter(obj["adapter"]?.jsonPrimitive?.contentOrNull),
@@ -303,7 +355,7 @@ object PlanTreeGenerator {
             "TOOL" -> PlanNodeAdapter.TOOL
             "CLAUDE" -> PlanNodeAdapter.CLAUDE
             "CLI" -> PlanNodeAdapter.CLI
-            "ANDROID" -> PlanNodeAdapter.ANDROID
+            "ANDROID", "UI_AUTOMATION" -> PlanNodeAdapter.ANDROID
             "LOCAL_RUNNER" -> PlanNodeAdapter.LOCAL_RUNNER
             else -> PlanNodeAdapter.CHAT
         }

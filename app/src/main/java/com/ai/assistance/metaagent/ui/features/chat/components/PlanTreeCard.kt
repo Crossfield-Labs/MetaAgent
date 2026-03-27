@@ -320,7 +320,7 @@ private fun AdapterBadge(adapter: com.ai.assistance.metaagent.core.plan.model.Pl
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CLI ->
             Icons.Outlined.Terminal to "CLI"
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.ANDROID ->
-            Icons.Outlined.PhoneAndroid to "Android"
+            Icons.Outlined.PhoneAndroid to "UI自动化"
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.LOCAL_RUNNER ->
             Icons.Outlined.Settings to "Runner"
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CHAT ->
