@@ -29,6 +29,9 @@ import com.ai.assistance.metaagent.ui.features.assistant.screens.AssistantConfig
 import com.ai.assistance.metaagent.ui.features.chat.screens.AIChatScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.MetaAgentHomeScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CourseSpaceScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.ReviewJourneyDemoScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.CourseMaterialDemoScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.CrossDeviceTaskDemoScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskCenterScreen
 import com.ai.assistance.metaagent.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.metaagent.ui.features.help.screens.HelpScreen
@@ -191,6 +194,9 @@ sealed class Screen(
                             chatHistoryManager.deleteChatHistory(chatId)
                         }
                     },
+                    onOpenReviewDemo = { navigateTo(ReviewJourneyDemo) },
+                    onOpenCourseDemo = { navigateTo(CourseMaterialDemo) },
+                    onOpenTaskDemo = { navigateTo(CrossDeviceTaskDemo) },
                     onBottomNavClick = { route ->
                         when (route) {
                             "meta_home" -> { /* already here */ }
@@ -294,7 +300,7 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             CourseSpaceScreen(
-                    onCourseClick = { /* TODO: course detail */ }
+                    onCourseClick = { navigateTo(CourseMaterialDemo) }
             )
         }
     }
@@ -312,8 +318,56 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             TaskCenterScreen(
-                    onTaskClick = { /* TODO: task detail */ }
+                    onTaskClick = { navigateTo(CrossDeviceTaskDemo) }
             )
+        }
+    }
+
+    data object ReviewJourneyDemo : Screen(parentScreen = MetaHome, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            ReviewJourneyDemoScreen(onBack = onGoBack)
+        }
+    }
+
+    data object CourseMaterialDemo : Screen(parentScreen = CourseSpace, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            CourseMaterialDemoScreen(onBack = onGoBack)
+        }
+    }
+
+    data object CrossDeviceTaskDemo : Screen(parentScreen = TaskCenter, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            CrossDeviceTaskDemoScreen(onBack = onGoBack)
         }
     }
 

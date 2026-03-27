@@ -67,6 +67,32 @@ enum class TaskStatus(val label: String) {
     FAILED("失败")
 }
 
+data class ReviewDrillItem(
+    val id: String,
+    val prompt: String,
+    val course: String,
+    val difficulty: String,
+    val mastery: Float,
+    val lastResult: String,
+    val nextRecommendation: String
+)
+
+data class LearningProfileField(
+    val title: String,
+    val value: String,
+    val evidence: String,
+    val usableIn: String
+)
+
+data class ActivePushItem(
+    val id: String,
+    val title: String,
+    val triggerReason: String,
+    val targetWindow: String,
+    val relatedState: String,
+    val suggestedAction: String
+)
+
 // ══════════════════════════════════════════
 // ChatHistory → MetaConversation 转换
 // ══════════════════════════════════════════
@@ -242,6 +268,90 @@ object MetaSampleData {
         TaskItem(
             "t4", "策略模式 vs 观察者模式对比", TaskStatus.COMPLETED,
             "昨天", 1f
+        )
+    )
+
+    val reviewDrills = listOf(
+        ReviewDrillItem(
+            id = "r1",
+            prompt = "TCP 拥塞控制的慢启动和拥塞避免分别在什么条件下切换？",
+            course = "计算机网络",
+            difficulty = "中等",
+            mastery = 0.46f,
+            lastResult = "上次答错，混淆了阈值变化",
+            nextRecommendation = "今晚 20:30 再推 1 题概念辨析"
+        ),
+        ReviewDrillItem(
+            id = "r2",
+            prompt = "观察者模式和发布订阅模式的核心差异是什么？",
+            course = "软件体系结构",
+            difficulty = "基础",
+            mastery = 0.72f,
+            lastResult = "最近两次答对，但解释不够完整",
+            nextRecommendation = "明天上午推荐 1 题场景判断"
+        ),
+        ReviewDrillItem(
+            id = "r3",
+            prompt = "CNN 中卷积核共享参数为什么能减少过拟合风险？",
+            course = "深度学习实践",
+            difficulty = "提升",
+            mastery = 0.58f,
+            lastResult = "能说出结论，但不会联系实验现象",
+            nextRecommendation = "实验完成后立即追问 1 题应用题"
+        )
+    )
+
+    val learningProfile = listOf(
+        LearningProfileField(
+            title = "当前薄弱点",
+            value = "TCP 拥塞控制阈值变化、模式区分题",
+            evidence = "来自最近 5 次复习题中 3 次错误记录",
+            usableIn = "用于复习推荐、问答时优先补背景解释"
+        ),
+        LearningProfileField(
+            title = "偏好学习方式",
+            value = "先看例子，再记抽象定义",
+            evidence = "观察者模式对比例题正确率高于纯定义题",
+            usableIn = "用于生成讲解顺序、题目展示方式"
+        ),
+        LearningProfileField(
+            title = "任务推进风格",
+            value = "倾向短链路可交付，接受 15-25 分钟的小任务",
+            evidence = "任务中心近 7 天完成任务平均时长 18 分钟",
+            usableIn = "用于主动推送的节奏与任务拆分"
+        ),
+        LearningProfileField(
+            title = "课程状态",
+            value = "软件体系结构稳定推进，计算机网络需要补复习闭环",
+            evidence = "课程进度 + 复习命中率 + 任务完成率组合判断",
+            usableIn = "用于课程摘要、下一步建议"
+        )
+    )
+
+    val activePushes = listOf(
+        ActivePushItem(
+            id = "p1",
+            title = "3 分钟复习提醒",
+            triggerReason = "你在计算机网络的薄弱点连续两天未复习",
+            targetWindow = "今晚 20:30 - 21:00",
+            relatedState = "复习状态：待回顾 4 题，掌握度低于 0.5",
+            suggestedAction = "直接进入 1 题快练，答后更新掌握度"
+        ),
+        ActivePushItem(
+            id = "p2",
+            title = "任务接力提醒",
+            triggerReason = "CNN 实验已运行到 75%，适合补一轮误差分析",
+            targetWindow = "实验结束后 10 分钟内",
+            relatedState = "任务状态：进行中；课程状态：深度学习实践正在推进",
+            suggestedAction = "推送实验复盘卡片和 2 个易错点"
+        ),
+        ActivePushItem(
+            id = "p3",
+            title = "课程收口提醒",
+            triggerReason = "软件体系结构本周材料学完，但复习覆盖不足",
+            targetWindow = "周日 16:00",
+            relatedState = "课程状态：进度 45%，复习完成率仅 38%",
+            suggestedAction = "推送本周总结 + 观察者模式专项复习"
         )
     )
 }
