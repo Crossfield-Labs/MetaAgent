@@ -167,6 +167,30 @@ class PlanTreeExecutor(
         val node = session.findNode(nodeId) ?: return
         if (node.status != PlanNodeStatus.BLOCKED) return
 
+        if (node.adapter == PlanNodeAdapter.PC && node.runtimeSessionId.isNotBlank()) {
+            updateSession(
+                session.updateNode(nodeId) {
+                    it.copy(
+                        status = PlanNodeStatus.PENDING,
+                        detail = "User replied: $response",
+                        awaitingUserPrompt = "",
+                        pendingUserInput = response
+                    )
+                }.copy(status = TaskSessionStatus.RUNNING)
+                    .appendEvent(
+                        TaskEventType.USER_INTERVENTION,
+                        nodeId = nodeId,
+                        message = "User replied to PC session: $response"
+                    )
+            )
+
+            executionJob?.cancel()
+            executionJob = scope.launch {
+                executeNodes()
+            }
+            return
+        }
+
         updateSession(
             session.updateNode(nodeId) {
                 it.copy(status = PlanNodeStatus.PENDING, detail = "用户补充：$response")
@@ -188,6 +212,33 @@ class PlanTreeExecutor(
         val session = _taskSession.value ?: return
         val node = session.findNode(nodeId) ?: return
         if (node.status != PlanNodeStatus.BLOCKED) return
+
+        if (node.adapter == PlanNodeAdapter.PC && node.runtimeSessionId.isNotBlank()) {
+            updateSession(
+                session.updateNode(nodeId) {
+                    it.copy(
+                        status = PlanNodeStatus.PENDING,
+                        requiresApproval = false,
+                        detail = "User confirmed / updated: $response",
+                        awaitingUserPrompt = "",
+                        pendingUserInput = response
+                    )
+                }.copy(
+                    status = TaskSessionStatus.RUNNING,
+                    activeNodeId = null
+                ).appendEvent(
+                    TaskEventType.USER_INTERVENTION,
+                    nodeId = nodeId,
+                    message = "User continued PC session: $response"
+                )
+            )
+
+            executionJob?.cancel()
+            executionJob = scope.launch {
+                executeNodes()
+            }
+            return
+        }
 
         updateSession(
             session.updateNode(nodeId) {
@@ -243,6 +294,24 @@ class PlanTreeExecutor(
             }
 
             val success = executeNode(nextNode)
+            val postExecutionSession = _taskSession.value
+            val postExecutionNode = postExecutionSession?.findNode(nextNode.id)
+            if (postExecutionSession?.status == TaskSessionStatus.WAITING_USER ||
+                postExecutionNode?.status == PlanNodeStatus.BLOCKED
+            ) {
+                updateSession(
+                    postExecutionSession.copy(activeNodeId = null)
+                        .appendEvent(
+                            TaskEventType.NODE_BLOCKED,
+                            nodeId = nextNode.id,
+                            message = postExecutionNode?.awaitingUserPrompt?.ifBlank {
+                                "PC session is waiting for your input."
+                            } ?: "PC session is waiting for your input."
+                        )
+                )
+                return
+            }
+
             if (success) {
                 updateSession(
                     _taskSession.value!!.updateNode(nextNode.id) {
@@ -306,7 +375,7 @@ class PlanTreeExecutor(
             PlanNodeAdapter.CLI,
             PlanNodeAdapter.LOCAL_RUNNER -> executeCliNode(node)
             PlanNodeAdapter.ANDROID -> executeAndroidNode(node)
-            PlanNodeAdapter.PC -> executePcNode(node)
+            PlanNodeAdapter.PC -> executePcSessionNode(node)
         }
     }
 
@@ -676,6 +745,161 @@ class PlanTreeExecutor(
         } catch (e: Exception) {
             AppLogger.e(TAG, "PC node failed: ${node.id}", e)
             recordNodeResult(node.id, "", e.message ?: "电脑端执行失败", e.stackTraceToString())
+            false
+        }
+    }
+
+    private suspend fun executePcSessionNode(node: PlanNode): Boolean {
+        val session = _taskSession.value ?: return false
+        return try {
+            val runner = node.toolParams["runner"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+                ?: "shell"
+            val workspace = node.toolParams["workspace"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                .orEmpty()
+            val task = node.toolParams["task"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+                ?: node.goal.ifBlank { node.title }
+            val command = node.toolParams["command"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+            val endpointOverride = node.toolParams["ws_url"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+            val sessionId = node.runtimeSessionId.trim().takeIf { it.isNotBlank() }
+            val pendingInput = node.pendingUserInput.trim()
+
+            val client = PcAgentWsClient(context)
+            emitNodeProgress(
+                node,
+                if (sessionId != null) 0.12f else 0.08f,
+                if (sessionId != null) "Resuming PC agent session" else "Connecting to PC agent"
+            )
+
+            val result = if (sessionId != null && pendingInput.isNotBlank()) {
+                client.submitUserInput(
+                    taskId = session.taskId,
+                    nodeId = node.id,
+                    sessionId = sessionId,
+                    userInput = pendingInput,
+                    endpointOverride = endpointOverride
+                ) { event ->
+                    when (event.event) {
+                        "pc.session.started",
+                        "pc.session.progress" -> {
+                            val safeProgress = event.progress
+                                ?.coerceIn(node.progress, 0.94f)
+                                ?: (node.progress + 0.06f).coerceAtMost(0.94f)
+                            emitNodeProgress(
+                                node,
+                                safeProgress,
+                                event.message.ifBlank { "PC agent is continuing the task" }
+                            )
+                        }
+                    }
+                }
+            } else {
+                client.execute(
+                    taskId = session.taskId,
+                    nodeId = node.id,
+                    startRequest = PcSessionStartRequest(
+                        runner = runner,
+                        workspace = workspace,
+                        task = task,
+                        goal = node.goal.ifBlank { node.title },
+                        command = command
+                    ),
+                    endpointOverride = endpointOverride
+                ) { event ->
+                    when (event.event) {
+                        "pc.session.started" -> {
+                            emitNodeProgress(
+                                node,
+                                event.progress ?: 0.14f,
+                                event.message.ifBlank { "PC agent started ($runner)" }
+                            )
+                        }
+
+                        "pc.session.progress" -> {
+                            val safeProgress = event.progress
+                                ?.coerceIn(node.progress, 0.94f)
+                                ?: (node.progress + 0.06f).coerceAtMost(0.94f)
+                            emitNodeProgress(
+                                node,
+                                safeProgress,
+                                event.message.ifBlank { "PC agent is executing the task" }
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (result.awaitingUser) {
+                val prompt = result.awaitingUserPrompt.ifBlank {
+                    "PC agent needs your input before continuing."
+                }
+                updateSession(
+                    (_taskSession.value ?: session).updateNode(node.id) {
+                        it.copy(
+                            status = PlanNodeStatus.BLOCKED,
+                            detail = prompt,
+                            runtimeSessionId = result.sessionId.orEmpty(),
+                            awaitingUserPrompt = prompt,
+                            pendingUserInput = ""
+                        )
+                    }.copy(
+                        status = TaskSessionStatus.WAITING_USER,
+                        activeNodeId = node.id
+                    )
+                )
+                return true
+            }
+
+            if (!result.success) {
+                recordNodeResult(
+                    nodeId = node.id,
+                    summary = "",
+                    detail = result.error.ifBlank { "PC execution failed" },
+                    rawData = result.error.ifBlank { result.finalMessage }
+                )
+                updateSession(
+                    (_taskSession.value ?: session).updateNode(node.id) {
+                        it.copy(
+                            runtimeSessionId = "",
+                            awaitingUserPrompt = "",
+                            pendingUserInput = ""
+                        )
+                    }
+                )
+                return false
+            }
+
+            val output = result.result.ifBlank { result.finalMessage }
+            recordNodeResult(
+                nodeId = node.id,
+                summary = summarizeResult(output, "PC task completed"),
+                detail = output.ifBlank { "PC agent completed the task" }.take(320),
+                rawData = output
+            )
+            updateSession(
+                (_taskSession.value ?: session).updateNode(node.id) {
+                    it.copy(
+                        runtimeSessionId = "",
+                        awaitingUserPrompt = "",
+                        pendingUserInput = ""
+                    )
+                }
+            )
+            emitNodeProgress(node, 1f, result.finalMessage.ifBlank { "PC task completed" })
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "PC session node failed: ${node.id}", e)
+            recordNodeResult(node.id, "", e.message ?: "PC execution failed", e.stackTraceToString())
             false
         }
     }

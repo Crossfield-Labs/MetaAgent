@@ -147,6 +147,8 @@ object PlanTreeGenerator {
         appendLine("14. TOOL -> CHAT -> UI_AUTOMATION is preferred when a tool gathers options and a later UI step executes one option.")
         appendLine("15. Use PC nodes for computer-side work such as inspecting a project, running tests, or asking a PC runner to create files.")
         appendLine("16. End user-facing tasks with a CHAT node that explains the final outcome.")
+        appendLine("17. If the user says 'ask me before continuing', 'confirm before the next step', or similar, create a CHAT gate node with requiresApproval=true before the continuation step.")
+        appendLine("18. When a read-only PC inspection is followed by a user confirmation gate, do not require approval on the inspection node itself.")
         appendLine()
         appendLine("Available planning tool hints:")
         planningToolHints.forEach { hintItem ->
@@ -319,7 +321,7 @@ object PlanTreeGenerator {
                   "task": "Check the current project directory structure and summarize the main folders"
                 },
                 "dependsOn": [],
-                "requiresApproval": true,
+                "requiresApproval": false,
                 "explainToUser": "Run a PC-side directory inspection and report the result.",
                 "confidence": 0.9
               },
@@ -331,6 +333,47 @@ object PlanTreeGenerator {
                 "dependsOn": ["n1"],
                 "requiresApproval": false,
                 "explainToUser": "Summarize the PC-side result for the user."
+              }
+            ]
+            """.trimIndent()
+        )
+        appendLine()
+        appendLine("Example for 'ask me before continuing' on PC:")
+        appendLine(
+            """
+            [
+              {
+                "id": "n1",
+                "title": "Inspect the current project directory on PC",
+                "goal": "Check the current project directory structure on the PC and collect the main folders and notable files",
+                "adapter": "PC",
+                "toolName": "pc.execute",
+                "toolParams": {
+                  "runner": "shell",
+                  "workspace": "D:/workspace/my-project",
+                  "task": "Inspect the current project directory structure and collect the main folders and notable files"
+                },
+                "dependsOn": [],
+                "requiresApproval": false,
+                "explainToUser": "Inspect the project structure on the PC first."
+              },
+              {
+                "id": "n2",
+                "title": "Ask the user whether to continue",
+                "goal": "Show the inspection result to the user and wait for confirmation before continuing the summary",
+                "adapter": "CHAT",
+                "dependsOn": ["n1"],
+                "requiresApproval": true,
+                "explainToUser": "Show the inspection result and wait for the user's decision."
+              },
+              {
+                "id": "n3",
+                "title": "Summarize the project structure",
+                "goal": "Summarize the project structure after the user confirms to continue",
+                "adapter": "CHAT",
+                "dependsOn": ["n2"],
+                "requiresApproval": false,
+                "explainToUser": "Continue with the final project summary after confirmation."
               }
             ]
             """.trimIndent()
@@ -459,7 +502,8 @@ object PlanTreeGenerator {
             }
 
         val withBridgeNodes = insertBridgeChatNodes(cleaned)
-        return ensureTerminalChatNode(withBridgeNodes)
+        val withTerminalChat = ensureTerminalChatNode(withBridgeNodes)
+        return normalizeApprovalGateNodes(withTerminalChat)
     }
 
     private fun insertBridgeChatNodes(nodes: List<PlanNode>): List<PlanNode> {
@@ -532,6 +576,37 @@ object PlanTreeGenerator {
         return nodes + summaryNode
     }
 
+    private fun normalizeApprovalGateNodes(nodes: List<PlanNode>): List<PlanNode> {
+        if (nodes.isEmpty()) return nodes
+
+        val gateNodeIds = nodes
+            .filter(::isUserDecisionGateNode)
+            .map { it.id }
+            .toSet()
+        if (gateNodeIds.isEmpty()) return nodes
+
+        return nodes.map { node ->
+            when {
+                node.id in gateNodeIds -> node.copy(
+                    requiresApproval = true,
+                    explainToUser = node.explainToUser.ifBlank {
+                        "Show the interim result and wait for the user's confirmation."
+                    }
+                )
+
+                node.adapter == PlanNodeAdapter.PC && gateNodeIds.any { gateId -> gateDependsOnNode(nodes, gateId, node.id) } -> {
+                    if (isReadOnlyPcInspectionNode(node)) {
+                        node.copy(requiresApproval = false)
+                    } else {
+                        node
+                    }
+                }
+
+                else -> node
+            }
+        }
+    }
+
     private fun shouldInsertBridgeNode(current: PlanNode, next: PlanNode): Boolean {
         if (next.adapter == PlanNodeAdapter.CHAT || current.adapter == PlanNodeAdapter.CHAT) return false
 
@@ -581,6 +656,71 @@ object PlanTreeGenerator {
             else ->
                 "Summarize the previous result and prepare the next step."
         }
+    }
+
+    private fun isUserDecisionGateNode(node: PlanNode): Boolean {
+        if (node.adapter != PlanNodeAdapter.CHAT) return false
+        val combinedText = listOf(node.title, node.goal, node.explainToUser)
+            .joinToString(" ")
+            .lowercase()
+        return listOf(
+            "ask the user whether to continue",
+            "ask the user before continuing",
+            "wait for confirmation before continuing",
+            "wait for the user's confirmation",
+            "whether to continue",
+            "confirm before continuing",
+            "先问我",
+            "确认后继续",
+            "是否继续",
+            "继续之前先确认"
+        ).any { combinedText.contains(it) }
+    }
+
+    private fun gateDependsOnNode(nodes: List<PlanNode>, gateNodeId: String, dependencyNodeId: String): Boolean {
+        val gateNode = nodes.firstOrNull { it.id == gateNodeId } ?: return false
+        return dependencyNodeId in gateNode.dependsOn
+    }
+
+    private fun isReadOnlyPcInspectionNode(node: PlanNode): Boolean {
+        val combinedText = listOf(node.title, node.goal, node.explainToUser)
+            .joinToString(" ")
+            .lowercase()
+        val readOnlyHints = listOf(
+            "inspect",
+            "check",
+            "list",
+            "read",
+            "summarize",
+            "analyze",
+            "directory",
+            "structure",
+            "目录",
+            "结构",
+            "检查",
+            "梳理",
+            "读取"
+        )
+        val mutatingHints = listOf(
+            "create",
+            "write",
+            "edit",
+            "modify",
+            "delete",
+            "remove",
+            "apply",
+            "run tests",
+            "build",
+            "execute",
+            "创建",
+            "写入",
+            "修改",
+            "删除",
+            "执行",
+            "编译"
+        )
+        return readOnlyHints.any { combinedText.contains(it) } &&
+            mutatingHints.none { combinedText.contains(it) }
     }
 
     private fun parseNodeFromJson(obj: JsonObject): PlanNode {

@@ -37,10 +37,11 @@ data class PcSessionStartRequest(
 private data class PcSessionRequestFrame(
     val type: String = "req",
     val id: String = UUID.randomUUID().toString().take(8),
-    val method: String = "pc.session.start",
+    val method: String,
     val taskId: String,
     val nodeId: String,
-    val params: JsonObject
+    val sessionId: String? = null,
+    val params: JsonObject = buildJsonObject {}
 )
 
 data class PcSessionEvent(
@@ -52,7 +53,8 @@ data class PcSessionEvent(
     val progress: Float? = null,
     val runner: String? = null,
     val result: String = "",
-    val error: String = ""
+    val error: String = "",
+    val inputMode: String? = null
 )
 
 data class PcSessionExecutionResult(
@@ -60,7 +62,10 @@ data class PcSessionExecutionResult(
     val sessionId: String?,
     val result: String = "",
     val error: String = "",
-    val finalMessage: String = ""
+    val finalMessage: String = "",
+    val awaitingUser: Boolean = false,
+    val awaitingUserPrompt: String = "",
+    val inputMode: String? = null
 )
 
 data class PcAgentConnectionConfig(
@@ -91,6 +96,76 @@ class PcAgentWsClient(
         connectionOverride: PcAgentConnectionConfig? = null,
         endpointOverride: String? = null,
         onEvent: (PcSessionEvent) -> Unit = {}
+    ): PcSessionExecutionResult {
+        val params = buildJsonObject {
+            put("runner", JsonPrimitive(startRequest.runner))
+            put("workspace", JsonPrimitive(startRequest.workspace))
+            put("task", JsonPrimitive(startRequest.task))
+            put("goal", JsonPrimitive(startRequest.goal))
+            startRequest.command?.takeIf { it.isNotBlank() }?.let { command ->
+                put("command", JsonPrimitive(command))
+            }
+        }
+        return runRequest(
+            frame = PcSessionRequestFrame(
+                method = "pc.session.start",
+                taskId = taskId,
+                nodeId = nodeId,
+                params = params
+            ),
+            connectionOverride = connectionOverride,
+            endpointOverride = endpointOverride,
+            onEvent = onEvent
+        )
+    }
+
+    suspend fun submitUserInput(
+        taskId: String,
+        nodeId: String,
+        sessionId: String,
+        userInput: String,
+        connectionOverride: PcAgentConnectionConfig? = null,
+        endpointOverride: String? = null,
+        onEvent: (PcSessionEvent) -> Unit = {}
+    ): PcSessionExecutionResult {
+        val params = buildJsonObject {
+            put("text", JsonPrimitive(userInput))
+        }
+        return runRequest(
+            frame = PcSessionRequestFrame(
+                method = "pc.session.input",
+                taskId = taskId,
+                nodeId = nodeId,
+                sessionId = sessionId,
+                params = params
+            ),
+            connectionOverride = connectionOverride,
+            endpointOverride = endpointOverride,
+            onEvent = onEvent
+        )
+    }
+
+    suspend fun testConnection(
+        connectionOverride: PcAgentConnectionConfig? = null
+    ): PcSessionExecutionResult {
+        return execute(
+            taskId = "pc-agent-test",
+            nodeId = "pc-agent-test",
+            startRequest = PcSessionStartRequest(
+                runner = "shell",
+                task = "Verify PC agent websocket connectivity",
+                goal = "Verify PC agent websocket connectivity",
+                command = "Write-Output 'pc-agent-connection-ok'"
+            ),
+            connectionOverride = connectionOverride
+        )
+    }
+
+    private suspend fun runRequest(
+        frame: PcSessionRequestFrame,
+        connectionOverride: PcAgentConnectionConfig? = null,
+        endpointOverride: String? = null,
+        onEvent: (PcSessionEvent) -> Unit = {}
     ): PcSessionExecutionResult = suspendCancellableCoroutine { continuation ->
         val config = connectionOverride ?: loadConnectionConfig()
         val url = endpointOverride?.trim().takeUnless { it.isNullOrBlank() }
@@ -101,29 +176,13 @@ class PcAgentWsClient(
                 PcSessionExecutionResult(
                     success = false,
                     sessionId = null,
-                    error = "电脑端地址未配置。请先在设置 -> 远程控制 中填写桌面端 Host / Port。"
+                    error = "电脑端地址未配置，请先在设置中填写 PC Agent 编排连接。"
                 )
             )
             return@suspendCancellableCoroutine
         }
 
-        val params = buildJsonObject {
-            put("runner", JsonPrimitive(startRequest.runner))
-            put("workspace", JsonPrimitive(startRequest.workspace))
-            put("task", JsonPrimitive(startRequest.task))
-            put("goal", JsonPrimitive(startRequest.goal))
-            startRequest.command?.takeIf { it.isNotBlank() }?.let { command ->
-                put("command", JsonPrimitive(command))
-            }
-        }
-        val payload = json.encodeToString(
-            PcSessionRequestFrame(
-                taskId = taskId,
-                nodeId = nodeId,
-                params = params
-            )
-        )
-
+        val payload = json.encodeToString(frame)
         var terminalSent = false
         lateinit var socketRef: WebSocket
 
@@ -146,6 +205,23 @@ class PcAgentWsClient(
                     .onSuccess { event ->
                         onEvent(event)
                         when (event.event) {
+                            "pc.session.await_user" -> {
+                                if (!terminalSent && continuation.isActive) {
+                                    terminalSent = true
+                                    continuation.resume(
+                                        PcSessionExecutionResult(
+                                            success = true,
+                                            sessionId = event.sessionId,
+                                            awaitingUser = true,
+                                            awaitingUserPrompt = event.message,
+                                            inputMode = event.inputMode,
+                                            finalMessage = event.message
+                                        )
+                                    )
+                                }
+                                webSocket.close(1000, "await-user")
+                            }
+
                             "pc.session.completed" -> {
                                 if (!terminalSent && continuation.isActive) {
                                     terminalSent = true
@@ -185,7 +261,7 @@ class PcAgentWsClient(
                                 PcSessionExecutionResult(
                                     success = false,
                                     sessionId = null,
-                                    error = error.message ?: "电脑端会话响应解析失败"
+                                    error = error.message ?: "PC session response parse failed."
                                 )
                             )
                         }
@@ -201,7 +277,7 @@ class PcAgentWsClient(
                         PcSessionExecutionResult(
                             success = false,
                             sessionId = null,
-                            error = t.message ?: "电脑端连接失败"
+                            error = t.message ?: "PC session connection failed."
                         )
                     )
                 }
@@ -214,7 +290,7 @@ class PcAgentWsClient(
                         PcSessionExecutionResult(
                             success = false,
                             sessionId = null,
-                            error = if (reason.isBlank()) "电脑端连接已关闭" else reason
+                            error = if (reason.isBlank()) "PC session connection closed." else reason
                         )
                     )
                 }
@@ -222,26 +298,9 @@ class PcAgentWsClient(
         }
 
         socketRef = httpClient.newWebSocket(request, listener)
-
         continuation.invokeOnCancellation {
             socketRef.cancel()
         }
-    }
-
-    suspend fun testConnection(
-        connectionOverride: PcAgentConnectionConfig? = null
-    ): PcSessionExecutionResult {
-        return execute(
-            taskId = "pc-agent-test",
-            nodeId = "pc-agent-test",
-            startRequest = PcSessionStartRequest(
-                runner = "shell",
-                task = "Verify PC agent websocket connectivity",
-                goal = "Verify PC agent websocket connectivity",
-                command = "Write-Output 'pc-agent-connection-ok'"
-            ),
-            connectionOverride = connectionOverride
-        )
     }
 
     private fun parseEvent(text: String): PcSessionEvent {
@@ -259,7 +318,8 @@ class PcAgentWsClient(
                 ?.toFloatOrNull(),
             runner = payload?.get("runner")?.jsonPrimitive?.contentOrNull,
             result = payload?.get("result")?.jsonPrimitive?.contentOrNull.orEmpty(),
-            error = payload?.get("error")?.jsonPrimitive?.contentOrNull.orEmpty()
+            error = payload?.get("error")?.jsonPrimitive?.contentOrNull.orEmpty(),
+            inputMode = payload?.get("inputMode")?.jsonPrimitive?.contentOrNull
         )
     }
 
@@ -270,11 +330,7 @@ class PcAgentWsClient(
         val token = prefs.getString(PcAgentConnectionPrefs.KEY_TOKEN, "").orEmpty()
 
         if (host.isNotBlank() || token.isNotBlank()) {
-            return PcAgentConnectionConfig(
-                host = host,
-                port = port,
-                token = token
-            )
+            return PcAgentConnectionConfig(host = host, port = port, token = token)
         }
 
         val legacyPrefs = context.getSharedPreferences(PcAgentConnectionPrefs.LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
