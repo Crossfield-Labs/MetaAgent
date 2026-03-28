@@ -47,10 +47,17 @@ fun PlanTreeCard(
     onPause: () -> Unit = {},
     onResume: () -> Unit = {},
     onCancel: () -> Unit = {},
+    onConfirmBlocked: () -> Unit = {},
+    onReplyBlocked: (String) -> Unit = {},
     onNodeTap: (PlanNode) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(true) }
+    var showBlockedReplyDialog by remember { mutableStateOf(false) }
+    var blockedReplyText by remember { mutableStateOf("") }
+    val blockedNode = remember(taskSession) {
+        taskSession.planNodes.firstOrNull { it.status == PlanNodeStatus.BLOCKED }
+    }
 
     Card(
         modifier = modifier
@@ -180,14 +187,68 @@ fun PlanTreeCard(
             // ---- 操作按钮 ----
             Spacer(Modifier.height(12.dp))
             PlanActionButtons(
+                taskSession = taskSession,
                 status = taskSession.status,
                 onApprove = onApprove,
                 onReject = onReject,
                 onPause = onPause,
                 onResume = onResume,
-                onCancel = onCancel
+                onCancel = onCancel,
+                onConfirmBlocked = onConfirmBlocked,
+                onEditBlocked = {
+                    blockedReplyText = blockedNode?.detail ?: ""
+                    showBlockedReplyDialog = true
+                }
             )
         }
+    }
+
+    if (showBlockedReplyDialog) {
+        AlertDialog(
+            onDismissRequest = { showBlockedReplyDialog = false },
+            title = {
+                Text("修改后继续")
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    blockedNode?.let { node ->
+                        Text(
+                            text = "节点：${node.title}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    OutlinedTextField(
+                        value = blockedReplyText,
+                        onValueChange = { blockedReplyText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 6,
+                        placeholder = {
+                            Text("输入补充说明或修改后的发送内容")
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onReplyBlocked(blockedReplyText.trim())
+                        showBlockedReplyDialog = false
+                    },
+                    enabled = blockedReplyText.isNotBlank()
+                ) {
+                    Text("继续执行")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showBlockedReplyDialog = false }
+                ) {
+                    Text("取消")
+                }
+            }
+        )
     }
 }
 
@@ -389,12 +450,15 @@ private fun TaskStatusIcon(status: TaskSessionStatus) {
  */
 @Composable
 private fun PlanActionButtons(
+    taskSession: TaskSession,
     status: TaskSessionStatus,
     onApprove: () -> Unit,
     onReject: (String) -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    onConfirmBlocked: () -> Unit,
+    onEditBlocked: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -420,6 +484,37 @@ private fun PlanActionButtons(
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("修改计划", fontSize = 13.sp)
+                }
+            }
+            TaskSessionStatus.WAITING_USER -> {
+                FilledTonalButton(
+                    onClick = onConfirmBlocked,
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("确认继续", fontSize = 13.sp)
+                }
+                OutlinedButton(
+                    onClick = onEditBlocked,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("修改内容", fontSize = 13.sp)
+                }
+                OutlinedButton(
+                    onClick = onCancel,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("取消", fontSize = 13.sp)
                 }
             }
             TaskSessionStatus.RUNNING -> {

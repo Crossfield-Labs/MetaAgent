@@ -2431,8 +2431,25 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     fun pausePlan() { planTreeExecutor?.pauseExecution() }
     fun resumePlan() { planTreeExecutor?.resumeExecution() }
     fun cancelPlan() { planTreeExecutor?.cancelTask() }
+    fun confirmBlockedPlanNode() {
+        val blockedNodeId = findBlockedPlanNodeId() ?: return
+        planTreeExecutor?.confirmAndContinueBlockedNode(blockedNodeId, "user confirmed to continue")
+    }
+    fun replyToBlockedPlanNode(response: String) {
+        val blockedNodeId = findBlockedPlanNodeId() ?: return
+        val normalized = response.trim()
+        if (normalized.isBlank()) return
+        planTreeExecutor?.confirmAndContinueBlockedNode(blockedNodeId, normalized)
+    }
     fun clearPlan() {
         releasePlanTreeExecution()
+    }
+
+    private fun findBlockedPlanNodeId(): String? {
+        val session = _taskSession.value ?: return null
+        return session.planNodes.firstOrNull {
+            it.status == com.ai.assistance.metaagent.core.plan.model.PlanNodeStatus.BLOCKED
+        }?.id ?: session.activeNodeId
     }
 
 

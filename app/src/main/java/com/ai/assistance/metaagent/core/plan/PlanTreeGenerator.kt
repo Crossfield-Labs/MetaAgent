@@ -141,6 +141,10 @@ object PlanTreeGenerator {
         appendLine("9. explainToUser must be a short user-facing sentence.")
         appendLine("10. If a later node depends on an earlier result, use a ref object inside toolParams: {\"type\":\"ref\",\"nodeId\":\"n1\"}.")
         appendLine("11. Static parameter values can be plain strings or {\"type\":\"static\",\"value\":\"...\"}.")
+        appendLine("12. If one UI automation step collects information and a later step needs to use that information, insert a CHAT bridge node in between.")
+        appendLine("13. For cross-app tasks, prefer UI_AUTOMATION -> CHAT -> UI_AUTOMATION -> CHAT.")
+        appendLine("14. TOOL -> CHAT -> UI_AUTOMATION is preferred when a tool gathers options and a later UI step executes one option.")
+        appendLine("15. End user-facing tasks with a CHAT node that explains the final outcome.")
         appendLine()
         appendLine("Available planning tool hints:")
         planningToolHints.forEach { hintItem ->
@@ -176,6 +180,122 @@ object PlanTreeGenerator {
                 "requiresApproval": false,
                 "explainToUser": "Summarize the collected information into a readable answer.",
                 "confidence": 0.92
+              }
+            ]
+            """.trimIndent()
+        )
+        appendLine()
+        appendLine("Example for cross-app UI automation:")
+        appendLine(
+            """
+            [
+              {
+                "id": "n1",
+                "title": "Collect postgraduate recommendation posts in Xiaohongshu",
+                "goal": "Open Xiaohongshu, search the newest postgraduate recommendation posts, and collect 3 key points",
+                "adapter": "UI_AUTOMATION",
+                "toolName": "run_ui_subagent",
+                "toolParams": {
+                  "intent": "Open Xiaohongshu, search the newest postgraduate recommendation posts, and collect 3 key points",
+                  "target_app": "com.xingin.xhs",
+                  "max_steps": "16"
+                },
+                "dependsOn": [],
+                "requiresApproval": false,
+                "explainToUser": "Use UI automation to collect the latest information."
+              },
+              {
+                "id": "n2",
+                "title": "Turn the findings into a short WeChat message",
+                "goal": "Summarize the previous result into a short message that can be sent in WeChat",
+                "adapter": "CHAT",
+                "dependsOn": ["n1"],
+                "requiresApproval": false,
+                "explainToUser": "Compress the findings into a short sendable message."
+              },
+              {
+                "id": "n3",
+                "title": "Send the prepared message in WeChat",
+                "goal": "Open WeChat and send the prepared message to the target contact",
+                "adapter": "UI_AUTOMATION",
+                "toolName": "run_ui_subagent",
+                "toolParams": {
+                  "intent": {
+                    "type": "ref",
+                    "nodeId": "n2"
+                  },
+                  "target_app": "com.tencent.mm",
+                  "max_steps": "16"
+                },
+                "dependsOn": ["n2"],
+                "requiresApproval": true,
+                "explainToUser": "Let UI automation send the prepared content in WeChat."
+              },
+              {
+                "id": "n4",
+                "title": "Summarize the final outcome",
+                "goal": "Tell the user whether the message was sent successfully",
+                "adapter": "CHAT",
+                "dependsOn": ["n3"],
+                "requiresApproval": false,
+                "explainToUser": "Explain the final result to the user."
+              }
+            ]
+            """.trimIndent()
+        )
+        appendLine()
+        appendLine("Example for tool plus UI automation:")
+        appendLine(
+            """
+            [
+              {
+                "id": "n1",
+                "title": "Search for a suitable study song",
+                "goal": "Find a song that is suitable for studying",
+                "adapter": "TOOL",
+                "toolName": "visit_web",
+                "toolParams": {
+                  "url": "https://www.google.com/search?q=best+study+songs"
+                },
+                "dependsOn": [],
+                "requiresApproval": false,
+                "explainToUser": "Use a tool to collect candidate songs."
+              },
+              {
+                "id": "n2",
+                "title": "Pick one song to play",
+                "goal": "Select one suitable song from the previous result and produce a short playback instruction",
+                "adapter": "CHAT",
+                "dependsOn": ["n1"],
+                "requiresApproval": false,
+                "explainToUser": "Choose one candidate and prepare a short instruction."
+              },
+              {
+                "id": "n3",
+                "title": "Play the selected song in NetEase Cloud Music",
+                "goal": "Open NetEase Cloud Music and play the selected song",
+                "adapter": "UI_AUTOMATION",
+                "toolName": "run_ui_subagent",
+                "toolParams": {
+                  "intent": {
+                    "type": "ref",
+                    "nodeId": "n2"
+                  },
+                  "target_app": "com.netease.cloudmusic",
+                  "max_steps": "14"
+                },
+                "dependsOn": ["n2"],
+                "requiresApproval": false,
+                "explainToUser": "Use UI automation to play the chosen song."
+              },
+              {
+                "id": "n4",
+                "title": "Report the playback result",
+                "goal": "Tell the user what song is playing and whether playback succeeded",
+                "adapter": "CHAT",
+                "dependsOn": ["n3"],
+                "requiresApproval": false,
+                "explainToUser": "Report the final playback result."
               }
             ]
             """.trimIndent()
@@ -293,7 +413,7 @@ object PlanTreeGenerator {
             )
         }
 
-        return normalized
+        val cleaned = normalized
             .filterNot { launchNodesToRemove.contains(it.id) }
             .map { node ->
                 if (launchNodesToRemove.isEmpty()) {
@@ -302,6 +422,121 @@ object PlanTreeGenerator {
                     node.copy(dependsOn = node.dependsOn.filterNot { launchNodesToRemove.contains(it) })
                 }
             }
+
+        val withBridgeNodes = insertBridgeChatNodes(cleaned)
+        return ensureTerminalChatNode(withBridgeNodes)
+    }
+
+    private fun insertBridgeChatNodes(nodes: List<PlanNode>): List<PlanNode> {
+        if (nodes.size < 2) return nodes
+
+        val result = nodes.toMutableList()
+        var index = 0
+        while (index < result.lastIndex) {
+            val current = result[index]
+            val next = result[index + 1]
+
+            if (!shouldInsertBridgeNode(current, next)) {
+                index += 1
+                continue
+            }
+
+            val bridgeId = generateStableNodeId()
+            val bridgeNode = PlanNode(
+                id = bridgeId,
+                title = createBridgeNodeTitle(current, next),
+                kind = PlanNodeKind.EXEC,
+                goal = createBridgeNodeGoal(current, next),
+                adapter = PlanNodeAdapter.CHAT,
+                dependsOn = listOf(current.id),
+                requiresApproval = false,
+                explainToUser = "Summarize the previous result and prepare the next step."
+            )
+
+            val updatedNextDependsOn = buildList {
+                if (next.dependsOn.isEmpty()) {
+                    add(bridgeId)
+                } else {
+                    var replaced = false
+                    next.dependsOn.forEach { dependency ->
+                        if (dependency == current.id) {
+                            add(bridgeId)
+                            replaced = true
+                        } else {
+                            add(dependency)
+                        }
+                    }
+                    if (!replaced) add(bridgeId)
+                }
+            }.distinct()
+
+            result[index + 1] = bridgeNode
+            result.add(index + 2, next.copy(dependsOn = updatedNextDependsOn))
+            result.removeAt(index + 3)
+            index += 2
+        }
+
+        return result
+    }
+
+    private fun ensureTerminalChatNode(nodes: List<PlanNode>): List<PlanNode> {
+        if (nodes.isEmpty()) return nodes
+        val lastNode = nodes.last()
+        if (lastNode.adapter == PlanNodeAdapter.CHAT) return nodes
+
+        val summaryNode = PlanNode(
+            id = generateStableNodeId(),
+            title = "Summarize the final result",
+            kind = PlanNodeKind.EXEC,
+            goal = "Explain the final outcome of the previous steps to the user.",
+            adapter = PlanNodeAdapter.CHAT,
+            dependsOn = listOf(lastNode.id),
+            requiresApproval = false,
+            explainToUser = "Summarize the final task result for the user."
+        )
+        return nodes + summaryNode
+    }
+
+    private fun shouldInsertBridgeNode(current: PlanNode, next: PlanNode): Boolean {
+        if (next.adapter == PlanNodeAdapter.CHAT || current.adapter == PlanNodeAdapter.CHAT) return false
+
+        val currentProducesContext = current.adapter in setOf(
+            PlanNodeAdapter.ANDROID,
+            PlanNodeAdapter.TOOL,
+            PlanNodeAdapter.CLI,
+            PlanNodeAdapter.LOCAL_RUNNER
+        )
+        if (!currentProducesContext) return false
+
+        if (next.adapter == PlanNodeAdapter.ANDROID) {
+            return true
+        }
+
+        return current.adapter == PlanNodeAdapter.ANDROID && next.adapter == PlanNodeAdapter.TOOL
+    }
+
+    private fun createBridgeNodeTitle(current: PlanNode, next: PlanNode): String {
+        return when {
+            next.adapter == PlanNodeAdapter.ANDROID ->
+                "Prepare the next UI automation step"
+            next.adapter == PlanNodeAdapter.TOOL ->
+                "Prepare the next tool input"
+            else ->
+                "Summarize the previous result"
+        }
+    }
+
+    private fun createBridgeNodeGoal(current: PlanNode, next: PlanNode): String {
+        return when {
+            current.adapter == PlanNodeAdapter.ANDROID && next.adapter == PlanNodeAdapter.ANDROID ->
+                "Summarize the previous UI automation result into a concise instruction for the next UI automation step."
+            current.adapter == PlanNodeAdapter.TOOL && next.adapter == PlanNodeAdapter.ANDROID ->
+                "Turn the previous tool result into a concise instruction for the next UI automation step."
+            current.adapter == PlanNodeAdapter.ANDROID && next.adapter == PlanNodeAdapter.TOOL ->
+                "Summarize the previous UI automation result into a concise instruction for the next tool step."
+            else ->
+                "Summarize the previous result and prepare the next step."
+        }
     }
 
     private fun parseNodeFromJson(obj: JsonObject): PlanNode {

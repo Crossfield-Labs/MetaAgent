@@ -184,6 +184,34 @@ class PlanTreeExecutor(
         }
     }
 
+    fun confirmAndContinueBlockedNode(nodeId: String, response: String) {
+        val session = _taskSession.value ?: return
+        val node = session.findNode(nodeId) ?: return
+        if (node.status != PlanNodeStatus.BLOCKED) return
+
+        updateSession(
+            session.updateNode(nodeId) {
+                it.copy(
+                    status = PlanNodeStatus.PENDING,
+                    requiresApproval = false,
+                    detail = "User confirmed / updated: $response"
+                )
+            }.copy(
+                status = TaskSessionStatus.RUNNING,
+                activeNodeId = null
+            ).appendEvent(
+                TaskEventType.USER_INTERVENTION,
+                nodeId = nodeId,
+                message = "User confirmed continuation: $response"
+            )
+        )
+
+        executionJob?.cancel()
+        executionJob = scope.launch {
+            executeNodes()
+        }
+    }
+
     private suspend fun executeNodes() {
         while (true) {
             val session = _taskSession.value ?: break
@@ -431,7 +459,7 @@ class PlanTreeExecutor(
         val callbackId = "plan-ui-${session.taskId}-${node.id}"
         var observedStepCount = 0
         return try {
-            val originalIntent = buildAndroidIntent(node, session)
+            val originalIntent = buildAndroidIntentForUiStep(node, session)
             val maxSteps = resolveAndroidMaxSteps(node, session)
             val targetApp = node.toolParams["target_app"]?.let { resolvePlanParameterValue(it, session) }
             val explicitAgentId = node.toolParams["agent_id"]
@@ -644,6 +672,23 @@ class PlanTreeExecutor(
             baseIntent
         } else {
             "$baseIntent\n\n已知前序结果：\n$dependencyContext"
+        }
+    }
+
+    private fun buildAndroidIntentForUiStep(node: PlanNode, session: TaskSession): String {
+        val targetApp = node.toolParams["target_app"]?.let { resolvePlanParameterValue(it, session) }
+        val baseIntent = buildAndroidIntent(node, session).trim()
+        if (targetApp.isNullOrBlank()) return baseIntent
+
+        val lower = baseIntent.lowercase()
+        val alreadyGuided = lower.contains("if the current screen is not inside the target app") ||
+            lower.contains("first open that app")
+        if (alreadyGuided) return baseIntent
+
+        return buildString {
+            appendLine("Start from the current phone state.")
+            appendLine("If the current screen is not inside the target app ($targetApp), first open that app and then continue the task.")
+            append(baseIntent)
         }
     }
 

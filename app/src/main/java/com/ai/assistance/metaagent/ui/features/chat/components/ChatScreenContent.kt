@@ -460,6 +460,8 @@ fun ChatScreenContent(
                         onPausePlan = { actualViewModel.pausePlan() },
                         onResumePlan = { actualViewModel.resumePlan() },
                         onCancelPlan = { actualViewModel.cancelPlan() },
+                        onConfirmBlockedPlan = { actualViewModel.confirmBlockedPlanNode() },
+                        onReplyBlockedPlan = { response -> actualViewModel.replyToBlockedPlanNode(response) },
                 )
                 ChatScreenHeader(
                         modifier =
@@ -544,6 +546,8 @@ fun ChatScreenContent(
                         onPausePlan = { actualViewModel.pausePlan() },
                         onResumePlan = { actualViewModel.resumePlan() },
                         onCancelPlan = { actualViewModel.cancelPlan() },
+                        onConfirmBlockedPlan = { actualViewModel.confirmBlockedPlanNode() },
+                        onReplyBlockedPlan = { response -> actualViewModel.replyToBlockedPlanNode(response) },
                 )
             }
         }
