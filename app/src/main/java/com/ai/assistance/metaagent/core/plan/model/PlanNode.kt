@@ -29,7 +29,8 @@ enum class PlanNodeAdapter {
     CLAUDE,
     CLI,
     ANDROID,
-    LOCAL_RUNNER
+    LOCAL_RUNNER,
+    PC
 }
 
 /**

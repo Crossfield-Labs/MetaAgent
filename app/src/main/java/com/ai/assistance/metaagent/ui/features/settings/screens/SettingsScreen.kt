@@ -50,6 +50,7 @@ fun SettingsScreen(
         onNavigateToUserPreferences: () -> Unit,
         navigateToGitHubAccount: () -> Unit,
         navigateToToolPermissions: () -> Unit,
+        navigateToPcAgentConnection: () -> Unit,
         navigateToRemoteControl: () -> Unit,
         navigateToModelConfig: () -> Unit,
         navigateToThemeSettings: () -> Unit,
@@ -277,6 +278,13 @@ fun SettingsScreen(
                         icon = Icons.Default.Security,
                         containerColor = cardContainerColor
                 ) {
+                        CompactSettingsItem(
+                                title = "PC Agent 编排连接",
+                                subtitle = "单独配置 Android -> PC 子 Agent 的 WebSocket 编排链路",
+                                icon = Icons.Default.Hub,
+                                onClick = navigateToPcAgentConnection
+                        )
+
                         CompactSettingsItem(
                                 title = stringResource(id = R.string.settings_remote_control),
                                 subtitle = stringResource(id = R.string.settings_remote_control_subtitle),

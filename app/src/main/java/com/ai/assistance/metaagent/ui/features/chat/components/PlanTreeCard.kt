@@ -384,6 +384,8 @@ private fun AdapterBadge(adapter: com.ai.assistance.metaagent.core.plan.model.Pl
             Icons.Outlined.PhoneAndroid to "UI自动化"
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.LOCAL_RUNNER ->
             Icons.Outlined.Settings to "Runner"
+        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.PC ->
+            Icons.Outlined.Computer to "PC"
         com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CHAT ->
             Icons.Outlined.Chat to "Chat"
     }
@@ -496,7 +498,7 @@ private fun PlanActionButtons(
                 ) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("确认继续", fontSize = 13.sp)
+                    Text("确认", fontSize = 13.sp)
                 }
                 OutlinedButton(
                     onClick = onEditBlocked,
@@ -504,7 +506,7 @@ private fun PlanActionButtons(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("修改内容", fontSize = 13.sp)
+                    Text("修改", fontSize = 13.sp)
                 }
                 OutlinedButton(
                     onClick = onCancel,
@@ -555,25 +557,6 @@ private fun PlanActionButtons(
                     Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("取消", fontSize = 13.sp)
-                }
-            }
-            TaskSessionStatus.WAITING_USER -> {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Icon(
-                        Icons.Outlined.HourglassTop,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "等待您的确认",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
                 }
             }
             TaskSessionStatus.COMPLETED -> {

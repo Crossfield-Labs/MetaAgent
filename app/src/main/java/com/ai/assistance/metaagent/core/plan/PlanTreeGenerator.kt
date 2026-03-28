@@ -34,6 +34,7 @@ object PlanTreeGenerator {
         PlanningToolHint("http_request", "url, method, body?", "Fetch structured web data or API responses"),
         PlanningToolHint("execute_intent", "action?, package?, component?, type?", "Open an Android app or jump to a screen"),
         PlanningToolHint("run_ui_subagent", "intent, max_steps, target_app?", "Take over a full Android UI task inside one app"),
+        PlanningToolHint("pc.execute", "runner, workspace, task", "Run a PC sub-agent session for computer-side work"),
         PlanningToolHint("execute_shell", "command", "Run shell commands in the local workspace"),
         PlanningToolHint("trigger_workflow", "workflow_id", "Run an existing workflow"),
         PlanningToolHint("list_files", "path", "Inspect workspace files"),
@@ -144,7 +145,8 @@ object PlanTreeGenerator {
         appendLine("12. If one UI automation step collects information and a later step needs to use that information, insert a CHAT bridge node in between.")
         appendLine("13. For cross-app tasks, prefer UI_AUTOMATION -> CHAT -> UI_AUTOMATION -> CHAT.")
         appendLine("14. TOOL -> CHAT -> UI_AUTOMATION is preferred when a tool gathers options and a later UI step executes one option.")
-        appendLine("15. End user-facing tasks with a CHAT node that explains the final outcome.")
+        appendLine("15. Use PC nodes for computer-side work such as inspecting a project, running tests, or asking a PC runner to create files.")
+        appendLine("16. End user-facing tasks with a CHAT node that explains the final outcome.")
         appendLine()
         appendLine("Available planning tool hints:")
         planningToolHints.forEach { hintItem ->
@@ -296,6 +298,39 @@ object PlanTreeGenerator {
                 "dependsOn": ["n3"],
                 "requiresApproval": false,
                 "explainToUser": "Report the final playback result."
+              }
+            ]
+            """.trimIndent()
+        )
+        appendLine()
+        appendLine("Example for a PC sub-agent task:")
+        appendLine(
+            """
+            [
+              {
+                "id": "n1",
+                "title": "Inspect the project structure on PC",
+                "goal": "Check the current project directory structure on the PC and summarize the main folders",
+                "adapter": "PC",
+                "toolName": "pc.execute",
+                "toolParams": {
+                  "runner": "shell",
+                  "workspace": "D:/workspace/my-project",
+                  "task": "Check the current project directory structure and summarize the main folders"
+                },
+                "dependsOn": [],
+                "requiresApproval": true,
+                "explainToUser": "Run a PC-side directory inspection and report the result.",
+                "confidence": 0.9
+              },
+              {
+                "id": "n2",
+                "title": "Summarize the PC inspection result",
+                "goal": "Explain the inspection result to the user",
+                "adapter": "CHAT",
+                "dependsOn": ["n1"],
+                "requiresApproval": false,
+                "explainToUser": "Summarize the PC-side result for the user."
               }
             ]
             """.trimIndent()
@@ -504,7 +539,8 @@ object PlanTreeGenerator {
             PlanNodeAdapter.ANDROID,
             PlanNodeAdapter.TOOL,
             PlanNodeAdapter.CLI,
-            PlanNodeAdapter.LOCAL_RUNNER
+            PlanNodeAdapter.LOCAL_RUNNER,
+            PlanNodeAdapter.PC
         )
         if (!currentProducesContext) return false
 
@@ -519,6 +555,8 @@ object PlanTreeGenerator {
         return when {
             next.adapter == PlanNodeAdapter.ANDROID ->
                 "Prepare the next UI automation step"
+            next.adapter == PlanNodeAdapter.PC ->
+                "Prepare the next PC step"
             next.adapter == PlanNodeAdapter.TOOL ->
                 "Prepare the next tool input"
             else ->
@@ -534,6 +572,12 @@ object PlanTreeGenerator {
                 "Turn the previous tool result into a concise instruction for the next UI automation step."
             current.adapter == PlanNodeAdapter.ANDROID && next.adapter == PlanNodeAdapter.TOOL ->
                 "Summarize the previous UI automation result into a concise instruction for the next tool step."
+            current.adapter == PlanNodeAdapter.PC && next.adapter == PlanNodeAdapter.ANDROID ->
+                "Turn the previous PC result into a concise instruction for the next UI automation step."
+            current.adapter == PlanNodeAdapter.PC && next.adapter == PlanNodeAdapter.TOOL ->
+                "Summarize the previous PC result into a concise instruction for the next tool step."
+            current.adapter == PlanNodeAdapter.TOOL && next.adapter == PlanNodeAdapter.PC ->
+                "Turn the previous tool result into a concise instruction for the next PC step."
             else ->
                 "Summarize the previous result and prepare the next step."
         }
@@ -592,6 +636,7 @@ object PlanTreeGenerator {
             "CLI" -> PlanNodeAdapter.CLI
             "ANDROID", "UI_AUTOMATION" -> PlanNodeAdapter.ANDROID
             "LOCAL_RUNNER" -> PlanNodeAdapter.LOCAL_RUNNER
+            "PC" -> PlanNodeAdapter.PC
             else -> PlanNodeAdapter.CHAT
         }
     }

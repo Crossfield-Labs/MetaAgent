@@ -306,6 +306,7 @@ class PlanTreeExecutor(
             PlanNodeAdapter.CLI,
             PlanNodeAdapter.LOCAL_RUNNER -> executeCliNode(node)
             PlanNodeAdapter.ANDROID -> executeAndroidNode(node)
+            PlanNodeAdapter.PC -> executePcNode(node)
         }
     }
 
@@ -590,6 +591,92 @@ class PlanTreeExecutor(
         } finally {
             UiAutomationStepCallbackRegistry.unregister(callbackId)
             returnToMetaAgentIfNeeded(node)
+        }
+    }
+
+    private suspend fun executePcNode(node: PlanNode): Boolean {
+        val session = _taskSession.value ?: return false
+        return try {
+            val runner = node.toolParams["runner"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+                ?: "shell"
+            val workspace = node.toolParams["workspace"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                .orEmpty()
+            val task = node.toolParams["task"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+                ?: node.goal.ifBlank { node.title }
+            val command = node.toolParams["command"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+            val endpointOverride = node.toolParams["ws_url"]
+                ?.let { resolvePlanParameterValue(it, session).trim() }
+                ?.takeIf { it.isNotBlank() }
+
+            val client = PcAgentWsClient(context)
+            emitNodeProgress(node, 0.08f, "正在连接电脑端子 Agent")
+
+            val result = client.execute(
+                taskId = session.taskId,
+                nodeId = node.id,
+                startRequest = PcSessionStartRequest(
+                    runner = runner,
+                    workspace = workspace,
+                    task = task,
+                    goal = node.goal.ifBlank { node.title },
+                    command = command
+                ),
+                endpointOverride = endpointOverride
+            ) { event ->
+                when (event.event) {
+                    "pc.session.started" -> {
+                        emitNodeProgress(
+                            node,
+                            event.progress ?: 0.14f,
+                            event.message.ifBlank { "电脑端子 Agent 已启动（$runner）" }
+                        )
+                    }
+
+                    "pc.session.progress" -> {
+                        val safeProgress = event.progress
+                            ?.coerceIn(node.progress, 0.94f)
+                            ?: (node.progress + 0.06f).coerceAtMost(0.94f)
+                        emitNodeProgress(
+                            node,
+                            safeProgress,
+                            event.message.ifBlank { "电脑端正在执行任务" }
+                        )
+                    }
+                }
+            }
+
+            if (!result.success) {
+                recordNodeResult(
+                    nodeId = node.id,
+                    summary = "",
+                    detail = result.error.ifBlank { "电脑端执行失败" },
+                    rawData = result.error.ifBlank { result.finalMessage }
+                )
+                return false
+            }
+
+            val output = result.result.ifBlank { result.finalMessage }
+            recordNodeResult(
+                nodeId = node.id,
+                summary = summarizeResult(output, "电脑端任务执行完成"),
+                detail = output.ifBlank { "电脑端子 Agent 已完成任务" }.take(320),
+                rawData = output
+            )
+            emitNodeProgress(node, 1f, result.finalMessage.ifBlank { "电脑端任务执行完成" })
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppLogger.e(TAG, "PC node failed: ${node.id}", e)
+            recordNodeResult(node.id, "", e.message ?: "电脑端执行失败", e.stackTraceToString())
+            false
         }
     }
 

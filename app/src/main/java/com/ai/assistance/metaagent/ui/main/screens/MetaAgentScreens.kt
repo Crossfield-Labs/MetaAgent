@@ -52,6 +52,7 @@ import com.ai.assistance.metaagent.ui.features.settings.screens.LanguageSettings
 import com.ai.assistance.metaagent.ui.features.settings.screens.LayoutAdjustmentSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.ModelConfigScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.ModelPromptsSettingsScreen
+import com.ai.assistance.metaagent.ui.features.settings.screens.PcAgentConnectionSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.RemoteControlSettingsScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.TagMarketScreen
 import com.ai.assistance.metaagent.ui.features.settings.screens.SettingsScreen
@@ -692,6 +693,7 @@ sealed class Screen(
         ) {
             SettingsScreen(
                     navigateToToolPermissions = { navigateTo(ToolPermission) },
+                    navigateToPcAgentConnection = { navigateTo(PcAgentConnection) },
                     navigateToRemoteControl = { navigateTo(RemoteControl) },
                     onNavigateToUserPreferences = { navigateTo(UserPreferencesSettings) },
                     navigateToGitHubAccount = { navigateTo(GitHubAccount) },
@@ -729,6 +731,26 @@ sealed class Screen(
         ) {
             RemoteControlSettingsScreen(onBackPressed = onGoBack)
         }
+    }
+
+    data object PcAgentConnection :
+        Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.settings_remote_control) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            updateNavItem: NavItemChangeHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            PcAgentConnectionSettingsScreen(onBackPressed = onGoBack)
+        }
+
+        @Composable
+        override fun getTitle(): String = "PC Agent 编排连接"
     }
 
     data object GitHubAccount : Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.github_account) {
