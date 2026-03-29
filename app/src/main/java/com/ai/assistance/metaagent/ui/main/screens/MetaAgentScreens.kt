@@ -15,7 +15,13 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -36,6 +42,7 @@ import com.ai.assistance.metaagent.ui.features.home.screens.TaskDetailScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CrossDeviceExecutionScreen
 import com.ai.assistance.metaagent.ui.features.home.data.CourseRagChatBindingStore
 import com.ai.assistance.metaagent.ui.features.home.data.StudyModuleStore
+import com.ai.assistance.metaagent.ui.features.home.data.toMetaConversation
 import com.ai.assistance.metaagent.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.metaagent.ui.features.help.screens.HelpScreen
 import com.ai.assistance.metaagent.ui.features.memory.screens.MemoryScreen
@@ -146,11 +153,45 @@ sealed class Screen(
             // 浠?CompositionLocal 鑾峰彇鎶藉眽鎵撳紑鍥炶皟
             val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
             val context = LocalContext.current
+            val chatHistoryManager = ChatHistoryManager.getInstance(context)
             val scope = rememberCoroutineScope()
+            val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
+
+            var lastMessagePreviews by remember { mutableStateOf(mapOf<String, String>()) }
+            LaunchedEffect(chatHistories) {
+                val previews = mutableMapOf<String, String>()
+                for (chat in chatHistories) {
+                    try {
+                        val lastMessages = chatHistoryManager.loadChatMessages(chat.id, order = "desc", limit = 1)
+                        previews[chat.id] = lastMessages.firstOrNull()?.content?.take(80)?.replace("\n", " ") ?: ""
+                    } catch (_: Exception) {
+                        previews[chat.id] = ""
+                    }
+                }
+                lastMessagePreviews = previews
+            }
+
+            val conversations = remember(chatHistories, lastMessagePreviews) {
+                chatHistories.map { chat ->
+                    chat.toMetaConversation(lastMessagePreview = lastMessagePreviews[chat.id] ?: "")
+                }
+            }
 
             MetaAgentHomeScreen(
-                    onConversationClick = { /* TODO: navigate to chat detail */ },
+                    conversations = conversations,
+                    onConversationClick = { chatId ->
+                        scope.launch {
+                            chatHistoryManager.setCurrentChatId(chatId)
+                        }
+                        navigateTo(AiChat)
+                        updateNavItem(NavItem.AiChat)
+                    },
                     onMenuClick = openDrawer,
+                    onDeleteChat = { chatId ->
+                        scope.launch {
+                            chatHistoryManager.deleteChatHistory(chatId)
+                        }
+                    },
                     onBottomNavClick = { route ->
                         when (route) {
                             "meta_home" -> { /* already here */ }
