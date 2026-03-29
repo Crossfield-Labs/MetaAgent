@@ -1,4 +1,4 @@
-package com.ai.assistance.metaagent.ui.main.screens
+﻿package com.ai.assistance.metaagent.ui.main.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,10 +30,12 @@ import com.ai.assistance.metaagent.ui.features.assistant.screens.AssistantConfig
 import com.ai.assistance.metaagent.ui.features.chat.screens.AIChatScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.MetaAgentHomeScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CourseSpaceScreen
-import com.ai.assistance.metaagent.ui.features.home.screens.ReviewJourneyDemoScreen
-import com.ai.assistance.metaagent.ui.features.home.screens.CourseMaterialDemoScreen
-import com.ai.assistance.metaagent.ui.features.home.screens.CrossDeviceTaskDemoScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.CourseDetailScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskCenterScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.TaskDetailScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.CrossDeviceExecutionScreen
+import com.ai.assistance.metaagent.ui.features.home.data.CourseRagChatBindingStore
+import com.ai.assistance.metaagent.ui.features.home.data.StudyModuleStore
 import com.ai.assistance.metaagent.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.metaagent.ui.features.help.screens.HelpScreen
 import com.ai.assistance.metaagent.ui.features.memory.screens.MemoryScreen
@@ -92,31 +95,27 @@ import com.ai.assistance.metaagent.ui.features.workflow.screens.WorkflowDetailSc
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import android.net.Uri
+import com.ai.assistance.metaagent.data.model.ChatMessage
 import com.ai.assistance.metaagent.data.preferences.GitHubAuthPreferences
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
-import com.ai.assistance.metaagent.ui.features.home.data.toMetaConversation
+import com.ai.assistance.metaagent.data.preferences.UserPreferencesManager
+import com.ai.assistance.metaagent.data.repository.ChatHistoryManager
 import kotlinx.coroutines.launch
 
-// 路由配置类
+// 璺敱閰嶇疆绫?
 typealias ScreenNavigationHandler = (Screen) -> Unit
 
 typealias NavItemChangeHandler = (NavItem) -> Unit
 
-// 重构的Screen类，添加了路由相关属性和内容渲染函数
+// 閲嶆瀯鐨凷creen绫伙紝娣诲姞浜嗚矾鐢辩浉鍏冲睘鎬у拰鍐呭娓叉煋鍑芥暟
 sealed class Screen(
-        // 指定父屏幕，用于返回导航
+        // 鎸囧畾鐖跺睆骞曪紝鐢ㄤ簬杩斿洖瀵艰埅
         open val parentScreen: Screen? = null,
-        // 对应的导航项，用于侧边栏高亮显示
+        // 瀵瑰簲鐨勫鑸」锛岀敤浜庝晶杈规爮楂樹寒鏄剧ず
         open val navItem: NavItem? = null,
-        // 屏幕标题资源ID
+        // 灞忓箷鏍囬璧勬簮ID
         open val titleRes: Int? = null
 ) {
-    // 屏幕内容渲染函数
+    // 灞忓箷鍐呭娓叉煋鍑芥暟
     @Composable
     open fun Content(
             navController: NavController,
@@ -128,7 +127,7 @@ sealed class Screen(
             onError: (String) -> Unit,
             onGestureConsumed: (Boolean) -> Unit
     ) {
-        // 子类实现具体内容
+        // 瀛愮被瀹炵幇鍏蜂綋鍐呭
     }
 
     // Main screens (primary)
@@ -144,59 +143,14 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
-            // 从 CompositionLocal 获取抽屉打开回调
+            // 浠?CompositionLocal 鑾峰彇鎶藉眽鎵撳紑鍥炶皟
             val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
             val context = LocalContext.current
-            val chatHistoryManager = com.ai.assistance.metaagent.data.repository.ChatHistoryManager.getInstance(context)
-            val scope = androidx.compose.runtime.rememberCoroutineScope()
-
-            // 收集真实聊天历史
-            val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
-
-            // 为每个 chat 加载最后一条消息预览
-            var lastMessagePreviews by remember { mutableStateOf(mapOf<String, String>()) }
-            LaunchedEffect(chatHistories) {
-                val previews = mutableMapOf<String, String>()
-                for (chat in chatHistories) {
-                    try {
-                        val lastMessages = chatHistoryManager.loadChatMessages(chat.id, order = "desc", limit = 1)
-                        val preview = lastMessages.firstOrNull()?.content?.take(80)?.replace("\n", " ") ?: ""
-                        previews[chat.id] = preview
-                    } catch (_: Exception) {
-                        previews[chat.id] = ""
-                    }
-                }
-                lastMessagePreviews = previews
-            }
-
-            // 转换为 MetaConversation 列表
-            val conversations = remember(chatHistories, lastMessagePreviews) {
-                chatHistories.map { chat ->
-                    chat.toMetaConversation(
-                        lastMessagePreview = lastMessagePreviews[chat.id] ?: ""
-                    )
-                }
-            }
+            val scope = rememberCoroutineScope()
 
             MetaAgentHomeScreen(
-                    conversations = conversations,
-                    onConversationClick = { chatId ->
-                        // 设置当前聊天ID并导航到聊天界面
-                        scope.launch {
-                            chatHistoryManager.setCurrentChatId(chatId)
-                        }
-                        navigateTo(AiChat)
-                        updateNavItem(NavItem.AiChat)
-                    },
+                    onConversationClick = { /* TODO: navigate to chat detail */ },
                     onMenuClick = openDrawer,
-                    onDeleteChat = { chatId ->
-                        scope.launch {
-                            chatHistoryManager.deleteChatHistory(chatId)
-                        }
-                    },
-                    onOpenReviewDemo = { navigateTo(ReviewJourneyDemo) },
-                    onOpenCourseDemo = { navigateTo(CourseMaterialDemo) },
-                    onOpenTaskDemo = { navigateTo(CrossDeviceTaskDemo) },
                     onBottomNavClick = { route ->
                         when (route) {
                             "meta_home" -> { /* already here */ }
@@ -209,6 +163,10 @@ sealed class Screen(
                                 updateNavItem(NavItem.MetaHome)
                             }
                             "ai_chat" -> {
+                                scope.launch {
+                                    UserPreferencesManager.getInstance(context)
+                                        .saveThemeSettings(customChatTitle = "")
+                                }
                                 navigateTo(AiChat)
                                 updateNavItem(NavItem.AiChat)
                             }
@@ -248,9 +206,9 @@ sealed class Screen(
                         }
                     },
                     onNewChatClick = {
-                        // 创建新对话并导航
                         scope.launch {
-                            chatHistoryManager.createNewChat()
+                            UserPreferencesManager.getInstance(context)
+                                .saveThemeSettings(customChatTitle = "")
                         }
                         navigateTo(AiChat)
                         updateNavItem(NavItem.AiChat)
@@ -300,7 +258,9 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             CourseSpaceScreen(
-                    onCourseClick = { navigateTo(CourseMaterialDemo) }
+                    onCourseClick = { courseId ->
+                        navigateTo(CourseDetail(courseId))
+                    }
             )
         }
     }
@@ -318,12 +278,17 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             TaskCenterScreen(
-                    onTaskClick = { navigateTo(CrossDeviceTaskDemo) }
+                    onTaskClick = { taskId ->
+                        navigateTo(TaskDetail(taskId))
+                    },
+                    onCrossDeviceClick = {
+                        navigateTo(CrossDeviceExecution)
+                    }
             )
         }
     }
 
-    data object ReviewJourneyDemo : Screen(parentScreen = MetaHome, navItem = NavItem.MetaHome) {
+    data object CrossDeviceExecution : Screen(parentScreen = TaskCenter, navItem = NavItem.MetaHome) {
         @Composable
         override fun Content(
                 navController: NavController,
@@ -335,11 +300,15 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
-            ReviewJourneyDemoScreen(onBack = onGoBack)
+            CrossDeviceExecutionScreen()
         }
+
+        @Composable
+        override fun getTitle(): String = "跨端执行"
     }
 
-    data object CourseMaterialDemo : Screen(parentScreen = CourseSpace, navItem = NavItem.MetaHome) {
+        data class CourseDetail(val courseId: String) :
+            Screen(parentScreen = CourseSpace, navItem = NavItem.MetaHome) {
         @Composable
         override fun Content(
                 navController: NavController,
@@ -351,11 +320,49 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
-            CourseMaterialDemoScreen(onBack = onGoBack)
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+
+            CourseDetailScreen(
+                    courseId = courseId,
+                    onAskAiClick = { targetCourseId, courseName ->
+                        scope.launch {
+                            val chatHistoryManager = ChatHistoryManager.getInstance(context)
+                            val preferencesManager = UserPreferencesManager.getInstance(context)
+
+                            val newChat = chatHistoryManager.createNewChat(setAsCurrentChat = true)
+                            chatHistoryManager.updateChatTitle(newChat.id, "$courseName · 课程问答")
+                            CourseRagChatBindingStore.bindChatToCourse(
+                                context = context,
+                                chatId = newChat.id,
+                                courseId = targetCourseId,
+                                courseName = courseName,
+                                folderPath = StudyModuleStore.getCourseRagFolderPath(targetCourseId),
+                                boundAt = System.currentTimeMillis().toString()
+                            )
+                            chatHistoryManager.addMessage(
+                                newChat.id,
+                                ChatMessage(
+                                    sender = "ai",
+                                    content = "已进入《${courseName}》课程问答，课程知识库已加载。你可以直接提问重点、实验或章节内容。"
+                                )
+                            )
+                            preferencesManager.saveThemeSettings(customChatTitle = "课程问答")
+
+                            navigateTo(AiChat)
+                            updateNavItem(NavItem.AiChat)
+                        }
+                    },
+                    onDeleteCourse = onGoBack
+            )
         }
+
+        @Composable
+        override fun getTitle(): String = "课程详情"
     }
 
-    data object CrossDeviceTaskDemo : Screen(parentScreen = TaskCenter, navItem = NavItem.MetaHome) {
+    data class TaskDetail(val taskId: String) :
+            Screen(parentScreen = TaskCenter, navItem = NavItem.MetaHome) {
         @Composable
         override fun Content(
                 navController: NavController,
@@ -367,8 +374,11 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
-            CrossDeviceTaskDemoScreen(onBack = onGoBack)
+            TaskDetailScreen(taskId = taskId)
         }
+
+        @Composable
+        override fun getTitle(): String = "任务详情"
     }
 
     data object AiChat : Screen(navItem = NavItem.AiChat) {
@@ -399,8 +409,7 @@ sealed class Screen(
                     onNavigateToPackageManager = { navigateTo(Packages) },
                     onLoading = onLoading,
                     onError = onError,
-                    onGestureConsumed = onGestureConsumed,
-                    onGoBack = onGoBack
+                    onGestureConsumed = onGestureConsumed
             )
         }
     }
@@ -992,7 +1001,7 @@ sealed class Screen(
             )
         }
     }
-    // 添加SpeechServicesSettings屏幕定义
+    // 娣诲姞SpeechServicesSettings灞忓箷瀹氫箟
     data object SpeechServicesSettings :
             Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_speech_services_settings) {
         @Composable
@@ -1013,7 +1022,7 @@ sealed class Screen(
         }
     }
     
-    // 添加自定义请求头设置屏幕
+    // 娣诲姞鑷畾涔夎姹傚ご璁剧疆灞忓箷
     data object CustomHeadersSettings :
         Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_custom_headers_settings) {
         @Composable
@@ -1030,7 +1039,7 @@ sealed class Screen(
             CustomHeadersSettingsScreen(onBackPressed = onGoBack)
         }
     }
-    // 新增：人设卡生成页面
+    // 鏂板锛氫汉璁惧崱鐢熸垚椤甸潰
     data object PersonaCardGeneration :
         Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_persona_card_generation) {
         @Composable
@@ -1053,7 +1062,7 @@ sealed class Screen(
         }
     }
 
-    // 新增：Waifu模式设置页面
+    // 鏂板锛歐aifu妯″紡璁剧疆椤甸潰
     data object WaifuModeSettings :
         Screen(parentScreen = Settings, navItem = NavItem.Settings, titleRes = R.string.screen_title_waifu_mode_settings) {
         @Composable
@@ -1074,7 +1083,7 @@ sealed class Screen(
         }
     }
     
-    // 自定义表情管理页面
+    // 鑷畾涔夎〃鎯呯鐞嗛〉闈?
     data object CustomEmojiManagement :
         Screen(parentScreen = WaifuModeSettings, navItem = NavItem.Settings, titleRes = R.string.manage_custom_emoji) {
         @Composable
@@ -1490,7 +1499,7 @@ sealed class Screen(
         }
     }
 
-    // 流式Markdown演示屏幕
+    // 娴佸紡Markdown婕旂ず灞忓箷
     data object MarkdownDemo :
             Screen(parentScreen = Toolbox, navItem = NavItem.Toolbox, titleRes = R.string.screen_title_markdown_demo) {
         @Composable
@@ -1508,7 +1517,7 @@ sealed class Screen(
         }
     }
 
-    // 工具测试屏幕
+    // 宸ュ叿娴嬭瘯灞忓箷
     data object ToolTester :
             Screen(parentScreen = Toolbox, navItem = NavItem.Toolbox, titleRes = R.string.screen_title_tool_tester) {
         @Composable
@@ -1526,7 +1535,7 @@ sealed class Screen(
         }
     }
 
-    // 在MarkdownDemo对象后添加TextToSpeech对象
+    // 鍦∕arkdownDemo瀵硅薄鍚庢坊鍔燭extToSpeech瀵硅薄
     data object TextToSpeech :
             Screen(parentScreen = Toolbox, navItem = NavItem.Toolbox, titleRes = R.string.screen_title_text_to_speech) {
         @Composable
@@ -1650,7 +1659,7 @@ sealed class Screen(
         }
     }
 
-    // MCP 插件详情页面
+    // MCP 鎻掍欢璇︽儏椤甸潰
     data class MCPPluginDetail(val issue: com.ai.assistance.metaagent.data.api.GitHubIssue) :
             Screen(parentScreen = Packages, navItem = NavItem.Packages) {
         @Composable
@@ -1671,23 +1680,23 @@ sealed class Screen(
         }
     }
 
-    // 获取屏幕标题
+    // 鑾峰彇灞忓箷鏍囬
     @Composable
     open fun getTitle(): String = titleRes?.let { stringResource(it) } ?: ""
 
-    // 判断是否为二级屏幕
+    // 鍒ゆ柇鏄惁涓轰簩绾у睆骞?
     val isSecondaryScreen: Boolean
         get() = parentScreen != null
 }
 
-// 路由管理器
+// 璺敱绠＄悊鍣?
 object MetaAgentRouter {
-    // 处理返回导航
+    // 澶勭悊杩斿洖瀵艰埅
     fun handleBackNavigation(currentScreen: Screen): Screen? {
         return currentScreen.parentScreen
     }
 
-    // 根据NavItem获取对应的Screen
+    // 鏍规嵁NavItem鑾峰彇瀵瑰簲鐨凷creen
     fun getScreenForNavItem(navItem: NavItem): Screen {
         return when (navItem) {
             NavItem.MetaHome -> Screen.MetaHome
@@ -1710,10 +1719,13 @@ object MetaAgentRouter {
     }
 }
 
-// 全局的手势状态持有者，用于在不同组件间共享手势状态
+// 鍏ㄥ眬鐨勬墜鍔跨姸鎬佹寔鏈夎€咃紝鐢ㄤ簬鍦ㄤ笉鍚岀粍浠堕棿鍏变韩鎵嬪娍鐘舵€?
 object GestureStateHolder {
-    // 聊天界面手势是否被消费的状态
+    // 鑱婂ぉ鐣岄潰鎵嬪娍鏄惁琚秷璐圭殑鐘舵€?
     var isChatScreenGestureConsumed: Boolean = false
 }
+
+
+
 
 

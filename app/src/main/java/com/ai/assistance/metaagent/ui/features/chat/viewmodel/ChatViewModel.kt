@@ -28,10 +28,15 @@ import com.ai.assistance.metaagent.data.model.AITool
 import com.ai.assistance.metaagent.data.model.ChatHistory
 import com.ai.assistance.metaagent.data.model.ChatMessage
 import com.ai.assistance.metaagent.data.model.FunctionType
+import com.ai.assistance.metaagent.data.model.MemoryScoreMode
 import com.ai.assistance.metaagent.data.preferences.ApiPreferences
 import com.ai.assistance.metaagent.data.preferences.ModelConfigManager
 import com.ai.assistance.metaagent.data.model.PromptFunctionType
 import com.ai.assistance.metaagent.data.model.ToolParameter
+import com.ai.assistance.metaagent.BuildConfig
+import com.ai.assistance.metaagent.data.preferences.UserPreferencesManager
+import com.ai.assistance.metaagent.data.preferences.preferencesManager
+import com.ai.assistance.metaagent.data.repository.MemoryRepository
 import com.ai.assistance.metaagent.R
 import com.ai.assistance.metaagent.ui.features.chat.webview.LocalWebServer
 import com.ai.assistance.metaagent.ui.floating.FloatingMode
@@ -80,6 +85,7 @@ import com.ai.assistance.metaagent.services.core.MessageCoordinationDelegate
 import com.ai.assistance.metaagent.data.model.InputProcessingState
 import com.ai.assistance.metaagent.ui.features.chat.util.MessageImageGenerator
 import com.ai.assistance.metaagent.ui.features.chat.components.CharacterSelectorTarget
+import com.ai.assistance.metaagent.ui.features.home.data.CourseRagChatBindingStore
 
 enum class ChatHistoryDisplayMode {
     BY_CHARACTER_CARD,
@@ -91,6 +97,17 @@ class ChatViewModel(private val context: Context) : ViewModel() {
 
     companion object {
         private const val TAG = "ChatViewModel"
+        private const val COURSE_RAG_CONTEXT_FILE_NAME = "course_rag_context.txt"
+        private const val COURSE_RAG_NO_HIT_SENTINEL = "[课程RAG系统提示]"
+    }
+
+    private data class CourseRagRetrievalResult(
+        val attachment: AttachmentInfo?,
+        val hitCount: Int,
+        val hitTitles: List<String>,
+        val elapsedMs: Long
+    ) {
+        val hasHit: Boolean get() = hitCount > 0
     }
 
     // 添加语音服务
@@ -117,6 +134,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
 
     // 工具权限系统
     private val toolPermissionSystem = ToolPermissionSystem.getInstance(context)
+    private val memoryRepositoriesByProfile = mutableMapOf<String, MemoryRepository>()
     
     // 终端管理器（用于执行工作区命令）
     @RequiresApi(Build.VERSION_CODES.O)
@@ -1297,14 +1315,330 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     fun sendUserMessage(promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
-        messageCoordinationDelegate.sendUserMessage(promptFunctionType)
+        viewModelScope.launch {
+            val chatId = chatHistoryDelegate.currentChatId.value
+            val inputText = userMessage.value.text
+            val hasCourseRagBinding = !chatId.isNullOrBlank() &&
+                !CourseRagChatBindingStore.getFolderPath(context, chatId).isNullOrBlank()
+            val ragResult = if (!chatId.isNullOrBlank()) {
+                attachCourseRagContextIfNeeded(chatId, inputText)
+            } else {
+                null
+            }
+            if (!chatId.isNullOrBlank()) {
+                appendCourseRagTraceMessageIfNeeded(chatId, inputText, ragResult)
+            }
+
+            val noHitOverride = if (ragResult != null && !ragResult.hasHit && inputText.isNotBlank()) {
+                buildNoHitGuardedMessage(inputText)
+            } else {
+                null
+            }
+
+            if (noHitOverride != null) {
+                updateUserMessage(TextFieldValue(""))
+                messageCoordinationDelegate.sendUserMessage(
+                    promptFunctionType = promptFunctionType,
+                    messageTextOverride = noHitOverride,
+                    forceDisableMemoryQuery = hasCourseRagBinding
+                )
+                return@launch
+            }
+
+            messageCoordinationDelegate.sendUserMessage(
+                promptFunctionType = promptFunctionType,
+                forceDisableMemoryQuery = hasCourseRagBinding
+            )
+        }
     }
 
     fun sendTextMessage(text: String, promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
-        messageCoordinationDelegate.sendUserMessage(
-            promptFunctionType = promptFunctionType,
-            messageTextOverride = text
+        viewModelScope.launch {
+            val chatId = chatHistoryDelegate.currentChatId.value
+            val hasCourseRagBinding = !chatId.isNullOrBlank() &&
+                !CourseRagChatBindingStore.getFolderPath(context, chatId).isNullOrBlank()
+            val ragResult = if (!chatId.isNullOrBlank()) {
+                attachCourseRagContextIfNeeded(chatId, text)
+            } else {
+                null
+            }
+            if (!chatId.isNullOrBlank()) {
+                appendCourseRagTraceMessageIfNeeded(chatId, text, ragResult)
+            }
+            val finalText = if (ragResult != null && !ragResult.hasHit && text.isNotBlank()) {
+                buildNoHitGuardedMessage(text)
+            } else {
+                text
+            }
+            messageCoordinationDelegate.sendUserMessage(
+                promptFunctionType = promptFunctionType,
+                messageTextOverride = finalText,
+                forceDisableMemoryQuery = hasCourseRagBinding
+            )
+        }
+    }
+    private suspend fun attachCourseRagContextIfNeeded(
+        chatId: String,
+        queryText: String
+    ): CourseRagRetrievalResult? {
+        val folderPath = CourseRagChatBindingStore.getFolderPath(context, chatId)?.trim().orEmpty()
+        if (folderPath.isBlank()) {
+            return null
+        }
+
+        val ragResult = buildCourseRagContextAttachment(
+            chatId = chatId,
+            folderPath = folderPath,
+            queryText = queryText
         )
+        val currentAttachments = attachments.value
+        val attachmentsWithoutCourseRag = currentAttachments.filterNot { attachment ->
+            attachment.fileName == COURSE_RAG_CONTEXT_FILE_NAME ||
+                attachment.fileName == "memory_context.xml"
+        }
+        when {
+            ragResult?.attachment != null -> {
+                attachmentDelegate.updateAttachments(attachmentsWithoutCourseRag + ragResult.attachment)
+                AppLogger.d(
+                    TAG,
+                    "Course RAG context injected for chatId=$chatId, query='${queryText.take(64)}', hitCount=${ragResult.hitCount}"
+                )
+            }
+            attachmentsWithoutCourseRag.size != currentAttachments.size -> {
+                attachmentDelegate.updateAttachments(attachmentsWithoutCourseRag)
+            }
+        }
+        if (BuildConfig.DEBUG && ragResult != null && queryText.isNotBlank()) {
+            val hitLabel = if (ragResult.hitTitles.isEmpty()) {
+                "no-hit"
+            } else {
+                ragResult.hitTitles.take(2).joinToString(" / ")
+            }
+            uiStateDelegate.showToast("RAG: ${ragResult.hitCount} hits / ${ragResult.elapsedMs}ms / $hitLabel")
+        }
+        return ragResult
+    }
+
+    private suspend fun buildCourseRagContextAttachment(
+        chatId: String,
+        folderPath: String,
+        queryText: String
+    ): CourseRagRetrievalResult? {
+        val normalizedQuery = queryText.trim()
+        if (normalizedQuery.isBlank()) {
+            return null
+        }
+        val startedAt = System.currentTimeMillis()
+        return runCatching {
+            val repository = getActiveProfileMemoryRepository()
+            var memories = repository.searchMemories(
+                query = normalizedQuery,
+                folderPath = folderPath,
+                semanticThreshold = 0.0f,
+                scoreMode = MemoryScoreMode.KEYWORD_FIRST,
+                keywordWeight = 12.0f,
+                semanticWeight = 0.2f,
+                edgeWeight = 0.0f
+            ).take(3)
+
+            if (memories.isEmpty()) {
+                val allCourseMemories = repository.searchMemories(
+                    query = "*",
+                    folderPath = folderPath,
+                    semanticThreshold = 0.0f
+                )
+                val queryKeywords = extractQueryKeywords(normalizedQuery)
+                val keywordRanked = if (queryKeywords.isEmpty()) {
+                    emptyList()
+                } else {
+                    allCourseMemories
+                        .asSequence()
+                        .map { memory ->
+                            val score = queryKeywords.count { keyword ->
+                                memory.title.contains(keyword, ignoreCase = true) ||
+                                    memory.content.contains(keyword, ignoreCase = true)
+                            }
+                            memory to score
+                        }
+                        .filter { (_, score) -> score > 0 }
+                        .sortedByDescending { (_, score) -> score }
+                        .map { (memory, _) -> memory }
+                        .take(3)
+                        .toList()
+                }
+                memories = if (queryKeywords.isEmpty()) {
+                    allCourseMemories.take(2)
+                } else if (keywordRanked.isNotEmpty()) {
+                    keywordRanked
+                } else {
+                    emptyList()
+                }
+            }
+
+            val snippetEntries = memories.mapNotNull { memory ->
+                val rawText = memory.content.trim()
+                if (rawText.isBlank()) {
+                    null
+                } else {
+                    val clipped = if (rawText.length > 1200) rawText.take(1200) + "..." else rawText
+                    memory.title to clipped
+                }
+            }
+
+            val elapsed = System.currentTimeMillis() - startedAt
+            if (snippetEntries.isEmpty()) {
+                return@runCatching CourseRagRetrievalResult(
+                    attachment = null,
+                    hitCount = 0,
+                    hitTitles = emptyList(),
+                    elapsedMs = elapsed
+                )
+            }
+
+            val contextText = buildCourseRagContextText(
+                queryText = normalizedQuery,
+                snippets = snippetEntries
+            )
+            val attachment = AttachmentInfo(
+                filePath = "course_rag_context_${chatId}_${System.currentTimeMillis()}",
+                fileName = COURSE_RAG_CONTEXT_FILE_NAME,
+                mimeType = "text/plain",
+                fileSize = contextText.length.toLong(),
+                content = contextText
+            )
+            CourseRagRetrievalResult(
+                attachment = attachment,
+                hitCount = snippetEntries.size,
+                hitTitles = snippetEntries.map { it.first },
+                elapsedMs = elapsed
+            )
+        }.onFailure { error ->
+            AppLogger.e(TAG, "Failed to build course RAG context attachment", error)
+        }.getOrNull()
+    }
+
+    private fun buildCourseRagContextText(
+        queryText: String,
+        snippets: List<Pair<String, String>>
+    ): String {
+        return buildString {
+            appendLine("Course knowledge retrieval context")
+            appendLine("User question: $queryText")
+            appendLine("Answer with the context below first. If not found, say: 课程资料中未找到相关内容。")
+            appendLine()
+            snippets.forEachIndexed { index, (title, content) ->
+                appendLine("[${index + 1}] $title")
+                appendLine(content)
+                appendLine()
+            }
+        }.trim()
+    }
+
+    private fun buildNoHitGuardedMessage(originalText: String): String {
+        val normalized = originalText.trim()
+        if (normalized.isEmpty()) {
+            return originalText
+        }
+        return buildString {
+            appendLine(normalized)
+            appendLine()
+            appendLine(COURSE_RAG_NO_HIT_SENTINEL)
+            appendLine("No relevant snippet was retrieved from the bound course knowledge base.")
+            appendLine("You MUST output exactly this one Chinese sentence and nothing else:")
+            appendLine("课程资料中未找到相关内容，请先上传或绑定相关资料后再试。")
+            appendLine("Do not add any extra explanation or tool result.")
+        }.trim()
+    }
+
+    private suspend fun appendCourseRagTraceMessageIfNeeded(
+        chatId: String,
+        queryText: String,
+        ragResult: CourseRagRetrievalResult?
+    ) {
+        val normalizedQuery = queryText.trim()
+        if (normalizedQuery.isBlank() || ragResult == null) {
+            return
+        }
+        val traceMessage = ChatMessage(
+            sender = "rag",
+            content = buildCourseRagTraceMessage(normalizedQuery, ragResult)
+        )
+        runCatching {
+            chatHistoryDelegate.addMessageToChat(traceMessage, chatId)
+        }.onFailure { error ->
+            AppLogger.e(TAG, "Failed to append course RAG trace message", error)
+        }
+    }
+
+    private fun buildCourseRagTraceMessage(
+        queryText: String,
+        ragResult: CourseRagRetrievalResult
+    ): String {
+        val sourceLabel = if (ragResult.hitTitles.isEmpty()) {
+            "none"
+        } else {
+            ragResult.hitTitles.take(3).joinToString(" / ")
+        }
+        return buildString {
+            appendLine("RAG retrieval")
+            appendLine("Question: $queryText")
+            appendLine("Hits: ${ragResult.hitCount}, Latency: ${ragResult.elapsedMs}ms")
+            appendLine("Sources: $sourceLabel")
+        }.trim()
+    }
+
+    private fun extractQueryKeywords(query: String): List<String> {
+        val latinTokens = query
+            .lowercase()
+            .replace(Regex("[^\\p{L}\\p{Nd}\\u4e00-\\u9fff]+"), " ")
+            .split(Regex("\\s+"))
+            .map { it.trim() }
+            .filter { it.length >= 2 }
+
+        val chineseRuns = Regex("[\\u4e00-\\u9fff]{2,}")
+            .findAll(query)
+            .map { it.value.trim() }
+            .filter { it.isNotBlank() }
+            .toList()
+
+        val chineseWholeTokens = chineseRuns
+            .filter { it.length <= 6 }
+
+        val chineseNgrams = chineseRuns.flatMap { token ->
+            val result = mutableListOf<String>()
+            for (size in 2..4) {
+                if (token.length < size) continue
+                for (i in 0..(token.length - size)) {
+                    result += token.substring(i, i + size)
+                }
+            }
+            result
+        }
+
+        val chineseStopWords = setOf(
+            "请问", "请给", "给出", "一下", "一下子",
+            "这个", "那个", "如何", "怎么", "是不是",
+            "有没有", "请你", "帮我", "可以", "以及"
+        )
+
+        return (latinTokens + chineseWholeTokens + chineseNgrams)
+            .map { it.trim() }
+            .filter { it.length >= 2 }
+            .filter { it !in chineseStopWords }
+            .filterNot { token -> token.all { ch -> ch == '的' || ch == '了' || ch == '吗' } }
+            .distinct()
+            .sortedByDescending { it.length }
+            .take(24)
+    }
+
+    private suspend fun getActiveProfileMemoryRepository(): MemoryRepository {
+        val profileId = runCatching {
+            UserPreferencesManager.getInstance(context)
+            preferencesManager.activeProfileIdFlow.first()
+        }.getOrDefault("default")
+        return synchronized(memoryRepositoriesByProfile) {
+            memoryRepositoriesByProfile.getOrPut(profileId) { MemoryRepository(context, profileId) }
+        }
     }
 
     fun cancelCurrentMessage() {
@@ -2548,4 +2882,6 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
 }
+
+
 

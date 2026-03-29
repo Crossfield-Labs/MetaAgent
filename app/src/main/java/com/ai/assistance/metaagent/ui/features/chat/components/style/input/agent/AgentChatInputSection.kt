@@ -130,6 +130,7 @@ import com.ai.assistance.metaagent.data.preferences.ModelConfigManager
 import com.ai.assistance.metaagent.data.preferences.UserPreferencesManager
 import com.ai.assistance.metaagent.ui.common.animations.SimpleAnimatedVisibility
 import com.ai.assistance.metaagent.ui.features.chat.components.AttachmentChip
+import com.ai.assistance.metaagent.ui.features.chat.components.CourseRagAttachmentSummary
 import com.ai.assistance.metaagent.ui.features.chat.components.AttachmentSelectorPopupPanel
 import com.ai.assistance.metaagent.ui.features.chat.components.FullscreenInputDialog
 import com.ai.assistance.metaagent.ui.features.chat.components.style.input.common.CharacterCardModelBindingSwitchConfirmDialog
@@ -648,6 +649,12 @@ fun AgentChatInputSection(
             }
 
             if (attachments.isNotEmpty()) {
+                CourseRagAttachmentSummary(
+                    attachments = attachments,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 2.dp),
+                )
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),

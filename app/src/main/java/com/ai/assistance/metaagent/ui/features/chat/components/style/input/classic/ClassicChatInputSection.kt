@@ -59,6 +59,7 @@ import com.ai.assistance.metaagent.data.model.ChatMessage
 import com.ai.assistance.metaagent.core.tools.ToolProgressBus
 import com.ai.assistance.metaagent.ui.common.animations.SimpleAnimatedVisibility
 import com.ai.assistance.metaagent.ui.features.chat.components.AttachmentChip
+import com.ai.assistance.metaagent.ui.features.chat.components.CourseRagAttachmentSummary
 import com.ai.assistance.metaagent.ui.features.chat.components.AttachmentSelectorPanel
 import com.ai.assistance.metaagent.ui.features.chat.components.FullscreenInputDialog
 import com.ai.assistance.metaagent.ui.features.chat.components.SimpleLinearProgressIndicator
@@ -387,6 +388,12 @@ fun ClassicChatInputSection(
 
             // Attachment chips row - only show if there are attachments
             if (attachments.isNotEmpty()) {
+                CourseRagAttachmentSummary(
+                    attachments = attachments,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
+                )
                 LazyRow(
                     modifier =
                     Modifier
