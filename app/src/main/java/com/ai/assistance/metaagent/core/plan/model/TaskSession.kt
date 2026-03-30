@@ -30,10 +30,29 @@ data class TaskSession(
     val completedAt: Long? = null,
     val resultSummary: String = "",
     val activeNodeId: String? = null,
+    val pcPhase: String = "",
+    val pcActiveWorker: String = "",
+    val pcActiveSessionMode: String = "",
+    val pcActiveWorkerProfile: String = "",
+    val pcActiveWorkerCanInterrupt: Boolean = false,
+    val pcActiveWorkerTaskId: String = "",
+    val pcLastProgressMessage: String = "",
+    val pcLatestSummary: String = "",
+    val pcLatestArtifactSummary: String = "",
+    val pcPermissionSummary: String = "",
+    val pcSessionInfoSummary: String = "",
+    val pcMcpStatusSummary: String = "",
+    val pcRecentHookEvents: List<String> = emptyList(),
+    val pcAwaitingUserPrompt: String = "",
+    val pcAwaitingInputMode: String = "",
+    val pcSnapshotVersion: Int = 0,
     val nextSeq: Int = 1
 ) {
     val activeNode: PlanNode?
         get() = planNodes.find { it.id == activeNodeId }
+
+    val currentPcNode: PlanNode?
+        get() = activeNode?.takeIf { it.adapter == PlanNodeAdapter.PC }
 
     val completedNodeCount: Int
         get() = planNodes.count { it.status == PlanNodeStatus.DONE }
@@ -54,6 +73,9 @@ data class TaskSession(
             TaskSessionStatus.FAILED,
             TaskSessionStatus.CANCELLED
         )
+
+    val hasActivePcProjection: Boolean
+        get() = pcActiveWorker.isNotBlank() || pcLatestSummary.isNotBlank() || pcPhase.isNotBlank()
 
     fun appendEvent(
         type: TaskEventType,

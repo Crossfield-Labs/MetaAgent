@@ -176,7 +176,11 @@ class PlanTreeExecutor(
                         awaitingUserPrompt = "",
                         pendingUserInput = response
                     )
-                }.copy(status = TaskSessionStatus.RUNNING)
+                }.copy(
+                    status = TaskSessionStatus.RUNNING,
+                    pcAwaitingUserPrompt = "",
+                    pcAwaitingInputMode = ""
+                )
                     .appendEvent(
                         TaskEventType.USER_INTERVENTION,
                         nodeId = nodeId,
@@ -225,7 +229,9 @@ class PlanTreeExecutor(
                     )
                 }.copy(
                     status = TaskSessionStatus.RUNNING,
-                    activeNodeId = null
+                    activeNodeId = null,
+                    pcAwaitingUserPrompt = "",
+                    pcAwaitingInputMode = ""
                 ).appendEvent(
                     TaskEventType.USER_INTERVENTION,
                     nodeId = nodeId,
@@ -260,6 +266,53 @@ class PlanTreeExecutor(
         executionJob?.cancel()
         executionJob = scope.launch {
             executeNodes()
+        }
+    }
+
+    fun interruptPcNode(nodeId: String, note: String = "") {
+        val session = _taskSession.value ?: return
+        val node = session.findNode(nodeId) ?: return
+        if (node.adapter != PlanNodeAdapter.PC) return
+
+        val runtimeSessionId = node.runtimeSessionId.trim()
+        if (runtimeSessionId.isBlank()) {
+            updateSession(
+                session.appendEvent(
+                    TaskEventType.PC_SESSION_FOLLOWUP,
+                    nodeId = nodeId,
+                    message = "PC session is not ready to be interrupted yet."
+                )
+            )
+            return
+        }
+
+        scope.launch {
+            val client = PcAgentWsClient(context)
+            val result = runCatching {
+                client.interruptSession(
+                    taskId = session.taskId,
+                    nodeId = nodeId,
+                    sessionId = runtimeSessionId,
+                    note = note
+                ) { event ->
+                    handlePcExecutionEvent(nodeId, event)
+                }
+            }.getOrElse { error ->
+                AppLogger.e(TAG, "Failed to interrupt PC session: $nodeId", error)
+                PcSessionExecutionResult(
+                    success = false,
+                    sessionId = runtimeSessionId,
+                    error = error.message ?: "Failed to interrupt the PC session."
+                )
+            }
+
+            if (!result.success) {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_FOLLOWUP,
+                    message = result.error.ifBlank { "Failed to interrupt the PC session." }
+                )
+            }
         }
     }
 
@@ -779,41 +832,20 @@ class PlanTreeExecutor(
                 if (sessionId != null) "Resuming PC agent session" else "Connecting to PC agent"
             )
 
+            val onPcEvent: (PcSessionEvent) -> Unit = { event ->
+                handlePcExecutionEvent(node.id, event)
+            }
+
             val result = if (sessionId != null && pendingInput.isNotBlank()) {
                 client.submitUserInput(
                     taskId = session.taskId,
                     nodeId = node.id,
                     sessionId = sessionId,
                     userInput = pendingInput,
-                    endpointOverride = endpointOverride
-                ) { event ->
-                    when (event.event) {
-                        "pc.session.started",
-                        "pc.session.progress" -> {
-                            val safeProgress = event.progress
-                                ?.coerceIn(node.progress, 0.94f)
-                                ?: (node.progress + 0.06f).coerceAtMost(0.94f)
-                            emitNodeProgress(
-                                node,
-                                safeProgress,
-                                event.message.ifBlank { "PC agent is continuing the task" }
-                            )
-                        }
-
-                        "pc.session.subnode.started",
-                        "pc.session.subnode.progress",
-                        "pc.session.subnode.completed" -> {
-                            val safeProgress = event.progress
-                                ?.coerceIn(node.progress, 0.94f)
-                                ?: (node.progress + 0.04f).coerceAtMost(0.94f)
-                            emitNodeProgress(
-                                node,
-                                safeProgress,
-                                event.message.ifBlank { "PC sub-agent step: ${event.event.substringAfterLast('.')}" }
-                            )
-                        }
-                    }
-                }
+                    inputIntent = "reply",
+                    endpointOverride = endpointOverride,
+                    onEvent = onPcEvent
+                )
             } else {
                 client.execute(
                     taskId = session.taskId,
@@ -825,42 +857,9 @@ class PlanTreeExecutor(
                         goal = node.goal.ifBlank { node.title },
                         command = command
                     ),
-                    endpointOverride = endpointOverride
-                ) { event ->
-                    when (event.event) {
-                        "pc.session.started" -> {
-                            emitNodeProgress(
-                                node,
-                                event.progress ?: 0.14f,
-                                event.message.ifBlank { "PC agent started ($runner)" }
-                            )
-                        }
-
-                        "pc.session.progress" -> {
-                            val safeProgress = event.progress
-                                ?.coerceIn(node.progress, 0.94f)
-                                ?: (node.progress + 0.06f).coerceAtMost(0.94f)
-                            emitNodeProgress(
-                                node,
-                                safeProgress,
-                                event.message.ifBlank { "PC agent is executing the task" }
-                            )
-                        }
-
-                        "pc.session.subnode.started",
-                        "pc.session.subnode.progress",
-                        "pc.session.subnode.completed" -> {
-                            val safeProgress = event.progress
-                                ?.coerceIn(node.progress, 0.94f)
-                                ?: (node.progress + 0.04f).coerceAtMost(0.94f)
-                            emitNodeProgress(
-                                node,
-                                safeProgress,
-                                event.message.ifBlank { "PC sub-agent step: ${event.event.substringAfterLast('.')}" }
-                            )
-                        }
-                    }
-                }
+                    endpointOverride = endpointOverride,
+                    onEvent = onPcEvent
+                )
             }
 
             if (result.awaitingUser) {
@@ -872,14 +871,22 @@ class PlanTreeExecutor(
                         it.copy(
                             status = PlanNodeStatus.BLOCKED,
                             detail = prompt,
-                            runtimeSessionId = result.sessionId.orEmpty(),
+                            runtimeSessionId = result.sessionId?.takeIf { value -> value.isNotBlank() } ?: it.runtimeSessionId,
                             awaitingUserPrompt = prompt,
                             pendingUserInput = ""
                         )
                     }.copy(
                         status = TaskSessionStatus.WAITING_USER,
-                        activeNodeId = node.id
+                        activeNodeId = node.id,
+                        pcAwaitingUserPrompt = prompt,
+                        pcAwaitingInputMode = result.inputMode.orEmpty(),
+                        pcActiveWorkerCanInterrupt = false
                     )
+                )
+                appendPcStructuredEvent(
+                    nodeId = node.id,
+                    type = TaskEventType.PC_SESSION_AWAIT_USER,
+                    message = prompt
                 )
                 return true
             }
@@ -891,15 +898,7 @@ class PlanTreeExecutor(
                     detail = result.error.ifBlank { "PC execution failed" },
                     rawData = result.error.ifBlank { result.finalMessage }
                 )
-                updateSession(
-                    (_taskSession.value ?: session).updateNode(node.id) {
-                        it.copy(
-                            runtimeSessionId = "",
-                            awaitingUserPrompt = "",
-                            pendingUserInput = ""
-                        )
-                    }
-                )
+                finalizePcNodeRuntime(node.id, artifacts = result.artifacts)
                 return false
             }
 
@@ -910,15 +909,7 @@ class PlanTreeExecutor(
                 detail = output.ifBlank { "PC agent completed the task" }.take(320),
                 rawData = output
             )
-            updateSession(
-                (_taskSession.value ?: session).updateNode(node.id) {
-                    it.copy(
-                        runtimeSessionId = "",
-                        awaitingUserPrompt = "",
-                        pendingUserInput = ""
-                    )
-                }
-            )
+            finalizePcNodeRuntime(node.id, artifacts = result.artifacts)
             emitNodeProgress(node, 1f, result.finalMessage.ifBlank { "PC task completed" })
             true
         } catch (e: CancellationException) {
@@ -928,6 +919,394 @@ class PlanTreeExecutor(
             recordNodeResult(node.id, "", e.message ?: "PC execution failed", e.stackTraceToString())
             false
         }
+    }
+
+    private fun handlePcExecutionEvent(nodeId: String, event: PcSessionEvent) {
+        val previousSession = _taskSession.value
+        applyPcProjection(nodeId, event)
+        val projectedSession = _taskSession.value
+
+        when (event.event) {
+            "pc.session.started" -> {
+                emitPcProgressEvent(
+                    nodeId = nodeId,
+                    progress = event.progress,
+                    progressStep = 0.06f,
+                    message = event.message.ifBlank { "PC agent started" }
+                )
+            }
+
+            "pc.session.progress" -> {
+                emitPcProgressEvent(
+                    nodeId = nodeId,
+                    progress = event.progress,
+                    progressStep = 0.06f,
+                    message = event.message.ifBlank { "PC agent is executing the task" }
+                )
+            }
+
+            "pc.session.subnode.started" -> {
+                emitPcProgressEvent(
+                    nodeId = nodeId,
+                    progress = event.progress,
+                    progressStep = 0.04f,
+                    message = event.message.ifBlank { "PC sub-agent step started" }
+                )
+            }
+
+            "pc.session.subnode.progress" -> {
+                emitPcProgressEvent(
+                    nodeId = nodeId,
+                    progress = event.progress,
+                    progressStep = 0.03f,
+                    message = event.message.ifBlank { "PC sub-agent step is running" }
+                )
+            }
+
+            "pc.session.subnode.completed" -> {
+                emitPcProgressEvent(
+                    nodeId = nodeId,
+                    progress = event.progress,
+                    progressStep = 0.04f,
+                    message = event.message.ifBlank { "PC sub-agent step completed" }
+                )
+            }
+
+            "pc.session.phase" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_PHASE,
+                    message = event.message.ifBlank { event.phase.orEmpty() },
+                    data = event.phase.orEmpty()
+                )
+            }
+
+            "pc.session.worker" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_WORKER,
+                    message = event.message.ifBlank { event.worker.orEmpty() },
+                    data = listOfNotNull(
+                        event.worker?.takeIf { it.isNotBlank() },
+                        event.workerProfile?.takeIf { it.isNotBlank() }?.let { "profile=$it" },
+                        event.sessionMode?.takeIf { it.isNotBlank() }?.let { "sessionMode=$it" },
+                        event.canInterrupt?.let { "canInterrupt=$it" }
+                    ).joinToString(" | ")
+                )
+            }
+
+            "pc.session.summary" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_SUMMARY,
+                    message = event.message,
+                    data = event.snapshot?.toString()
+                )
+            }
+
+            "pc.session.artifact_summary" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_ARTIFACT,
+                    message = event.message.ifBlank { event.latestArtifactSummary.orEmpty() },
+                    data = event.artifacts.joinToString("\n")
+                )
+            }
+
+            "pc.session.permission" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_PERMISSION,
+                    message = event.message.ifBlank { event.permissionSummary.orEmpty() }
+                )
+            }
+
+            "pc.session.mcp_status" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_MCP_STATUS,
+                    message = event.message.ifBlank { event.mcpStatusSummary.orEmpty() }
+                )
+            }
+
+            "pc.session.worker_runtime" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_RUNTIME,
+                    message = event.message.ifBlank { event.sessionInfoSummary.orEmpty() },
+                    data = event.snapshot?.toString()
+                )
+            }
+
+            "pc.session.snapshot" -> {
+                val snapshot = event.snapshot
+                if (shouldAppendPcSnapshot(previousSession, projectedSession)) {
+                    val summary = event.message.ifBlank {
+                        snapshot?.latestSummary
+                            ?: snapshot?.lastProgressMessage
+                            ?: "PC session snapshot updated"
+                    }
+                    appendPcStructuredEvent(
+                        nodeId = nodeId,
+                        type = TaskEventType.PC_SESSION_SNAPSHOT,
+                        message = summary,
+                        data = snapshot?.snapshotVersion?.toString() ?: event.snapshotVersion?.toString()
+                    )
+                }
+            }
+
+            "pc.session.followup.accepted" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_FOLLOWUP,
+                    message = event.message,
+                    data = event.intent.orEmpty()
+                )
+            }
+
+            "pc.session.await_user" -> {
+                appendPcStructuredEvent(
+                    nodeId = nodeId,
+                    type = TaskEventType.PC_SESSION_AWAIT_USER,
+                    message = event.message,
+                    data = event.inputMode.orEmpty()
+                )
+            }
+        }
+    }
+
+    private fun shouldAppendPcSnapshot(previous: TaskSession?, current: TaskSession?): Boolean {
+        if (current == null) return false
+        if (previous == null) return true
+
+        return previous.pcActiveWorker != current.pcActiveWorker ||
+            previous.pcActiveWorkerProfile != current.pcActiveWorkerProfile ||
+            previous.pcActiveWorkerCanInterrupt != current.pcActiveWorkerCanInterrupt ||
+            previous.pcAwaitingUserPrompt != current.pcAwaitingUserPrompt ||
+            previous.pcLatestArtifactSummary != current.pcLatestArtifactSummary ||
+            previous.pcPermissionSummary != current.pcPermissionSummary ||
+            previous.pcSessionInfoSummary != current.pcSessionInfoSummary ||
+            previous.pcMcpStatusSummary != current.pcMcpStatusSummary ||
+            previous.pcRecentHookEvents != current.pcRecentHookEvents
+    }
+
+    private fun emitPcProgressEvent(
+        nodeId: String,
+        progress: Float?,
+        progressStep: Float,
+        message: String
+    ) {
+        val session = _taskSession.value ?: return
+        val currentNode = session.findNode(nodeId) ?: return
+        val normalized = message.trim()
+        if (normalized.isBlank()) return
+
+        val lastProgressEvent = session.events
+            .asReversed()
+            .firstOrNull { it.nodeId == nodeId && it.type == TaskEventType.NODE_PROGRESS }
+
+        if (currentNode.detail == normalized || lastProgressEvent?.message == normalized) {
+            return
+        }
+
+        val safeProgress = progress
+            ?.coerceIn(currentNode.progress, 0.94f)
+            ?: (currentNode.progress + progressStep).coerceAtMost(0.94f)
+
+        emitNodeProgress(currentNode, safeProgress, normalized)
+    }
+
+    private fun appendPcStructuredEvent(
+        nodeId: String,
+        type: TaskEventType,
+        message: String,
+        data: String? = null
+    ) {
+        val normalized = message.trim()
+        if (normalized.isBlank()) return
+
+        val session = _taskSession.value ?: return
+        val lastSameType = session.events
+            .asReversed()
+            .firstOrNull { it.nodeId == nodeId && it.type == type }
+
+        if (lastSameType?.message == normalized && lastSameType.data == data) {
+            return
+        }
+
+        updateSession(
+            session.appendEvent(
+                type = type,
+                nodeId = nodeId,
+                message = normalized.take(160),
+                data = data
+            )
+        )
+    }
+
+    private fun applyPcProjection(nodeId: String, event: PcSessionEvent) {
+        val current = _taskSession.value ?: return
+        val snapshot = event.snapshot
+
+        val updated = if (snapshot != null) {
+            current.copy(
+                pcPhase = snapshot.phase,
+                pcActiveWorker = snapshot.activeWorker,
+                pcActiveSessionMode = snapshot.activeSessionMode,
+                pcActiveWorkerProfile = snapshot.activeWorkerProfile,
+                pcActiveWorkerCanInterrupt = snapshot.activeWorkerCanInterrupt,
+                pcActiveWorkerTaskId = snapshot.activeWorkerTaskId,
+                pcLastProgressMessage = snapshot.lastProgressMessage,
+                pcLatestSummary = snapshot.latestSummary,
+                pcLatestArtifactSummary = snapshot.latestArtifactSummary,
+                pcPermissionSummary = snapshot.permissionSummary,
+                pcSessionInfoSummary = snapshot.sessionInfoSummary,
+                pcMcpStatusSummary = snapshot.mcpStatusSummary,
+                pcRecentHookEvents = snapshot.recentHookEvents,
+                pcAwaitingUserPrompt = snapshot.pendingUserPrompt,
+                pcAwaitingInputMode = snapshot.pendingInputMode,
+                pcSnapshotVersion = max(current.pcSnapshotVersion, snapshot.snapshotVersion)
+            ).updateNode(nodeId) { node ->
+                node.copy(
+                    runtimeSessionId = event.sessionId ?: node.runtimeSessionId,
+                    awaitingUserPrompt = snapshot.pendingUserPrompt,
+                    pcPhase = snapshot.phase,
+                    workerName = snapshot.activeWorker,
+                    workerSessionMode = snapshot.activeSessionMode,
+                    workerProfile = snapshot.activeWorkerProfile,
+                    workerCanInterrupt = snapshot.activeWorkerCanInterrupt,
+                    workerTaskId = snapshot.activeWorkerTaskId,
+                    workerSummary = snapshot.latestSummary,
+                    artifactSummary = snapshot.latestArtifactSummary,
+                    permissionSummary = snapshot.permissionSummary,
+                    sessionInfoSummary = snapshot.sessionInfoSummary,
+                    mcpStatusSummary = snapshot.mcpStatusSummary,
+                    recentHookEvents = snapshot.recentHookEvents,
+                    artifacts = mergeArtifacts(node.artifacts, snapshot.artifacts),
+                    pcSnapshotVersion = max(node.pcSnapshotVersion, snapshot.snapshotVersion)
+                )
+            }
+        } else {
+            current.copy(
+                pcPhase = event.phase ?: current.pcPhase,
+                pcActiveWorker = event.worker ?: current.pcActiveWorker,
+                pcActiveSessionMode = event.sessionMode ?: current.pcActiveSessionMode,
+                pcActiveWorkerProfile = event.workerProfile ?: current.pcActiveWorkerProfile,
+                pcActiveWorkerCanInterrupt = event.canInterrupt ?: current.pcActiveWorkerCanInterrupt,
+                pcActiveWorkerTaskId = event.workerTaskId ?: current.pcActiveWorkerTaskId,
+                pcLastProgressMessage = when {
+                    event.event == "pc.session.progress" && event.message.isNotBlank() -> event.message
+                    else -> current.pcLastProgressMessage
+                },
+                pcLatestSummary = when {
+                    event.event in setOf("pc.session.summary", "pc.session.phase", "pc.session.worker") &&
+                        event.message.isNotBlank() -> event.message
+                    else -> current.pcLatestSummary
+                },
+                pcLatestArtifactSummary = when {
+                    event.event == "pc.session.artifact_summary" && event.message.isNotBlank() -> event.message
+                    !event.latestArtifactSummary.isNullOrBlank() -> event.latestArtifactSummary
+                    else -> current.pcLatestArtifactSummary
+                },
+                pcPermissionSummary = when {
+                    event.event == "pc.session.permission" && event.message.isNotBlank() -> event.message
+                    !event.permissionSummary.isNullOrBlank() -> event.permissionSummary
+                    else -> current.pcPermissionSummary
+                },
+                pcSessionInfoSummary = when {
+                    event.event == "pc.session.worker_runtime" && event.message.isNotBlank() -> event.message
+                    !event.sessionInfoSummary.isNullOrBlank() -> event.sessionInfoSummary
+                    else -> current.pcSessionInfoSummary
+                },
+                pcMcpStatusSummary = when {
+                    event.event == "pc.session.mcp_status" && event.message.isNotBlank() -> event.message
+                    !event.mcpStatusSummary.isNullOrBlank() -> event.mcpStatusSummary
+                    else -> current.pcMcpStatusSummary
+                },
+                pcRecentHookEvents = if (event.recentHookEvents.isNotEmpty()) {
+                    event.recentHookEvents
+                } else {
+                    current.pcRecentHookEvents
+                },
+                pcAwaitingUserPrompt = if (event.event == "pc.session.await_user") event.message else current.pcAwaitingUserPrompt,
+                pcAwaitingInputMode = if (event.event == "pc.session.await_user") {
+                    event.inputMode.orEmpty()
+                } else {
+                    current.pcAwaitingInputMode
+                },
+                pcSnapshotVersion = event.snapshotVersion ?: current.pcSnapshotVersion
+            ).updateNode(nodeId) { node ->
+                node.copy(
+                    runtimeSessionId = event.sessionId ?: node.runtimeSessionId,
+                    awaitingUserPrompt = if (event.event == "pc.session.await_user") event.message else node.awaitingUserPrompt,
+                    pcPhase = event.phase ?: node.pcPhase,
+                    workerName = event.worker ?: node.workerName,
+                    workerSessionMode = event.sessionMode ?: node.workerSessionMode,
+                    workerProfile = event.workerProfile ?: node.workerProfile,
+                    workerCanInterrupt = event.canInterrupt ?: node.workerCanInterrupt,
+                    workerTaskId = event.workerTaskId ?: node.workerTaskId,
+                    workerSummary = when {
+                        event.event in setOf("pc.session.summary", "pc.session.phase", "pc.session.worker") &&
+                            event.message.isNotBlank() -> event.message
+                        else -> node.workerSummary
+                    },
+                    artifactSummary = when {
+                        event.event == "pc.session.artifact_summary" && event.message.isNotBlank() -> event.message
+                        !event.latestArtifactSummary.isNullOrBlank() -> event.latestArtifactSummary
+                        else -> node.artifactSummary
+                    },
+                    permissionSummary = when {
+                        event.event == "pc.session.permission" && event.message.isNotBlank() -> event.message
+                        !event.permissionSummary.isNullOrBlank() -> event.permissionSummary
+                        else -> node.permissionSummary
+                    },
+                    sessionInfoSummary = when {
+                        event.event == "pc.session.worker_runtime" && event.message.isNotBlank() -> event.message
+                        !event.sessionInfoSummary.isNullOrBlank() -> event.sessionInfoSummary
+                        else -> node.sessionInfoSummary
+                    },
+                    mcpStatusSummary = when {
+                        event.event == "pc.session.mcp_status" && event.message.isNotBlank() -> event.message
+                        !event.mcpStatusSummary.isNullOrBlank() -> event.mcpStatusSummary
+                        else -> node.mcpStatusSummary
+                    },
+                    recentHookEvents = if (event.recentHookEvents.isNotEmpty()) event.recentHookEvents else node.recentHookEvents,
+                    artifacts = mergeArtifacts(node.artifacts, event.artifacts),
+                    pcSnapshotVersion = event.snapshotVersion ?: node.pcSnapshotVersion
+                )
+            }
+        }
+
+        if (updated != current) {
+            updateSession(updated)
+        }
+    }
+
+    private fun finalizePcNodeRuntime(nodeId: String, artifacts: List<String> = emptyList()) {
+        val session = _taskSession.value ?: return
+        updateSession(
+            session.updateNode(nodeId) { node ->
+                node.copy(
+                    runtimeSessionId = "",
+                    awaitingUserPrompt = "",
+                    pendingUserInput = "",
+                    workerCanInterrupt = false,
+                    artifacts = mergeArtifacts(node.artifacts, artifacts)
+                )
+            }.copy(
+                pcActiveWorkerCanInterrupt = false,
+                pcAwaitingUserPrompt = "",
+                pcAwaitingInputMode = ""
+            )
+        )
+    }
+
+    private fun mergeArtifacts(existing: List<String>, incoming: List<String>): List<String> {
+        if (incoming.isEmpty()) return existing
+        return (existing + incoming)
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .distinct()
     }
 
     private fun resolveToolParameters(node: PlanNode, session: TaskSession): List<ToolParameter> {

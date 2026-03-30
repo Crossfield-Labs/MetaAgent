@@ -300,6 +300,16 @@ private fun EventLogItem(event: TaskEvent) {
             TaskEventType.TASK_RESUMED -> Icons.Default.PlayArrow to MaterialTheme.colorScheme.primary
             TaskEventType.USER_INTERVENTION -> Icons.Default.Person to MaterialTheme.colorScheme.secondary
             TaskEventType.DIALOGUE_REPLY -> Icons.Outlined.Chat to MaterialTheme.colorScheme.secondary
+            TaskEventType.PC_SESSION_PHASE -> Icons.Default.Refresh to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_SUMMARY -> Icons.Default.ListAlt to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_WORKER -> Icons.Default.AutoAwesome to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_RUNTIME -> Icons.Default.AccountTree to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_ARTIFACT -> Icons.Default.CheckCircle to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_PERMISSION -> Icons.Default.ErrorOutline to MaterialTheme.colorScheme.tertiary
+            TaskEventType.PC_SESSION_MCP_STATUS -> Icons.Default.Wifi to MaterialTheme.colorScheme.primary
+            TaskEventType.PC_SESSION_FOLLOWUP -> Icons.Default.Person to MaterialTheme.colorScheme.secondary
+            TaskEventType.PC_SESSION_SNAPSHOT -> Icons.Outlined.AccountTree to MaterialTheme.colorScheme.secondary
+            TaskEventType.PC_SESSION_AWAIT_USER -> Icons.Outlined.HourglassTop to MaterialTheme.colorScheme.tertiary
             TaskEventType.CONNECTED -> Icons.Default.Wifi to MaterialTheme.colorScheme.primary
             TaskEventType.DISCONNECTED -> Icons.Default.WifiOff to MaterialTheme.colorScheme.error
         }

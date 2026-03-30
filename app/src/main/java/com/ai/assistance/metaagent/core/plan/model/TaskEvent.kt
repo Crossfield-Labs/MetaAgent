@@ -51,6 +51,28 @@ enum class TaskEventType {
     /** 对话回路回复 */
     DIALOGUE_REPLY,
 
+    // === PC Session projection ===
+    /** PC 会话阶段变化 */
+    PC_SESSION_PHASE,
+    /** PC 会话摘要 */
+    PC_SESSION_SUMMARY,
+    /** PC 当前 worker / profile / sessionMode */
+    PC_SESSION_WORKER,
+    /** PC worker 运行态摘要 */
+    PC_SESSION_RUNTIME,
+    /** PC 产物摘要 */
+    PC_SESSION_ARTIFACT,
+    /** PC 权限摘要 */
+    PC_SESSION_PERMISSION,
+    /** PC MCP 状态摘要 */
+    PC_SESSION_MCP_STATUS,
+    /** PC follow-up / interrupt / redirect 被接受 */
+    PC_SESSION_FOLLOWUP,
+    /** PC snapshot 更新 */
+    PC_SESSION_SNAPSHOT,
+    /** PC 会话等待用户输入 */
+    PC_SESSION_AWAIT_USER,
+
     // === 系统 ===
     /** 连接建立 */
     CONNECTED,

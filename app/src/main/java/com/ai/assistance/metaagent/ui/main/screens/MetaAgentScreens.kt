@@ -1,4 +1,4 @@
-﻿package com.ai.assistance.metaagent.ui.main.screens
+package com.ai.assistance.metaagent.ui.main.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,7 @@ import com.ai.assistance.metaagent.ui.features.assistant.screens.AssistantConfig
 import com.ai.assistance.metaagent.ui.features.chat.screens.AIChatScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.MetaAgentHomeScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CourseSpaceScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.FlashReviewScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CourseDetailScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskCenterScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskDetailScreen
@@ -197,6 +198,10 @@ sealed class Screen(
                         navigateTo(AiChat)
                         updateNavItem(NavItem.AiChat)
                     },
+                    onOpenFlashReview = {
+                        navigateTo(FlashReview)
+                        updateNavItem(NavItem.MetaHome)
+                    },
                     onMenuClick = openDrawer,
                     onDeleteChat = { chatId ->
                         scope.launch {
@@ -351,6 +356,27 @@ sealed class Screen(
                     onCourseClick = { courseId ->
                         navigateTo(CourseDetail(courseId))
                     }
+            )
+        }
+    }
+
+    data object FlashReview : Screen(navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            FlashReviewScreen(
+                onGoBack = onGoBack,
+                onOpenReviewDemo = { /* TODO */ },
+                onOpenCourseDemo = { navigateTo(CourseSpace) },
+                onOpenTaskDemo = { navigateTo(TaskCenter) }
             )
         }
     }
