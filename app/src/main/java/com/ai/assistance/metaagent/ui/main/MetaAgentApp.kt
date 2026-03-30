@@ -144,8 +144,8 @@ fun MetaAgentApp(initialNavItem: NavItem = NavItem.MetaHome, toolHandler: AITool
     // 只要不在首页，统一由应用内处理返回逻辑
     BackHandler(enabled = currentScreen !is Screen.MetaHome, onBack = { goBack() })
 
-    // 修改canGoBack的判断逻辑：二级屏幕显示返回键，同时AiChat等一级页面也可以返回到首页
-    val canGoBack = currentScreen.isSecondaryScreen || (currentScreen !is Screen.MetaHome)
+    // 修改canGoBack的判断逻辑，只有当前屏幕是二级屏幕时才显示返回键
+    val canGoBack = currentScreen.isSecondaryScreen
 
     var isLoading by remember { mutableStateOf(false) }
 

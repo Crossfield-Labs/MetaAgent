@@ -125,6 +125,7 @@ fun ChatScreenContent(
         chatHeaderOverlayMode: Boolean,
         chatStyle: ChatStyle, // Add chatStyle parameter
         historyListState: LazyListState,
+        onOpenTaskPlanDetails: () -> Unit = {},
         onSwitchCharacter: (CharacterSelectorTarget) -> Unit,
         chatAreaHorizontalPadding: Float = 16f, // 聊天区域水平内边距
         bubbleUserImageStyle: BubbleImageStyleConfig? = null,
@@ -424,9 +425,10 @@ fun ChatScreenContent(
                         onCreateBranch = { timestamp -> actualViewModel.createBranch(timestamp) }, // 添加创建分支回调
                         onInsertSummary = { index, message -> actualViewModel.insertSummary(index, message) }, // 添加插入总结回调
                         onMentionRoleFromAvatar = { roleName -> actualViewModel.insertRoleMention(roleName) },
-                        topPadding = headerHeight,
-                        chatStyle = chatStyle, // Pass chat style
-                        isMultiSelectMode = isMultiSelectMode,
+                         topPadding = headerHeight,
+                          chatStyle = chatStyle, // Pass chat style
+                          onOpenPlanDetails = onOpenTaskPlanDetails,
+                          isMultiSelectMode = isMultiSelectMode,
                         selectedMessageIndices = selectedMessageIndices,
                         onToggleMultiSelectMode = { initialIndex ->
                             isMultiSelectMode = !isMultiSelectMode
@@ -510,9 +512,10 @@ fun ChatScreenContent(
                         onCreateBranch = { timestamp -> actualViewModel.createBranch(timestamp) }, // 添加创建分支回调
                         onInsertSummary = { index, message -> actualViewModel.insertSummary(index, message) }, // 添加插入总结回调
                         onAutoReadMessage = { content -> actualViewModel.enableAutoReadAndSpeak(content) }, // 添加自动朗读回调
-                        onMentionRoleFromAvatar = { roleName -> actualViewModel.insertRoleMention(roleName) },
-                        chatStyle = chatStyle, // Pass chat style
-                        isMultiSelectMode = isMultiSelectMode,
+                          onMentionRoleFromAvatar = { roleName -> actualViewModel.insertRoleMention(roleName) },
+                          chatStyle = chatStyle, // Pass chat style
+                          onOpenPlanDetails = onOpenTaskPlanDetails,
+                          isMultiSelectMode = isMultiSelectMode,
                         selectedMessageIndices = selectedMessageIndices,
                         horizontalPadding = chatAreaHorizontalPadding.dp,
                         onToggleMultiSelectMode = { initialIndex ->

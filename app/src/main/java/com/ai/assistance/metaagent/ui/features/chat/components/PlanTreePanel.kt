@@ -70,6 +70,7 @@ fun PlanTreePanel(
     onResume: () -> Unit = {},
     onCancel: () -> Unit = {},
     onClear: () -> Unit = {},
+    onOpenDetails: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (taskSession == null) {
@@ -86,6 +87,7 @@ fun PlanTreePanel(
             onResume = onResume,
             onCancel = onCancel,
             onClear = onClear,
+            onOpenDetails = onOpenDetails,
             modifier = modifier
         )
     }
@@ -162,6 +164,7 @@ private fun ActivePlanContent(
     onResume: () -> Unit,
     onCancel: () -> Unit,
     onClear: () -> Unit,
+    onOpenDetails: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -226,6 +229,7 @@ private fun ActivePlanContent(
             onPause = onPause,
             onResume = onResume,
             onCancel = onCancel,
+            onOpenDetails = onOpenDetails,
             modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
         )
 

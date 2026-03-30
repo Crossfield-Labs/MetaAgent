@@ -23,7 +23,9 @@ import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.outlined.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -212,6 +214,8 @@ fun AgentChatInputSection(
     onDeletePendingQueueMessage: (Long) -> Unit = {},
     onEditPendingQueueMessage: (Long) -> Unit = {},
     onSendPendingQueueMessage: (Long) -> Unit = {},
+    agentMode: Boolean = false,
+    onAgentModeChange: (Boolean) -> Unit = {},
 ) {
     val showTokenLimitDialog = remember { mutableStateOf(false) }
     val showFullscreenInput = remember { mutableStateOf(false) }
@@ -741,13 +745,10 @@ fun AgentChatInputSection(
                             ),
                         shape = RoundedCornerShape(14.dp),
                         trailingIcon = {
-                            IconButton(onClick = { showFullscreenInput.value = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Fullscreen,
-                                    contentDescription = stringResource(R.string.chat_fullscreen_input),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+                            AgentModeFieldSwitch(
+                                checked = agentMode,
+                                onCheckedChange = onAgentModeChange,
+                            )
                         },
                         enabled = !isProcessing || allowTextInputWhileProcessing,
                     )
@@ -1015,13 +1016,10 @@ fun AgentChatInputSection(
                                 ),
                             shape = RoundedCornerShape(14.dp),
                             trailingIcon = {
-                                IconButton(onClick = { showFullscreenInput.value = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Fullscreen,
-                                        contentDescription = stringResource(R.string.chat_fullscreen_input),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                                AgentModeFieldSwitch(
+                                    checked = agentMode,
+                                    onCheckedChange = onAgentModeChange,
+                                )
                             },
                             enabled = !isProcessing || allowTextInputWhileProcessing,
                         )
@@ -2878,4 +2876,31 @@ private fun expandCornerRadius(base: CornerRadius, expansion: Float): CornerRadi
         x = (base.x + expansion).coerceAtLeast(0f),
         y = (base.y + expansion).coerceAtLeast(0f),
     )
+
+@Composable
+private fun AgentModeFieldSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = Modifier.scale(0.78f),
+        thumbContent = {
+            Icon(
+                imageVector = if (checked) Icons.Default.AutoAwesome else Icons.Default.AccountTree,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize)
+            )
+        },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = MaterialTheme.colorScheme.primaryContainer,
+            checkedTrackColor = MaterialTheme.colorScheme.primary,
+            checkedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            uncheckedThumbColor = MaterialTheme.colorScheme.surface,
+            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+            uncheckedIconColor = MaterialTheme.colorScheme.primary
+        )
+    )
+}
 

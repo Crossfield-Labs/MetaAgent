@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.ai.assistance.metaagent.ui.components.CustomScaffold
@@ -71,6 +72,7 @@ import com.ai.assistance.metaagent.ui.features.chat.components.WindowsExportDial
 import com.ai.assistance.metaagent.ui.features.chat.webview.workspace.WorkspaceScreen
 import com.ai.assistance.metaagent.ui.features.chat.webview.WorkspaceFileSelector
 import com.ai.assistance.metaagent.ui.features.chat.webview.computer.ComputerScreen
+import com.ai.assistance.metaagent.ui.features.chat.screens.TaskPlanDetailScreen
 import com.ai.assistance.metaagent.ui.features.chat.util.ConfigurationStateHolder
 import com.ai.assistance.metaagent.ui.features.chat.viewmodel.ChatViewModel
 import com.ai.assistance.metaagent.ui.main.LocalTopBarActions
@@ -685,7 +687,13 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
     // 收集 Agent 模式状态
     val agentMode by actualViewModel.agentMode.collectAsState()
     val taskSession by actualViewModel.taskSession.collectAsState()
+    var showTaskPlanDetail by rememberSaveable { mutableStateOf(false) }
     val manifestSoftInputMode = remember(hostActivity) { hostActivity?.manifestSoftInputMode() }
+    LaunchedEffect(taskSession?.taskId) {
+        if (taskSession == null) {
+            showTaskPlanDetail = false
+        }
+    }
     LaunchedEffect(inputStyle, showWebView, showAiComputer, hostActivity) {
         val window = hostActivity?.window
         if (window != null) {
@@ -757,21 +765,24 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
 
 
     // 当showWebView、showAiComputer或agentMode状态改变时，更新TopAppBar的actions
-    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, agentMode, isWorkspacePreparing, appBarContentColor) {
+    LaunchedEffect(isCurrentScreen, showWebView, showAiComputer, agentMode, isWorkspacePreparing, appBarContentColor, taskSession?.taskId) {
         if (isCurrentScreen) {
             setTopBarActions {
                 // 编排树按钮
                 IconButton(
+                        enabled = taskSession != null,
                         onClick = {
-                            actualViewModel.onPlanTreeButtonClick()
+                            if (taskSession != null) {
+                                showTaskPlanDetail = true
+                            }
                         }
                 ) {
                     Icon(
                             imageVector = Icons.Default.AccountTree,
-                            contentDescription = "任务编排",
+                            contentDescription = "任务编排详情",
                             tint =
-                            if (agentMode) MaterialTheme.colorScheme.primary
-                            else appBarContentColor
+                            if (taskSession != null) MaterialTheme.colorScheme.primary
+                            else appBarContentColor.copy(alpha = 0.45f)
                     )
                 }
 
@@ -1011,6 +1022,8 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                                 sendQueuedItemNow(queueItem, true)
                                             }
                                         },
+                                        agentMode = agentMode,
+                                        onAgentModeChange = { actualViewModel.setAgentMode(it) },
                                 )
                             } else {
                                 ClassicChatInputSection(
@@ -1195,12 +1208,17 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
                                 chatHeaderTransparent = chatHeaderTransparent,
                                 chatHeaderHistoryIconColor = chatHeaderHistoryIconColor,
                                 chatHeaderPipIconColor = chatHeaderPipIconColor,
-                                chatHeaderOverlayMode = chatHeaderOverlayMode,
-                                chatStyle = chatStyle, // Pass chat style
-                                historyListState = historyListState,
-                                onSwitchCharacter = { target ->
-                                    actualViewModel.switchActiveCharacterTarget(target)
-                                },
+                                  chatHeaderOverlayMode = chatHeaderOverlayMode,
+                                  chatStyle = chatStyle, // Pass chat style
+                                  historyListState = historyListState,
+                                  onOpenTaskPlanDetails = {
+                                      if (taskSession != null) {
+                                          showTaskPlanDetail = true
+                                      }
+                                  },
+                                  onSwitchCharacter = { target ->
+                                      actualViewModel.switchActiveCharacterTarget(target)
+                                  },
                                 chatAreaHorizontalPadding = chatAreaHorizontalPadding,
                                 bubbleUserImageStyle = bubbleUserImageStyle,
                                 bubbleAiImageStyle = bubbleAiImageStyle,
@@ -1413,9 +1431,25 @@ val actualViewModel: ChatViewModel = viewModel ?: viewModel { ChatViewModel(cont
         // TaskProgressBar 保留作为任务进度指示
         TaskProgressBar(
             taskSession = taskSession,
-            onClick = { actualViewModel.setAgentMode(true) },
+            onClick = {
+                if (taskSession != null) {
+                    showTaskPlanDetail = true
+                }
+            },
             modifier = Modifier.align(Alignment.TopCenter)
         )
+
+        if (showTaskPlanDetail && taskSession != null) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                TaskPlanDetailScreen(
+                    taskSession = taskSession!!,
+                    onNavigateBack = { showTaskPlanDetail = false }
+                )
+            }
+        }
 
         AnimatedVisibility(
             visible = isWorkspacePreparing,

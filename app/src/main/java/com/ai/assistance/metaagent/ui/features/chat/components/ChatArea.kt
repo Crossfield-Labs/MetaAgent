@@ -236,6 +236,7 @@ fun ChatArea(
     onCancelPlan: () -> Unit = {},
     onConfirmBlockedPlan: () -> Unit = {},
     onReplyBlockedPlan: (String) -> Unit = {},
+    onOpenPlanDetails: () -> Unit = {},
 ) {
     // 记住当前深度状态，但当chatHistory发生变化时重置为1
     var currentDepth = remember(chatHistory) { mutableStateOf(1) }
@@ -340,6 +341,7 @@ fun ChatArea(
                         onCancelPlan = onCancelPlan,
                         onConfirmBlockedPlan = onConfirmBlockedPlan,
                         onReplyBlockedPlan = onReplyBlockedPlan,
+                        onOpenPlanDetails = onOpenPlanDetails,
                     )
                 }
 
@@ -431,6 +433,7 @@ private fun MessageItem(
     onCancelPlan: () -> Unit = {},
     onConfirmBlockedPlan: () -> Unit = {},
     onReplyBlockedPlan: (String) -> Unit = {},
+    onOpenPlanDetails: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var showContextMenu by remember { mutableStateOf(false) }
@@ -474,6 +477,7 @@ private fun MessageItem(
                 onCancel = onCancelPlan,
                 onConfirmBlocked = onConfirmBlockedPlan,
                 onReplyBlocked = onReplyBlockedPlan,
+                onOpenDetails = onOpenPlanDetails,
                 modifier = Modifier.fillMaxWidth()
             )
             return

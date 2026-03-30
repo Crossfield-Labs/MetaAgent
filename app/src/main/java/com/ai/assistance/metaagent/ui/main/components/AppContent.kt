@@ -208,8 +208,8 @@ fun AppContent(
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
-                // MetaHome 自己管理顶部栏，不需要外层TopAppBar
-                if (currentScreen is Screen.MetaHome) {
+                // MetaHome / AiChat 自己管理顶部栏，不需要外层TopAppBar
+                if (currentScreen is Screen.MetaHome || currentScreen is Screen.AiChat) {
                     // 只保留状态栏高度的空间，使用 surface 颜色避免底色穿透
                     Spacer(modifier = Modifier
                         .fillMaxWidth()

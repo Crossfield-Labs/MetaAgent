@@ -2,21 +2,66 @@ package com.ai.assistance.metaagent.ui.features.chat.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,19 +71,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ai.assistance.metaagent.core.plan.model.PlanNode
+import com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter
 import com.ai.assistance.metaagent.core.plan.model.PlanNodeStatus
 import com.ai.assistance.metaagent.core.plan.model.TaskSession
 import com.ai.assistance.metaagent.core.plan.model.TaskSessionStatus
 
-/**
- * 编排树卡片 — Material You 风格
- *
- * 在聊天界面中展示编排树的完整状态，包括：
- * - 任务标题 + 总体进度
- * - 节点列表（带状态图标、进度条）
- * - 审批按钮（等待审批状态时）
- * - 操作按钮（暂停/恢复/取消）
- */
 @Composable
 fun PlanTreeCard(
     taskSession: TaskSession,
@@ -50,6 +87,7 @@ fun PlanTreeCard(
     onConfirmBlocked: () -> Unit = {},
     onReplyBlocked: (String) -> Unit = {},
     onNodeTap: (PlanNode) -> Unit = {},
+    onOpenDetails: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(true) }
@@ -58,30 +96,44 @@ fun PlanTreeCard(
     val blockedNode = remember(taskSession) {
         taskSession.planNodes.firstOrNull { it.status == PlanNodeStatus.BLOCKED }
     }
+    val summaryMode = remember(taskSession.status) {
+        taskSession.status !in setOf(
+            TaskSessionStatus.DRAFT,
+            TaskSessionStatus.PLANNED,
+            TaskSessionStatus.AWAITING_APPROVAL
+        )
+    }
+    val displayedNodes = remember(taskSession, summaryMode) {
+        if (summaryMode) taskSession.recentExecutionChain(maxNodes = 4) else taskSession.planNodes
+    }
+    val latestSummary = remember(taskSession) {
+        taskSession.pcLatestSummary.ifBlank {
+            taskSession.pcLatestArtifactSummary.ifBlank {
+                taskSession.events.lastOrNull { it.message.isNotBlank() }?.message.orEmpty()
+            }
+        }
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // ---- 标题行 ----
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 状态图标
                 TaskStatusIcon(taskSession.status)
                 Spacer(Modifier.width(12.dp))
 
-                // 标题
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "任务编排",
@@ -98,7 +150,6 @@ fun PlanTreeCard(
                     )
                 }
 
-                // 进度标签
                 if (taskSession.planNodes.isNotEmpty()) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -114,7 +165,19 @@ fun PlanTreeCard(
                     Spacer(Modifier.width(4.dp))
                 }
 
-                // 展开/折叠
+                TextButton(
+                    onClick = onOpenDetails,
+                    enabled = taskSession.planNodes.isNotEmpty()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountTree,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Text("详情")
+                }
+
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = if (expanded) "折叠" else "展开",
@@ -123,7 +186,6 @@ fun PlanTreeCard(
                 )
             }
 
-            // ---- 总体进度条 ----
             if (taskSession.planNodes.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
                 SimpleLinearProgressIndicator(
@@ -137,21 +199,36 @@ fun PlanTreeCard(
                 )
             }
 
-            // ---- 节点列表 ----
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    taskSession.planNodes.forEachIndexed { index, node ->
+                    if (summaryMode && taskSession.planNodes.size > displayedNodes.size) {
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f),
+                            modifier = Modifier.padding(bottom = 10.dp)
+                        ) {
+                            Text(
+                                text = "运行中仅展示最近 ${displayedNodes.size} 个关键节点，完整树与分支请进入详情页查看。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
+
+                    displayedNodes.forEachIndexed { visibleIndex, node ->
+                        val originalIndex = taskSession.planNodes.indexOfFirst { it.id == node.id }
+                            .takeIf { it >= 0 } ?: visibleIndex
                         PlanNodeRow(
                             node = node,
-                            index = index,
+                            index = originalIndex,
                             onTap = { onNodeTap(node) }
                         )
-                        if (index < taskSession.planNodes.lastIndex) {
-                            // 节点之间的连线
+                        if (visibleIndex < displayedNodes.lastIndex) {
                             Box(
                                 modifier = Modifier
                                     .padding(start = 15.dp)
@@ -162,29 +239,41 @@ fun PlanTreeCard(
                         }
                     }
 
-                    if (taskSession.events.isNotEmpty()) {
+                    if (latestSummary.isNotBlank()) {
                         Spacer(Modifier.height(12.dp))
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(Modifier.height(10.dp))
                         Text(
-                            text = "执行日志",
+                            text = if (taskSession.hasActivePcProjection) "PC 侧摘要" else "最新进展",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(Modifier.height(6.dp))
-                        taskSession.events.takeLast(if (expanded) 8 else 3).forEach { event ->
-                            Text(
-                                text = "• ${event.message.ifBlank { event.type.name }}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 2.dp)
-                            )
+                        Text(
+                            text = latestSummary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        if (taskSession.pcActiveWorker.isNotBlank()) {
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                SummaryBadge("Worker ${taskSession.pcActiveWorker}")
+                                taskSession.pcActiveWorkerProfile.takeIf { it.isNotBlank() }?.let {
+                                    SummaryBadge("Profile $it")
+                                }
+                                if (taskSession.pcActiveWorkerCanInterrupt) {
+                                    SummaryBadge("可中断")
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            // ---- 操作按钮 ----
             Spacer(Modifier.height(12.dp))
             PlanActionButtons(
                 taskSession = taskSession,
@@ -206,9 +295,7 @@ fun PlanTreeCard(
     if (showBlockedReplyDialog) {
         AlertDialog(
             onDismissRequest = { showBlockedReplyDialog = false },
-            title = {
-                Text("修改后继续")
-            },
+            title = { Text("修改后继续") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     blockedNode?.let { node ->
@@ -224,9 +311,7 @@ fun PlanTreeCard(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         maxLines = 6,
-                        placeholder = {
-                            Text("输入补充说明或修改后的发送内容")
-                        }
+                        placeholder = { Text("输入补充说明或修改后的发送内容") }
                     )
                 }
             },
@@ -242,9 +327,7 @@ fun PlanTreeCard(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showBlockedReplyDialog = false }
-                ) {
+                TextButton(onClick = { showBlockedReplyDialog = false }) {
                     Text("取消")
                 }
             }
@@ -252,9 +335,50 @@ fun PlanTreeCard(
     }
 }
 
-/**
- * 单个节点行
- */
+private fun TaskSession.recentExecutionChain(maxNodes: Int): List<PlanNode> {
+    if (planNodes.size <= maxNodes) return planNodes
+
+    val anchorIndex = activeNodeId
+        ?.let { activeId -> planNodes.indexOfFirst { it.id == activeId } }
+        ?.takeIf { it >= 0 }
+        ?: planNodes.indexOfLast {
+            it.status == PlanNodeStatus.RUNNING ||
+                it.status == PlanNodeStatus.BLOCKED ||
+                it.status == PlanNodeStatus.FAILED ||
+                it.status == PlanNodeStatus.DONE
+        }.takeIf { it >= 0 }
+        ?: 0
+
+    val before = 1
+    val after = maxNodes - before - 1
+    var start = (anchorIndex - before).coerceAtLeast(0)
+    var end = (anchorIndex + after).coerceAtMost(planNodes.lastIndex)
+
+    if (end - start + 1 < maxNodes) {
+        start = (start - (maxNodes - (end - start + 1))).coerceAtLeast(0)
+    }
+    if (end - start + 1 < maxNodes) {
+        end = (end + (maxNodes - (end - start + 1))).coerceAtMost(planNodes.lastIndex)
+    }
+
+    return planNodes.subList(start, end + 1)
+}
+
+@Composable
+private fun SummaryBadge(text: String) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        )
+    }
+}
+
 @Composable
 private fun PlanNodeRow(
     node: PlanNode,
@@ -269,26 +393,24 @@ private fun PlanNodeRow(
             .padding(vertical = 6.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 状态圆点
         NodeStatusDot(status = node.status)
         Spacer(Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            // 节点标题
             Text(
                 text = "${index + 1}. ${node.title}",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (node.status == PlanNodeStatus.RUNNING) FontWeight.SemiBold else FontWeight.Normal,
                 color = when (node.status) {
-                    PlanNodeStatus.CANCELLED, PlanNodeStatus.SKIPPED ->
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    PlanNodeStatus.CANCELLED,
+                    PlanNodeStatus.SKIPPED -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
                     else -> MaterialTheme.colorScheme.onSurface
                 }
             )
 
-            // 详情/说明
             val detailText = when {
                 node.status == PlanNodeStatus.DONE && node.resultSummary.isNotBlank() -> node.resultSummary
+                node.workerSummary.isNotBlank() -> node.workerSummary
                 node.detail.isNotBlank() -> node.detail
                 else -> node.explainToUser
             }
@@ -302,7 +424,6 @@ private fun PlanNodeRow(
                 )
             }
 
-            // 进度条（执行中时）
             if (node.status == PlanNodeStatus.RUNNING && node.progress > 0f) {
                 Spacer(Modifier.height(4.dp))
                 SimpleLinearProgressIndicator(
@@ -314,14 +435,10 @@ private fun PlanNodeRow(
             }
         }
 
-        // 适配器标签
         AdapterBadge(adapter = node.adapter)
     }
 }
 
-/**
- * 节点状态小圆点（带脉冲动画）
- */
 @Composable
 private fun NodeStatusDot(status: PlanNodeStatus) {
     val color by animateColorAsState(
@@ -331,63 +448,52 @@ private fun NodeStatusDot(status: PlanNodeStatus) {
             PlanNodeStatus.DONE -> MaterialTheme.colorScheme.primary
             PlanNodeStatus.FAILED -> MaterialTheme.colorScheme.error
             PlanNodeStatus.BLOCKED -> MaterialTheme.colorScheme.tertiary
-            PlanNodeStatus.SKIPPED, PlanNodeStatus.CANCELLED -> MaterialTheme.colorScheme.outline
+            PlanNodeStatus.SKIPPED,
+            PlanNodeStatus.CANCELLED -> MaterialTheme.colorScheme.outline
         },
         label = "nodeStatusColor"
     )
 
-    // RUNNING 状态脉冲动画
-    val pulseAnim = rememberInfiniteTransition(label = "pulse")
+    val pulseAnim = rememberInfiniteTransition(label = "nodePulse")
     val pulseScale by pulseAnim.animateFloat(
         initialValue = 1f,
-        targetValue = 1.4f,
+        targetValue = 1.35f,
         animationSpec = infiniteRepeatable(
             animation = tween(800, easing = EaseInOut),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "pulseScale"
+        label = "nodePulseScale"
     )
 
     Box(
         modifier = Modifier
             .size(12.dp)
-            .then(
-                if (status == PlanNodeStatus.RUNNING) Modifier.scale(pulseScale) else Modifier
-            )
+            .then(if (status == PlanNodeStatus.RUNNING) Modifier.scale(pulseScale) else Modifier)
             .background(color = color, shape = CircleShape)
     ) {
-        // DONE 状态显示对号
         if (status == PlanNodeStatus.DONE) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(10.dp).align(Alignment.Center)
+                modifier = Modifier
+                    .size(10.dp)
+                    .align(Alignment.Center)
             )
         }
     }
 }
 
-/**
- * 适配器小标签 — Material You
- */
 @Composable
-private fun AdapterBadge(adapter: com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter) {
+private fun AdapterBadge(adapter: PlanNodeAdapter) {
     val (icon, label) = when (adapter) {
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.TOOL ->
-            Icons.Outlined.Settings to "Tool"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CLAUDE ->
-            Icons.Outlined.Computer to "PC"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CLI ->
-            Icons.Outlined.Terminal to "CLI"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.ANDROID ->
-            Icons.Outlined.PhoneAndroid to "UI自动化"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.LOCAL_RUNNER ->
-            Icons.Outlined.Settings to "Runner"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.PC ->
-            Icons.Outlined.Computer to "PC"
-        com.ai.assistance.metaagent.core.plan.model.PlanNodeAdapter.CHAT ->
-            Icons.Outlined.Chat to "Chat"
+        PlanNodeAdapter.TOOL -> Icons.Outlined.Settings to "Tool"
+        PlanNodeAdapter.CLAUDE -> Icons.Outlined.Computer to "PC"
+        PlanNodeAdapter.CLI -> Icons.Outlined.Terminal to "CLI"
+        PlanNodeAdapter.ANDROID -> Icons.Outlined.PhoneAndroid to "UI 自动化"
+        PlanNodeAdapter.LOCAL_RUNNER -> Icons.Outlined.Settings to "Runner"
+        PlanNodeAdapter.PC -> Icons.Outlined.Computer to "PC"
+        PlanNodeAdapter.CHAT -> Icons.Outlined.Chat to "Chat"
     }
 
     Surface(
@@ -416,29 +522,20 @@ private fun AdapterBadge(adapter: com.ai.assistance.metaagent.core.plan.model.Pl
     }
 }
 
-/**
- * 任务状态图标 — Material Icons
- */
 @Composable
 private fun TaskStatusIcon(status: TaskSessionStatus) {
     val (icon, tint) = when (status) {
-        TaskSessionStatus.DRAFT ->
-            Icons.Outlined.Edit to MaterialTheme.colorScheme.onSurfaceVariant
-        TaskSessionStatus.PLANNED, TaskSessionStatus.AWAITING_APPROVAL ->
-            Icons.Outlined.Checklist to MaterialTheme.colorScheme.tertiary
-        TaskSessionStatus.RUNNING ->
-            Icons.Default.PlayArrow to MaterialTheme.colorScheme.primary
-        TaskSessionStatus.PAUSED ->
-            Icons.Default.Pause to MaterialTheme.colorScheme.tertiary
-        TaskSessionStatus.WAITING_USER ->
-            Icons.Outlined.HelpOutline to MaterialTheme.colorScheme.tertiary
-        TaskSessionStatus.COMPLETED ->
-            Icons.Default.CheckCircle to MaterialTheme.colorScheme.primary
-        TaskSessionStatus.FAILED ->
-            Icons.Default.Error to MaterialTheme.colorScheme.error
-        TaskSessionStatus.CANCELLED ->
-            Icons.Default.Cancel to MaterialTheme.colorScheme.outline
+        TaskSessionStatus.DRAFT -> Icons.Default.Edit to MaterialTheme.colorScheme.onSurfaceVariant
+        TaskSessionStatus.PLANNED,
+        TaskSessionStatus.AWAITING_APPROVAL -> Icons.Outlined.Checklist to MaterialTheme.colorScheme.tertiary
+        TaskSessionStatus.RUNNING -> Icons.Default.PlayArrow to MaterialTheme.colorScheme.primary
+        TaskSessionStatus.PAUSED -> Icons.Default.Pause to MaterialTheme.colorScheme.tertiary
+        TaskSessionStatus.WAITING_USER -> Icons.Outlined.HelpOutline to MaterialTheme.colorScheme.tertiary
+        TaskSessionStatus.COMPLETED -> Icons.Default.CheckCircle to MaterialTheme.colorScheme.primary
+        TaskSessionStatus.FAILED -> Icons.Default.Error to MaterialTheme.colorScheme.error
+        TaskSessionStatus.CANCELLED -> Icons.Default.Cancel to MaterialTheme.colorScheme.outline
     }
+
     Icon(
         imageVector = icon,
         contentDescription = status.name,
@@ -447,9 +544,6 @@ private fun TaskStatusIcon(status: TaskSessionStatus) {
     )
 }
 
-/**
- * 操作按钮区域 — Material You
- */
 @Composable
 private fun PlanActionButtons(
     taskSession: TaskSession,
@@ -488,6 +582,7 @@ private fun PlanActionButtons(
                     Text("修改计划", fontSize = 13.sp)
                 }
             }
+
             TaskSessionStatus.WAITING_USER -> {
                 FilledTonalButton(
                     onClick = onConfirmBlocked,
@@ -514,11 +609,12 @@ private fun PlanActionButtons(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Cancel, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("取消", fontSize = 13.sp)
                 }
             }
+
             TaskSessionStatus.RUNNING -> {
                 OutlinedButton(
                     onClick = onPause,
@@ -534,11 +630,12 @@ private fun PlanActionButtons(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Cancel, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("取消", fontSize = 13.sp)
                 }
             }
+
             TaskSessionStatus.PAUSED -> {
                 FilledTonalButton(
                     onClick = onResume,
@@ -554,51 +651,13 @@ private fun PlanActionButtons(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Cancel, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("取消", fontSize = 13.sp)
                 }
             }
-            TaskSessionStatus.COMPLETED -> {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "任务已完成",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-            TaskSessionStatus.FAILED -> {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Error,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "任务失败",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-            else -> { /* DRAFT / PLANNED / CANCELLED — no buttons */ }
+
+            else -> Unit
         }
     }
 }
