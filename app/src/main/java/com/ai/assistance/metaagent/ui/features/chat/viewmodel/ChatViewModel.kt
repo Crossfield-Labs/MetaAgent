@@ -28,10 +28,15 @@ import com.ai.assistance.metaagent.data.model.AITool
 import com.ai.assistance.metaagent.data.model.ChatHistory
 import com.ai.assistance.metaagent.data.model.ChatMessage
 import com.ai.assistance.metaagent.data.model.FunctionType
+import com.ai.assistance.metaagent.data.model.MemoryScoreMode
 import com.ai.assistance.metaagent.data.preferences.ApiPreferences
 import com.ai.assistance.metaagent.data.preferences.ModelConfigManager
 import com.ai.assistance.metaagent.data.model.PromptFunctionType
 import com.ai.assistance.metaagent.data.model.ToolParameter
+import com.ai.assistance.metaagent.BuildConfig
+import com.ai.assistance.metaagent.data.preferences.UserPreferencesManager
+import com.ai.assistance.metaagent.data.preferences.preferencesManager
+import com.ai.assistance.metaagent.data.repository.MemoryRepository
 import com.ai.assistance.metaagent.R
 import com.ai.assistance.metaagent.ui.features.chat.webview.LocalWebServer
 import com.ai.assistance.metaagent.ui.floating.FloatingMode
@@ -80,6 +85,7 @@ import com.ai.assistance.metaagent.services.core.MessageCoordinationDelegate
 import com.ai.assistance.metaagent.data.model.InputProcessingState
 import com.ai.assistance.metaagent.ui.features.chat.util.MessageImageGenerator
 import com.ai.assistance.metaagent.ui.features.chat.components.CharacterSelectorTarget
+import com.ai.assistance.metaagent.ui.features.home.data.CourseRagChatBindingStore
 
 enum class ChatHistoryDisplayMode {
     BY_CHARACTER_CARD,
@@ -91,6 +97,17 @@ class ChatViewModel(private val context: Context) : ViewModel() {
 
     companion object {
         private const val TAG = "ChatViewModel"
+        private const val COURSE_RAG_CONTEXT_FILE_NAME = "course_rag_context.txt"
+        private const val COURSE_RAG_NO_HIT_SENTINEL = "[课程RAG系统提示]"
+    }
+
+    private data class CourseRagRetrievalResult(
+        val attachment: AttachmentInfo?,
+        val hitCount: Int,
+        val hitTitles: List<String>,
+        val elapsedMs: Long
+    ) {
+        val hasHit: Boolean get() = hitCount > 0
     }
 
     // 添加语音服务
@@ -117,6 +134,7 @@ class ChatViewModel(private val context: Context) : ViewModel() {
 
     // 工具权限系统
     private val toolPermissionSystem = ToolPermissionSystem.getInstance(context)
+    private val memoryRepositoriesByProfile = mutableMapOf<String, MemoryRepository>()
     
     // 终端管理器（用于执行工作区命令）
     @RequiresApi(Build.VERSION_CODES.O)
@@ -1301,25 +1319,44 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
     fun sendUserMessage(promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
-        if (_agentMode.value && promptFunctionType == PromptFunctionType.CHAT) {
-            val text = userMessage.value.text.trim()
-            if (text.isNotBlank()) {
-                updateUserMessage(TextFieldValue(""))
-                handleAgentMessage(text)
-                return
+        viewModelScope.launch {
+            val chatId = chatHistoryDelegate.currentChatId.value
+            val inputText = userMessage.value.text
+            val hasCourseRagBinding = !chatId.isNullOrBlank() &&
+                !CourseRagChatBindingStore.getFolderPath(context, chatId).isNullOrBlank()
+            val ragResult = if (!chatId.isNullOrBlank()) {
+                attachCourseRagContextIfNeeded(chatId, inputText)
+            } else {
+                null
             }
+            if (!chatId.isNullOrBlank()) {
+                appendCourseRagTraceMessageIfNeeded(chatId, inputText, ragResult)
+            }
+
+            val noHitOverride = if (ragResult != null && !ragResult.hasHit && inputText.isNotBlank()) {
+                buildNoHitGuardedMessage(inputText)
+            } else {
+                null
+            }
+
+            if (noHitOverride != null) {
+                updateUserMessage(TextFieldValue(""))
+                messageCoordinationDelegate.sendUserMessage(
+                    promptFunctionType = promptFunctionType,
+                    messageTextOverride = noHitOverride,
+                    forceDisableMemoryQuery = hasCourseRagBinding
+                )
+                return@launch
+            }
+
+            messageCoordinationDelegate.sendUserMessage(
+                promptFunctionType = promptFunctionType,
+                forceDisableMemoryQuery = hasCourseRagBinding
+            )
         }
-        messageCoordinationDelegate.sendUserMessage(promptFunctionType)
     }
 
     fun sendTextMessage(text: String, promptFunctionType: PromptFunctionType = PromptFunctionType.CHAT) {
-        if (_agentMode.value && promptFunctionType == PromptFunctionType.CHAT) {
-            val normalized = text.trim()
-            if (normalized.isNotBlank()) {
-                handleAgentMessage(normalized)
-                return
-            }
-        }
         messageCoordinationDelegate.sendUserMessage(
             promptFunctionType = promptFunctionType,
             messageTextOverride = text
@@ -2598,5 +2635,4 @@ class ChatViewModel(private val context: Context) : ViewModel() {
     }
 
 }
-
 

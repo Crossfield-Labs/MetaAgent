@@ -1,11 +1,10 @@
-
 package com.ai.assistance.metaagent.ui.features.chat.components.style.bubble
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.ai.assistance.metaagent.data.model.ChatMessage
+import com.ai.assistance.metaagent.ui.features.chat.components.style.cursor.CourseRagTraceMessageComposable
 import com.ai.assistance.metaagent.ui.features.chat.components.style.cursor.SummaryMessageComposable
-import com.ai.assistance.metaagent.util.stream.Stream
 
 /**
  * A composable function that renders chat messages in a bubble chat style.
@@ -31,7 +30,7 @@ fun BubbleStyleChatMessage(
     isHidden: Boolean = false,
     onDeleteMessage: ((Int) -> Unit)? = null,
     index: Int = -1,
-    enableDialogs: Boolean = true,  // 新增参数：是否启用弹窗功能，默认启用
+    enableDialogs: Boolean = true,
     onRoleAvatarLongPress: ((String) -> Unit)? = null
 ) {
     when (message.sender) {
@@ -47,6 +46,7 @@ fun BubbleStyleChatMessage(
                 enableDialogs = enableDialogs
             )
         }
+
         "ai" -> {
             BubbleAiMessageComposable(
                 message = message,
@@ -61,6 +61,7 @@ fun BubbleStyleChatMessage(
                 onAvatarLongPressMention = onRoleAvatarLongPress
             )
         }
+
         "summary" -> {
             SummaryMessageComposable(
                 message = message,
@@ -71,9 +72,15 @@ fun BubbleStyleChatMessage(
                         onDeleteMessage?.invoke(index)
                     }
                 },
-                enableDialog = enableDialogs  // 传递弹窗启用状态
+                enableDialog = enableDialogs
+            )
+        }
+
+        "rag" -> {
+            CourseRagTraceMessageComposable(
+                message = message,
+                textColor = systemTextColor
             )
         }
     }
 }
-

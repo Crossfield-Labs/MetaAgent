@@ -61,6 +61,12 @@ fun CursorStyleChatMessage(
                     }
             )
         }
+        "rag" -> {
+            CourseRagTraceMessageComposable(
+                message = message,
+                textColor = systemTextColor
+            )
+        }
     }
 }
 

@@ -116,7 +116,8 @@ class MessageCoordinationDelegate(
         messageTextOverride: String? = null,
         proxySenderNameOverride: String? = null,
         chatModelConfigIdOverride: String? = null,
-        chatModelIndexOverride: Int? = null
+        chatModelIndexOverride: Int? = null,
+        forceDisableMemoryQuery: Boolean = false
     ) {
         // 仅在没有指定 chatId 的情况下，才需要确保有当前对话
         if (chatIdOverride.isNullOrBlank() && chatHistoryDelegate.currentChatId.value == null) {
@@ -153,7 +154,8 @@ class MessageCoordinationDelegate(
                     messageTextOverride = messageTextOverride,
                     proxySenderNameOverride = proxySenderNameOverride,
                     chatModelConfigIdOverride = chatModelConfigIdOverride,
-                    chatModelIndexOverride = chatModelIndexOverride
+                    chatModelIndexOverride = chatModelIndexOverride,
+                    forceDisableMemoryQuery = forceDisableMemoryQuery
                 )
             }
         } else {
@@ -165,7 +167,8 @@ class MessageCoordinationDelegate(
                 messageTextOverride = messageTextOverride,
                 proxySenderNameOverride = proxySenderNameOverride,
                 chatModelConfigIdOverride = chatModelConfigIdOverride,
-                chatModelIndexOverride = chatModelIndexOverride
+                chatModelIndexOverride = chatModelIndexOverride,
+                forceDisableMemoryQuery = forceDisableMemoryQuery
             )
         }
     }
@@ -188,7 +191,8 @@ class MessageCoordinationDelegate(
         forceDisableSummary: Boolean = false,
         enableGroupOrchestration: Boolean = true,
         isGroupOrchestrationTurn: Boolean = false,
-        groupParticipantNamesText: String? = null
+        groupParticipantNamesText: String? = null,
+        forceDisableMemoryQuery: Boolean = false
     ) {
         // 如果不是自动续写，更新当前的 promptFunctionType
         if (!isAutoContinuation) {
@@ -235,7 +239,8 @@ class MessageCoordinationDelegate(
                         chatModelIndexOverride = chatModelIndexOverride,
                         suppressUserMessageInHistory = suppressUserMessageInHistory,
                         forceDisableSummary = forceDisableSummary,
-                        enableGroupOrchestration = false
+                        enableGroupOrchestration = false,
+                        forceDisableMemoryQuery = forceDisableMemoryQuery
                     )
                 }
             }
@@ -330,7 +335,11 @@ class MessageCoordinationDelegate(
 
         // 如果是proxy sender，视为关闭记忆附着
         val shouldEnableMemoryQuery = if (proxySenderName.isNullOrBlank()) {
-            apiConfigDelegate.enableMemoryQuery.value || hasMemoryFolder
+            if (forceDisableMemoryQuery) {
+                false
+            } else {
+                apiConfigDelegate.enableMemoryQuery.value || hasMemoryFolder
+            }
         } else {
             false
         }
