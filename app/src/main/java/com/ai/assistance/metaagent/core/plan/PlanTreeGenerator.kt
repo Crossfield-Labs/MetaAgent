@@ -149,6 +149,7 @@ object PlanTreeGenerator {
         appendLine("16. End user-facing tasks with a CHAT node that explains the final outcome.")
         appendLine("17. If the user says 'ask me before continuing', 'confirm before the next step', or similar, create a CHAT gate node with requiresApproval=true before the continuation step.")
         appendLine("18. When a read-only PC inspection is followed by a user confirmation gate, do not require approval on the inspection node itself.")
+        appendLine("19. Use runner='shell' for one-off computer commands. Use runner='pc_subagent' for multi-step PC work that needs reading files, reasoning over results, delegating coding tools, or deciding the next computer-side step.")
         appendLine()
         appendLine("Available planning tool hints:")
         planningToolHints.forEach { hintItem ->
@@ -333,6 +334,38 @@ object PlanTreeGenerator {
                 "dependsOn": ["n1"],
                 "requiresApproval": false,
                 "explainToUser": "Summarize the PC-side result for the user."
+              }
+            ]
+            """.trimIndent()
+        )
+        appendLine()
+        appendLine("Example for a multi-step PC sub-agent task:")
+        appendLine(
+            """
+            [
+              {
+                "id": "n1",
+                "title": "Analyze the project with the PC sub-agent",
+                "goal": "Inspect the current project on the PC, read the key files, and decide the next implementation suggestions",
+                "adapter": "PC",
+                "toolName": "pc.execute",
+                "toolParams": {
+                  "runner": "pc_subagent",
+                  "workspace": "D:/workspace/my-project",
+                  "task": "Inspect the current project, read the important files, and produce the next 3 implementation suggestions"
+                },
+                "dependsOn": [],
+                "requiresApproval": false,
+                "explainToUser": "Let the PC sub-agent inspect the project and work through the analysis steps on the computer."
+              },
+              {
+                "id": "n2",
+                "title": "Summarize the PC sub-agent result",
+                "goal": "Explain the PC sub-agent result to the user",
+                "adapter": "CHAT",
+                "dependsOn": ["n1"],
+                "requiresApproval": false,
+                "explainToUser": "Summarize the PC-side analysis and recommendations for the user."
               }
             ]
             """.trimIndent()

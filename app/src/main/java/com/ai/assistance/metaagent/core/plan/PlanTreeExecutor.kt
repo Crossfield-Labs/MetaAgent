@@ -799,6 +799,19 @@ class PlanTreeExecutor(
                                 event.message.ifBlank { "PC agent is continuing the task" }
                             )
                         }
+
+                        "pc.session.subnode.started",
+                        "pc.session.subnode.progress",
+                        "pc.session.subnode.completed" -> {
+                            val safeProgress = event.progress
+                                ?.coerceIn(node.progress, 0.94f)
+                                ?: (node.progress + 0.04f).coerceAtMost(0.94f)
+                            emitNodeProgress(
+                                node,
+                                safeProgress,
+                                event.message.ifBlank { "PC sub-agent step: ${event.event.substringAfterLast('.')}" }
+                            )
+                        }
                     }
                 }
             } else {
@@ -831,6 +844,19 @@ class PlanTreeExecutor(
                                 node,
                                 safeProgress,
                                 event.message.ifBlank { "PC agent is executing the task" }
+                            )
+                        }
+
+                        "pc.session.subnode.started",
+                        "pc.session.subnode.progress",
+                        "pc.session.subnode.completed" -> {
+                            val safeProgress = event.progress
+                                ?.coerceIn(node.progress, 0.94f)
+                                ?: (node.progress + 0.04f).coerceAtMost(0.94f)
+                            emitNodeProgress(
+                                node,
+                                safeProgress,
+                                event.message.ifBlank { "PC sub-agent step: ${event.event.substringAfterLast('.')}" }
                             )
                         }
                     }
