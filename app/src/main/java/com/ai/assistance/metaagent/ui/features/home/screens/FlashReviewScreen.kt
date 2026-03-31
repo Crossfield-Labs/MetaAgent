@@ -90,29 +90,29 @@ fun FlashReviewScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                DemoEntryCard(
+                FlashReviewEntryCard(
                     title = "碎片复习",
                     subtitle = "答错卡片、画像变化、晚间提醒、续上进度",
                     icon = Icons.Default.School,
-                    variant = HomeCardVariant.Review,
+                    variant = FlashReviewCardVariant.Review,
                     onClick = onOpenReviewDemo
                 )
             }
             item {
-                DemoEntryCard(
+                FlashReviewEntryCard(
                     title = "课程整理",
                     subtitle = "导入资料、处理中、结构化笔记、课程追问",
                     icon = Icons.Default.Person,
-                    variant = HomeCardVariant.Course,
+                    variant = FlashReviewCardVariant.Course,
                     onClick = onOpenCourseDemo
                 )
             }
             item {
-                DemoEntryCard(
+                FlashReviewEntryCard(
                     title = "跨端任务",
                     subtitle = "看计划、批准、电脑执行、手机改方向",
                     icon = Icons.Default.Notifications,
-                    variant = HomeCardVariant.Task,
+                    variant = FlashReviewCardVariant.Task,
                     onClick = onOpenTaskDemo
                 )
             }
@@ -120,7 +120,7 @@ fun FlashReviewScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        HomeOverviewBoard(
+        FlashReviewOverviewBoard(
             onOpenReviewDemo = onOpenReviewDemo,
             onOpenCourseDemo = onOpenCourseDemo,
             onOpenTaskDemo = onOpenTaskDemo
@@ -131,7 +131,7 @@ fun FlashReviewScreen(
 }
 
 @Composable
-private fun HomeOverviewBoard(
+private fun FlashReviewOverviewBoard(
     onOpenReviewDemo: () -> Unit,
     onOpenCourseDemo: () -> Unit,
     onOpenTaskDemo: () -> Unit
@@ -153,11 +153,11 @@ private fun HomeOverviewBoard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("今天该做什么", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(todayOverviewText(), style = MaterialTheme.typography.bodyMedium)
+            Text(flashReviewTodayOverviewText(), style = MaterialTheme.typography.bodyMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StatusPill("最近任务", taskSummary(state.taskStage))
-                StatusPill("课程入口", courseSummary(state.courseStage))
-                StatusPill("复习入口", reviewSummary(state.reviewStage))
+                FlashReviewStatusPill("最近任务", flashReviewTaskSummary(state.taskStage))
+                FlashReviewStatusPill("课程入口", flashReviewCourseSummary(state.courseStage))
+                FlashReviewStatusPill("复习入口", flashReviewReviewSummary(state.reviewStage))
             }
             if (state.taskStage >= CrossDeviceTaskStage.RUNNING_ON_DESKTOP) {
                 Text(
@@ -167,16 +167,16 @@ private fun HomeOverviewBoard(
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                QuickJumpChip("去复习", onOpenReviewDemo)
-                QuickJumpChip("去课程", onOpenCourseDemo)
-                QuickJumpChip("去任务", onOpenTaskDemo)
+                FlashReviewQuickJumpChip("去复习", onOpenReviewDemo)
+                FlashReviewQuickJumpChip("去课程", onOpenCourseDemo)
+                FlashReviewQuickJumpChip("去任务", onOpenTaskDemo)
             }
         }
     }
 }
 
 @Composable
-private fun StatusPill(label: String, value: String) {
+private fun FlashReviewStatusPill(label: String, value: String) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
@@ -189,7 +189,7 @@ private fun StatusPill(label: String, value: String) {
 }
 
 @Composable
-private fun QuickJumpChip(
+private fun FlashReviewQuickJumpChip(
     text: String,
     onClick: () -> Unit
 ) {
@@ -202,7 +202,7 @@ private fun QuickJumpChip(
     }
 }
 
-private fun todayOverviewText(): String {
+private fun flashReviewTodayOverviewText(): String {
     val state = LearningDemoState
     return when {
         state.reviewStage == ReviewDemoStage.START -> "先补 1 轮错卡，再决定是否进入课程整理。"
@@ -212,7 +212,7 @@ private fun todayOverviewText(): String {
     }
 }
 
-private fun taskSummary(stage: CrossDeviceTaskStage): String = when (stage) {
+private fun flashReviewTaskSummary(stage: CrossDeviceTaskStage): String = when (stage) {
     CrossDeviceTaskStage.DRAFT -> "待发起"
     CrossDeviceTaskStage.PLAN_READY -> "待批准"
     CrossDeviceTaskStage.APPROVED -> "已批准"
@@ -221,7 +221,7 @@ private fun taskSummary(stage: CrossDeviceTaskStage): String = when (stage) {
     CrossDeviceTaskStage.REDIRECTED -> "已改方向"
 }
 
-private fun courseSummary(stage: CourseDemoStage): String = when (stage) {
+private fun flashReviewCourseSummary(stage: CourseDemoStage): String = when (stage) {
     CourseDemoStage.EMPTY -> "待导入"
     CourseDemoStage.IMPORTED -> "待整理"
     CourseDemoStage.PROCESSING -> "处理中"
@@ -229,7 +229,7 @@ private fun courseSummary(stage: CourseDemoStage): String = when (stage) {
     CourseDemoStage.QA -> "可追问"
 }
 
-private fun reviewSummary(stage: ReviewDemoStage): String = when (stage) {
+private fun flashReviewReviewSummary(stage: ReviewDemoStage): String = when (stage) {
     ReviewDemoStage.START -> "待开始"
     ReviewDemoStage.ANSWERED_WRONG -> "已答错"
     ReviewDemoStage.PROFILE_UPDATED -> "画像已变"
@@ -237,37 +237,37 @@ private fun reviewSummary(stage: ReviewDemoStage): String = when (stage) {
     ReviewDemoStage.RESUMED -> "已续上"
 }
 
-private enum class HomeCardVariant {
+private enum class FlashReviewCardVariant {
     Review,
     Course,
     Task
 }
 
 @Composable
-private fun DemoEntryCard(
+private fun FlashReviewEntryCard(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    variant: HomeCardVariant,
+    variant: FlashReviewCardVariant,
     onClick: () -> Unit
 ) {
     val state = LearningDemoState
     val progressTarget = when (variant) {
-        HomeCardVariant.Review -> when (state.reviewStage) {
+        FlashReviewCardVariant.Review -> when (state.reviewStage) {
             ReviewDemoStage.START -> 0.24f
             ReviewDemoStage.ANSWERED_WRONG -> 0.42f
             ReviewDemoStage.PROFILE_UPDATED -> 0.62f
             ReviewDemoStage.REMINDER_READY -> 0.82f
             ReviewDemoStage.RESUMED -> 0.94f
         }
-        HomeCardVariant.Course -> when (state.courseStage) {
+        FlashReviewCardVariant.Course -> when (state.courseStage) {
             CourseDemoStage.EMPTY -> 0.12f
             CourseDemoStage.IMPORTED -> 0.32f
             CourseDemoStage.PROCESSING -> 0.56f
             CourseDemoStage.GENERATED -> 0.82f
             CourseDemoStage.QA -> 0.94f
         }
-        HomeCardVariant.Task -> when (state.taskStage) {
+        FlashReviewCardVariant.Task -> when (state.taskStage) {
             CrossDeviceTaskStage.DRAFT -> 0.12f
             CrossDeviceTaskStage.PLAN_READY -> 0.28f
             CrossDeviceTaskStage.APPROVED -> 0.46f
@@ -301,21 +301,21 @@ private fun DemoEntryCard(
         label = "home_card_scan"
     )
     val statusLabel = when (variant) {
-        HomeCardVariant.Review -> when (state.reviewStage) {
+        FlashReviewCardVariant.Review -> when (state.reviewStage) {
             ReviewDemoStage.START -> "待开始"
             ReviewDemoStage.ANSWERED_WRONG -> "答错 4 张"
             ReviewDemoStage.PROFILE_UPDATED -> "画像已更新"
             ReviewDemoStage.REMINDER_READY -> "今晚提醒"
             ReviewDemoStage.RESUMED -> "已续上"
         }
-        HomeCardVariant.Course -> when (state.courseStage) {
+        FlashReviewCardVariant.Course -> when (state.courseStage) {
             CourseDemoStage.EMPTY -> "待导入"
             CourseDemoStage.IMPORTED -> "资料已入列"
             CourseDemoStage.PROCESSING -> "正在整理"
             CourseDemoStage.GENERATED -> "笔记已生成"
             CourseDemoStage.QA -> "可继续追问"
         }
-        HomeCardVariant.Task -> when (state.taskStage) {
+        FlashReviewCardVariant.Task -> when (state.taskStage) {
             CrossDeviceTaskStage.DRAFT -> "待发起"
             CrossDeviceTaskStage.PLAN_READY -> "计划已出"
             CrossDeviceTaskStage.APPROVED -> "已批准"
@@ -325,21 +325,21 @@ private fun DemoEntryCard(
         }
     }
     val detailText = when (variant) {
-        HomeCardVariant.Review -> when (state.reviewStage) {
+        FlashReviewCardVariant.Review -> when (state.reviewStage) {
             ReviewDemoStage.START -> "今天还有 ${state.wrongCardsToday} 张错卡待过。"
             ReviewDemoStage.ANSWERED_WRONG -> "掌握度回落到 ${(state.mastery * 100).toInt()}%，准备更新画像。"
             ReviewDemoStage.PROFILE_UPDATED -> state.profileSummary
             ReviewDemoStage.REMINDER_READY -> state.nextRecommendation
             ReviewDemoStage.RESUMED -> "复习已续上，剩余 ${state.wrongCardsToday} 张错卡。"
         }
-        HomeCardVariant.Course -> when (state.courseStage) {
+        FlashReviewCardVariant.Course -> when (state.courseStage) {
             CourseDemoStage.EMPTY -> "导入本节资料后，会落到课程内笔记与卡片。"
             CourseDemoStage.IMPORTED -> "资料已接入，下一步进入结构化整理。"
             CourseDemoStage.PROCESSING -> "正在抽取章节结构、重点概念和可复习卡片。"
             CourseDemoStage.GENERATED -> "已产出 ${state.generatedCardCount} 张卡片和课程笔记。"
             CourseDemoStage.QA -> state.courseQaMessages.lastOrNull() ?: "课程内追问已就绪。"
         }
-        HomeCardVariant.Task -> when (state.taskStage) {
+        FlashReviewCardVariant.Task -> when (state.taskStage) {
             CrossDeviceTaskStage.DRAFT -> "先发起任务，再查看执行计划。"
             CrossDeviceTaskStage.PLAN_READY -> "计划已生成，批准后切到电脑继续跑。"
             CrossDeviceTaskStage.APPROVED -> "任务已批准，正在准备接管电脑端执行。"
@@ -349,9 +349,9 @@ private fun DemoEntryCard(
         }
     }
     val isActive = when (variant) {
-        HomeCardVariant.Review -> state.reviewStage == ReviewDemoStage.REMINDER_READY
-        HomeCardVariant.Course -> state.courseStage == CourseDemoStage.PROCESSING
-        HomeCardVariant.Task -> state.taskStage == CrossDeviceTaskStage.RUNNING_ON_DESKTOP
+        FlashReviewCardVariant.Review -> state.reviewStage == ReviewDemoStage.REMINDER_READY
+        FlashReviewCardVariant.Course -> state.courseStage == CourseDemoStage.PROCESSING
+        FlashReviewCardVariant.Task -> state.taskStage == CrossDeviceTaskStage.RUNNING_ON_DESKTOP
     }
     Card(
         modifier = Modifier
