@@ -262,7 +262,9 @@ fun UserProfileScreen(
                 Icon(
                     Icons.Default.Search,
                     contentDescription = "搜索",
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { onNavigate("ai_chat") },
                     tint = Color.Black
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -271,7 +273,8 @@ fun UserProfileScreen(
                         Badge(containerColor = Color.Red) {
                             Text("2", color = Color.White, fontSize = 10.sp)
                         }
-                    }
+                    },
+                    modifier = Modifier.clickable { onNavigate("task_center") }
                 ) {
                     Icon(
                         Icons.Default.Notifications,
@@ -304,7 +307,15 @@ fun UserProfileScreen(
                                     RoundedCornerShape(5.dp)
                                 )
                             )
-                            .clickable { selectedTag = tag }
+                            .clickable {
+                                selectedTag = tag
+                                when (tag) {
+                                    "学习" -> onNavigate("course_space")
+                                    "任务" -> onNavigate("task_center")
+                                    "复习" -> onNavigate("review")
+                                    "闲聊" -> onNavigate("ai_chat")
+                                }
+                            }
                             .padding(horizontal = 10.dp, vertical = 5.dp)
                     ) {
                         Text(
@@ -454,7 +465,7 @@ fun UserProfileScreen(
                 ProfileNavItem(
                     icon = Icons.Outlined.Notifications,
                     label = "通知设置",
-                    onClick = { }
+                    onClick = { onNavigate("settings") }
                 )
                 ProfileNavDivider()
                 ProfileNavItem(

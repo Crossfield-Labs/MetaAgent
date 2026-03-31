@@ -134,6 +134,12 @@ object StudyModuleStore {
     val taskNotifications: List<StudyTaskNotification>
         get() = notificationsState
 
+    fun getLatestCompletedTask(): StudyTask? {
+        return tasksState
+            .filter { it.status == StudyTaskStatus.COMPLETED }
+            .maxByOrNull { it.updatedAt }
+    }
+
     @Synchronized
     fun ensureInitialized(context: Context) {
         if (initialized) {
@@ -456,6 +462,28 @@ object StudyModuleStore {
         persistTaskNotifications()
     }
 
+    fun resetDemoData() {
+        val context = appContext ?: return
+
+        taskJobs.values.forEach { it.cancel() }
+        taskJobs.clear()
+
+        coursesState.forEach { deleteAllCourseMaterialFiles(it) }
+        File(context.filesDir, TASK_MATERIALS_ROOT).deleteRecursively()
+
+        coursesState.clear()
+        coursesState.addAll(defaultCourses())
+        persistCourses()
+
+        tasksState.clear()
+        tasksState.addAll(defaultTasks())
+        persistTasks()
+
+        notificationsState.clear()
+        notificationsState.addAll(defaultTaskNotifications())
+        persistTaskNotifications()
+    }
+
     fun buildCourseAnswer(course: StudyCourse, question: String): String {
         val q = question.lowercase()
         val highlights = course.highlights.ifEmpty { listOf("课程核心概念") }
@@ -583,6 +611,9 @@ object StudyModuleStore {
         notificationsState.clear()
         if (!loadedNotifications.isNullOrEmpty()) {
             notificationsState.addAll(loadedNotifications.map { normalizeNotification(it) })
+        } else {
+            notificationsState.addAll(defaultTaskNotifications())
+            persistTaskNotifications()
         }
     }
 
@@ -1180,7 +1211,14 @@ object StudyModuleStore {
         } else {
             "已应用提示词约束：${task.promptHint.take(24)}${if (task.promptHint.length > 24) "..." else ""}"
         }
-        return "已输出：${task.title}（Demo）· 完成 $stageCount 个阶段，$promptPart"
+        return buildString {
+            appendLine("交付摘要")
+            appendLine("任务：${task.title}")
+            appendLine("已完成阶段：$stageCount")
+            appendLine("任务目标：${task.summary.ifBlank { "已按默认策略整理任务结果。" }}")
+            appendLine("执行说明：$promptPart")
+            append("建议下一步：查看交付物、同步课程空间、安排后续复习。")
+        }
     }
 
     private fun prefs() = requireNotNull(appContext).getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -1323,9 +1361,36 @@ object StudyModuleStore {
                 status = StudyTaskStatus.COMPLETED,
                 progress = 100,
                 statusDetail = "任务已完成",
-                result = "已输出：核心概念摘要 + 3条复习建议（Demo）",
+                result = """
+                    交付摘要
+                    任务：软件体系结构章节速记
+                    课程：软件体系结构
+
+                    本次输出
+                    1. 已整理出分层架构、观察者模式、高可用设计三块核心内容。
+                    2. 已压缩成适合手机端回看的短句版摘要，方便临近考试快速翻阅。
+                    3. 已补出 3 条后续复习建议，便于下一轮继续巩固。
+
+                    建议下一步
+                    - 先看“最终结论”确认本章重点。
+                    - 再回课程空间补一轮追问。
+                    - 晚上把高可用设计做成后续复习卡片。
+                """.trimIndent(),
                 createdAt = now,
                 updatedAt = now
+            )
+        )
+    }
+
+    private fun defaultTaskNotifications(): List<StudyTaskNotification> {
+        return listOf(
+            StudyTaskNotification(
+                id = "n_seed_delivery",
+                taskId = "t_seed_2",
+                title = "结果已交付",
+                detail = "《软件体系结构章节速记》已整理完成，可直接进入结果页查看交付内容。",
+                timeLabel = nowLabel(),
+                isRead = false
             )
         )
     }

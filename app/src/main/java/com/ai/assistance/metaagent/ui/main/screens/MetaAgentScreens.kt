@@ -41,8 +41,14 @@ import com.ai.assistance.metaagent.ui.features.home.screens.CourseDetailScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskCenterScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.TaskDetailScreen
 import com.ai.assistance.metaagent.ui.features.home.screens.CrossDeviceExecutionScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.ResultDeliveryScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.ReviewJourneyDemoScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.LearningProfileScreen
+import com.ai.assistance.metaagent.ui.features.home.screens.PlanTreeScreen
 import com.ai.assistance.metaagent.ui.features.home.data.CourseRagChatBindingStore
+import com.ai.assistance.metaagent.ui.features.home.data.LearningDemoState
 import com.ai.assistance.metaagent.ui.features.home.data.StudyModuleStore
+import com.ai.assistance.metaagent.ui.features.home.data.StudyTaskStatus
 import com.ai.assistance.metaagent.ui.features.home.data.toMetaConversation
 import com.ai.assistance.metaagent.ui.features.demo.screens.ShizukuDemoScreen
 import com.ai.assistance.metaagent.ui.features.help.screens.HelpScreen
@@ -155,18 +161,16 @@ sealed class Screen(
             // 浠?CompositionLocal 鑾峰彇鎶藉眽鎵撳紑鍥炶皟
             val openDrawer = com.ai.assistance.metaagent.ui.main.components.LocalDrawerOpener.current
             val context = LocalContext.current
-            val chatHistoryManager = com.ai.assistance.metaagent.data.repository.ChatHistoryManager.getInstance(context)
+            StudyModuleStore.ensureInitialized(context)
+            val chatHistoryManager = ChatHistoryManager.getInstance(context)
+            val scope = rememberCoroutineScope()
             val displayPreferencesManager = com.ai.assistance.metaagent.data.preferences.DisplayPreferencesManager.getInstance(context)
-            val scope = androidx.compose.runtime.rememberCoroutineScope()
-
-            // 收集用户全局头像 URI
             val globalUserAvatarUriString by displayPreferencesManager.globalUserAvatarUri.collectAsState(initial = null)
             val avatarUri = remember(globalUserAvatarUriString) {
-                globalUserAvatarUriString?.let { android.net.Uri.parse(it) }
+                globalUserAvatarUriString?.let { Uri.parse(it) }
             }
-
-            // 收集真实聊天历史
             val chatHistories by chatHistoryManager.chatHistoriesFlow.collectAsState(initial = emptyList())
+            val latestCompletedTask = StudyModuleStore.getLatestCompletedTask()
 
             var lastMessagePreviews by remember { mutableStateOf(mapOf<String, String>()) }
             LaunchedEffect(chatHistories) {
@@ -191,6 +195,51 @@ sealed class Screen(
             MetaAgentHomeScreen(
                     conversations = conversations,
                     avatarUri = avatarUri,
+                    onFilterNavigate = { route ->
+                        when (route) {
+                            "course_space" -> {
+                                navigateTo(CourseSpace)
+                                updateNavItem(NavItem.MetaHome)
+                            }
+                            "task_center" -> {
+                                navigateTo(TaskCenter)
+                                updateNavItem(NavItem.MetaHome)
+                            }
+                        }
+                    },
+                    onOpenReviewDemo = {
+                        navigateTo(ReviewJourneyDemo)
+                        updateNavItem(NavItem.MetaHome)
+                    },
+                    onOpenCourseDemo = {
+                        navigateTo(CourseSpace)
+                        updateNavItem(NavItem.MetaHome)
+                    },
+                    onOpenTaskDemo = {
+                        navigateTo(CrossDeviceExecution)
+                        updateNavItem(NavItem.MetaHome)
+                    },
+                    onOpenTaskCenter = {
+                        navigateTo(TaskCenter)
+                        updateNavItem(NavItem.MetaHome)
+                    },
+                    onOpenCourseSpace = {
+                        navigateTo(CourseSpace)
+                        updateNavItem(NavItem.MetaHome)
+                    },
+                    onOpenLatestResult = {
+                        latestCompletedTask?.id?.let { taskId ->
+                            navigateTo(ResultDelivery(taskId))
+                            updateNavItem(NavItem.MetaHome)
+                        }
+                    },
+                    onResetDemo = {
+                        StudyModuleStore.resetDemoData()
+                        LearningDemoState.resetTaskDemo()
+                        LearningDemoState.resetCourseDemo()
+                        LearningDemoState.resetReviewDemo()
+                    },
+                    latestResultTitle = latestCompletedTask?.title,
                     onConversationClick = { chatId ->
                         scope.launch {
                             chatHistoryManager.setCurrentChatId(chatId)
@@ -333,7 +382,14 @@ sealed class Screen(
                     onNavigate = { route ->
                         when (route) {
                             "settings" -> { navigateTo(Settings); updateNavItem(NavItem.Settings) }
-                            else -> { /* TODO */ }
+                            "course_space" -> { navigateTo(CourseSpace); updateNavItem(NavItem.MetaHome) }
+                            "task_center" -> { navigateTo(TaskCenter); updateNavItem(NavItem.MetaHome) }
+                            "review" -> { navigateTo(ReviewJourneyDemo); updateNavItem(NavItem.MetaHome) }
+                            "ai_chat" -> { navigateTo(AiChat); updateNavItem(NavItem.AiChat) }
+                            "learning_profile" -> { navigateTo(LearningProfile); updateNavItem(NavItem.MetaHome) }
+                            "plan_tree/t1" -> { navigateTo(PlanTree); updateNavItem(NavItem.MetaHome) }
+                            "device_pairing" -> { navigateTo(CrossDeviceExecution); updateNavItem(NavItem.MetaHome) }
+                            else -> { }
                         }
                     }
             )
@@ -395,7 +451,12 @@ sealed class Screen(
         ) {
             TaskCenterScreen(
                     onTaskClick = { taskId ->
-                        navigateTo(TaskDetail(taskId))
+                        val task = StudyModuleStore.getTask(taskId)
+                        if (task?.status == StudyTaskStatus.COMPLETED) {
+                            navigateTo(ResultDelivery(taskId))
+                        } else {
+                            navigateTo(TaskDetail(taskId))
+                        }
                     },
                     onCrossDeviceClick = {
                         navigateTo(CrossDeviceExecution)
@@ -490,11 +551,154 @@ sealed class Screen(
                 onError: (String) -> Unit,
                 onGestureConsumed: (Boolean) -> Unit
         ) {
-            TaskDetailScreen(taskId = taskId)
+            TaskDetailScreen(
+                taskId = taskId,
+                onOpenResult = { resultTaskId ->
+                    navigateTo(ResultDelivery(resultTaskId))
+                }
+            )
         }
 
         @Composable
         override fun getTitle(): String = "任务详情"
+    }
+
+    data class ResultDelivery(val taskId: String) :
+        Screen(parentScreen = TaskCenter, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            val course = StudyModuleStore.getTask(taskId)?.courseName
+            val courseId = StudyModuleStore.courses.firstOrNull { it.name == course }?.id
+
+            ResultDeliveryScreen(
+                taskId = taskId,
+                onOpenCourse = {
+                    if (courseId != null) {
+                        navigateTo(CourseDetail(courseId))
+                    }
+                },
+                onOpenTaskCenter = {
+                    navigateTo(TaskCenter)
+                },
+                onOpenReview = {
+                    navigateTo(ReviewJourneyDemo)
+                }
+            )
+        }
+
+        @Composable
+        override fun getTitle(): String = "结果交付"
+    }
+
+    data object ReviewJourneyDemo : Screen(parentScreen = MetaHome, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            ReviewJourneyDemoScreen(onBack = onGoBack)
+        }
+
+        @Composable
+        override fun getTitle(): String = "碎片复习"
+    }
+
+    data object CourseMaterialDemo : Screen(parentScreen = MetaHome, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            CourseSpaceScreen(
+                onCourseClick = { courseId ->
+                    navigateTo(CourseDetail(courseId))
+                }
+            )
+        }
+
+        @Composable
+        override fun getTitle(): String = "课程整理"
+    }
+
+    data object CrossDeviceTaskDemo : Screen(parentScreen = MetaHome, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            CrossDeviceExecutionScreen()
+        }
+
+        @Composable
+        override fun getTitle(): String = "跨端任务"
+    }
+
+    data object LearningProfile : Screen(parentScreen = UserProfile, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            LearningProfileScreen(onBack = onGoBack)
+        }
+
+        @Composable
+        override fun getTitle(): String = "学习画像"
+    }
+
+    data object PlanTree : Screen(parentScreen = UserProfile, navItem = NavItem.MetaHome) {
+        @Composable
+        override fun Content(
+                navController: NavController,
+                navigateTo: ScreenNavigationHandler,
+                updateNavItem: NavItemChangeHandler,
+                onGoBack: () -> Unit,
+                hasBackgroundImage: Boolean,
+                onLoading: (Boolean) -> Unit,
+                onError: (String) -> Unit,
+                onGestureConsumed: (Boolean) -> Unit
+        ) {
+            PlanTreeScreen(onBack = onGoBack, onTaskClick = { taskId ->
+                navigateTo(TaskDetail(taskId))
+                updateNavItem(NavItem.MetaHome)
+            })
+        }
+
+        @Composable
+        override fun getTitle(): String = "编排树"
     }
 
     data object AiChat : Screen(navItem = NavItem.AiChat) {
@@ -525,7 +729,8 @@ sealed class Screen(
                     onNavigateToPackageManager = { navigateTo(Packages) },
                     onLoading = onLoading,
                     onError = onError,
-                    onGestureConsumed = onGestureConsumed
+                    onGestureConsumed = onGestureConsumed,
+                    onGoBack = onGoBack
             )
         }
     }

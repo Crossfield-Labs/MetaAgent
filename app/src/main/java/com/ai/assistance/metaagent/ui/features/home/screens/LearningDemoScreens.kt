@@ -64,7 +64,10 @@ import com.ai.assistance.metaagent.ui.components.CustomScaffold
 import com.ai.assistance.metaagent.ui.features.home.data.CourseDemoStage
 import com.ai.assistance.metaagent.ui.features.home.data.CrossDeviceTaskStage
 import com.ai.assistance.metaagent.ui.features.home.data.LearningDemoState
+import com.ai.assistance.metaagent.ui.features.home.data.ReviewChoice
 import com.ai.assistance.metaagent.ui.features.home.data.ReviewDemoStage
+import com.ai.assistance.metaagent.ui.features.home.data.ReviewEvent
+import com.ai.assistance.metaagent.ui.features.home.data.ReviewQuestion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +76,16 @@ fun ReviewJourneyDemoScreen(
     modifier: Modifier = Modifier
 ) {
     val state = LearningDemoState
+    val canWorkOnQuestion = when (state.reviewStage) {
+        ReviewDemoStage.START -> true
+        ReviewDemoStage.PROFILE_UPDATED -> true
+        ReviewDemoStage.RESUMED -> !state.reviewSessionCompleted
+        ReviewDemoStage.ANSWERED_WRONG,
+        ReviewDemoStage.REMINDER_READY -> false
+    }
+    val canSubmitCurrentQuestion = canWorkOnQuestion &&
+        !state.reviewAnswered &&
+        state.reviewSelectedChoiceId != null
     CustomScaffold(
         modifier = modifier,
         topBar = {
@@ -95,33 +108,63 @@ fun ReviewJourneyDemoScreen(
         ) {
             item {
                 HeroCard(
-                    "今天答错 -> 画像变化 -> 晚些提醒 -> 再次打开续上",
-                    "这条链会保留当前进度，再次进入时可以继续。",
-                    Color(0xFF3467EB),
-                    Icons.Default.School
+                    title = "一题一推进度",
+                    subtitle = "先做题，再给反馈和下一次推荐。中途停下，回来时也能从这组题接着走。",
+                    accent = Color(0xFF3467EB),
+                    icon = Icons.Default.School
                 )
             }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MetricChip("今日错卡", "${state.wrongCardsToday} 张")
+                    MetricChip("待过卡片", "${state.wrongCardsToday} 张")
                     MetricChip("掌握度", "${(state.mastery * 100).toInt()}%")
-                    MetricChip("阶段", reviewStageLabel(state.reviewStage))
+                    MetricChip("当前状态", reviewStageLabel(state.reviewStage))
                 }
             }
             item {
                 JourneyCard(
-                    title = "碎片复习流程",
+                    title = "本轮进度",
                     body = reviewStageDescription(state.reviewStage, state.nextRecommendation)
                 )
             }
-            item {
-                ReviewQuestionCard(
-                    mastery = state.mastery,
-                    stage = state.reviewStage
-                )
+            if (canWorkOnQuestion) {
+                item {
+                    ReviewQuestionCard(
+                        question = state.currentReviewQuestion,
+                        questionNumber = state.reviewQuestionIndex + 1,
+                        mastery = state.mastery,
+                        selectedChoiceId = state.reviewSelectedChoiceId,
+                        answered = state.reviewAnswered,
+                        answerCorrect = state.reviewLastAnswerCorrect == true,
+                        onSelectChoice = state::selectReviewChoice
+                    )
+                }
+            }
+            if (state.reviewAnswered || state.reviewSessionCompleted) {
+                item {
+                    ReviewFeedbackCard(
+                        answerCorrect = state.reviewLastAnswerCorrect == true,
+                        masteryDelta = state.reviewLastMasteryDelta,
+                        explanation = state.currentReviewQuestion.explanation,
+                        summary = state.profileSummary,
+                        nextRecommendation = state.nextRecommendation,
+                        sessionCompleted = state.reviewSessionCompleted
+                    )
+                }
             }
             item {
                 ProfileCard(state.profileSummary)
+            }
+            item {
+                ReviewNextStepCard(
+                    title = if (state.reviewReminderVisible) "稍后继续" else "下次推荐",
+                    body = if (state.reviewReminderVisible) state.reviewResumeLabel else state.nextRecommendation,
+                    caption = if (state.reviewSessionCompleted) {
+                        "这轮已经收尾，下次打开会按这条推荐继续。"
+                    } else {
+                        "系统会根据这轮表现调整下一题和下一次出现的时机。"
+                    }
+                )
             }
             item {
                 AnimatedVisibility(
@@ -129,17 +172,67 @@ fun ReviewJourneyDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    ReminderCard(state.nextRecommendation)
+                    ReminderCard(state.reviewResumeLabel)
+                }
+            }
+            if (state.reviewEvents.isNotEmpty()) {
+                item {
+                    ReviewEventCard(state.reviewEvents)
                 }
             }
             item {
-                DemoActions(
-                    primary = nextReviewActionLabel(state.reviewStage),
-                    onPrimary = { state.advanceReviewDemo() },
-                    secondary = "重新开始",
-                    onSecondary = { state.resetReviewDemo() }
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    when {
+                        state.reviewStage == ReviewDemoStage.REMINDER_READY -> {
+                            Button(
+                                onClick = { state.resumeReviewFromReminder() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text("从提醒继续")
+                            }
+                        }
+
+                        state.reviewStage == ReviewDemoStage.ANSWERED_WRONG && state.reviewAnswered -> {
+                            Button(
+                                onClick = { state.continueReviewWithFollowUp() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text(if (state.reviewLastAnswerCorrect == true) "继续下一题" else "补 1 题同类题")
+                            }
+                        }
+
+                        canSubmitCurrentQuestion -> {
+                            Button(
+                                onClick = { state.submitReviewAnswer() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text(if (state.reviewStage == ReviewDemoStage.RESUMED) "提交这题" else "提交答案")
+                            }
+                        }
+
+                        state.reviewSessionCompleted -> {
+                            Button(
+                                onClick = { state.resetReviewDemo() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text("再来一轮")
+                            }
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (state.reviewStage == ReviewDemoStage.PROFILE_UPDATED && !state.reviewAnswered) {
+                            OutlinedButton(onClick = { state.scheduleReviewReminder() }) {
+                                Text("稍后继续")
+                            }
+                        }
+                        OutlinedButton(onClick = { state.resetReviewDemo() }) {
+                            Text("重新开始")
+                        }
+                    }
+                }
             }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
 }
@@ -172,28 +265,40 @@ fun CourseMaterialDemoScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                HeroCard(
-                    "导入资料 -> 处理中 -> 笔记/卡片生成 -> 课程内追问",
-                    "保留真实的导入、中间态、结果页和课程内追问结构。",
-                    Color(0xFF0F9D7A),
-                    Icons.Default.FolderZip
-                )
-            }
-            item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MetricChip("当前课程", "计算机网络")
+                    MetricChip("课程", "计算机网络")
                     MetricChip("资料", "PDF + 截图")
-                    MetricChip("阶段", courseStageLabel(state.courseStage))
+                    MetricChip("状态", courseStageLabel(state.courseStage))
                 }
             }
             item {
-                JourneyCard(
-                    title = "导入动作",
-                    body = when (state.courseStage) {
-                        CourseDemoStage.EMPTY -> "点击“导入资料”后，课程空间出现本次导入条目。"
-                        else -> "已导入：${state.importedMaterialName}"
+                Card(shape = RoundedCornerShape(22.dp)) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("已导入资料", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            when (state.courseStage) {
+                                CourseDemoStage.EMPTY -> "点击下方按钮导入课程资料，支持 PDF、Word、图片等格式。"
+                                else -> "已导入：${state.importedMaterialName}"
+                            },
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (state.courseStage == CourseDemoStage.EMPTY) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { state.advanceCourseDemo() }
+                            ) {
+                                Text(
+                                    "导入资料",
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
                     }
-                )
+                }
             }
             item {
                 AnimatedVisibility(
@@ -201,7 +306,42 @@ fun CourseMaterialDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    ProcessingCard()
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("正在整理", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                if (state.courseStage == CourseDemoStage.PROCESSING) {
+                                    val transition = rememberInfiniteTransition(label = "proc")
+                                    val alpha = transition.animateFloat(0.35f, 1f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "a")
+                                    AnimatedStatusDots(alpha = alpha.value)
+                                } else {
+                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF0F9D7A), modifier = Modifier.size(18.dp))
+                                }
+                            }
+                            if (state.courseStage == CourseDemoStage.PROCESSING) {
+                                val transition = rememberInfiniteTransition(label = "procProg")
+                                val prog = transition.animateFloat(0.24f, 0.82f, infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "p")
+                                Text(processingCaption(prog.value), style = MaterialTheme.typography.bodyMedium)
+                                LinearProgressIndicator(progress = prog.value, modifier = Modifier.fillMaxWidth().height(8.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.clickable { state.advanceCourseDemo() }
+                                ) {
+                                    Text(
+                                        "生成笔记",
+                                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            } else {
+                                Text("整理完成，笔记已生成。", style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
                 }
             }
             item {
@@ -210,10 +350,32 @@ fun CourseMaterialDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    ResultCard(
-                        state.generatedNoteTitle,
-                        "${state.generatedCardCount} 张卡片已生成，可继续用于课程内复习和追问。"
-                    )
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.AutoStories, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("结构化笔记", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            }
+                            Text(state.generatedNoteTitle, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                            Text("${state.generatedCardCount} 张复习卡片已生成，可用于课程内复习和追问。", style = MaterialTheme.typography.bodyMedium)
+                            if (state.courseStage == CourseDemoStage.GENERATED) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.clickable { state.advanceCourseDemo() }
+                                ) {
+                                    Text(
+                                        "开始追问",
+                                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
             item {
@@ -222,17 +384,27 @@ fun CourseMaterialDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    InCourseQaCard()
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("课程内追问", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            LearningDemoState.courseQaMessages.forEach { msg ->
+                                Text(msg, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
                 }
             }
             item {
-                DemoActions(
-                    primary = nextCourseActionLabel(state.courseStage),
-                    onPrimary = { state.advanceCourseDemo() },
-                    secondary = "重新开始",
-                    onSecondary = { state.resetCourseDemo() }
-                )
+                if (state.courseStage == CourseDemoStage.QA) {
+                    OutlinedButton(
+                        onClick = { state.resetCourseDemo() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("重新整理")
+                    }
+                }
             }
+            item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
 }
@@ -265,28 +437,64 @@ fun CrossDeviceTaskDemoScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
-                HeroCard(
-                    "发起任务 -> 看计划 -> 批准 -> 电脑跑 -> 手机继续聊 -> 中途改方向",
-                    "任务状态会连续推进，手机端和电脑端状态一起更新。",
-                    Color(0xFFE87722),
-                    Icons.Default.Computer
-                )
-            }
-            item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MetricChip("任务阶段", taskStageLabel(state.taskStage))
+                    MetricChip("阶段", taskStageLabel(state.taskStage))
                     MetricChip("电脑进度", "${(state.desktopProgress * 100).toInt()}%")
-                    MetricChip("当前方向", if (state.taskStage >= CrossDeviceTaskStage.REDIRECTED) "已改方向" else "原计划")
+                    MetricChip("方向", if (state.taskStage >= CrossDeviceTaskStage.REDIRECTED) "已调整" else "原计划")
                 }
             }
             item {
-                JourneyCard(
-                    title = "任务目标",
-                    body = state.taskGoal
-                )
+                Card(shape = RoundedCornerShape(22.dp)) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("任务目标", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(state.taskGoal, style = MaterialTheme.typography.bodyMedium)
+                        if (state.taskStage == CrossDeviceTaskStage.DRAFT) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { state.advanceTaskDemo() }
+                            ) {
+                                Text("生成执行计划", modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.labelLarge)
+                            }
+                        }
+                    }
+                }
             }
             item {
-                PlanCard(state.taskStage, state.taskDirection)
+                AnimatedVisibility(
+                    visible = state.taskStage >= CrossDeviceTaskStage.PLAN_READY,
+                    enter = fadeIn(tween(350)) + expandVertically(tween(350)),
+                    exit = fadeOut(tween(220))
+                ) {
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("执行计划", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            listOf(
+                                "1. 解析任务目标并生成三步计划",
+                                "2. 用户在手机端批准后，电脑端开始执行",
+                                "3. 执行中允许继续聊天并中途改方向"
+                            ).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                            if (state.taskStage >= CrossDeviceTaskStage.REDIRECTED) {
+                                Text("当前已改方向：${state.taskDirection}", color = MaterialTheme.colorScheme.primary)
+                            }
+                            if (state.taskStage == CrossDeviceTaskStage.PLAN_READY) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.clickable { state.advanceTaskDemo() }
+                                ) {
+                                    Text("批准执行", modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             item {
                 AnimatedVisibility(
@@ -294,7 +502,38 @@ fun CrossDeviceTaskDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    DesktopRunningCard(state.desktopProgress)
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Computer, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("电脑端执行中", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                if (state.taskStage == CrossDeviceTaskStage.RUNNING_ON_DESKTOP) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    val t = rememberInfiniteTransition(label = "dp")
+                                    val a = t.animateFloat(0.35f, 1f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "da")
+                                    AnimatedStatusDots(alpha = a.value)
+                                }
+                            }
+                            val t2 = rememberInfiniteTransition(label = "dp2")
+                            val drift = t2.animateFloat(0f, 0.06f, infiniteRepeatable(tween(1500), RepeatMode.Reverse), label = "dr")
+                            val animProg = animateFloatAsState((state.desktopProgress + drift.value).coerceAtMost(0.98f), tween(350), label = "ap")
+                            Text(desktopCaption(animProg.value), style = MaterialTheme.typography.bodyMedium)
+                            LinearProgressIndicator(progress = animProg.value, modifier = Modifier.fillMaxWidth().height(8.dp))
+                            if (state.taskStage == CrossDeviceTaskStage.RUNNING_ON_DESKTOP) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    modifier = Modifier.clickable { state.advanceTaskDemo() }
+                                ) {
+                                    Text("在手机上继续聊", modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             item {
@@ -303,48 +542,51 @@ fun CrossDeviceTaskDemoScreen(
                     enter = fadeIn(tween(350)) + expandVertically(tween(350)),
                     exit = fadeOut(tween(220))
                 ) {
-                    PhoneChatCard()
+                    Card(shape = RoundedCornerShape(22.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("手机继续聊天", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            LearningDemoState.taskChatMessages.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                            if (state.taskStage == CrossDeviceTaskStage.CHATTING_ON_PHONE) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.clickable { state.advanceTaskDemo() }
+                                ) {
+                                    Text("调整方向", modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             item {
-                DemoActions(
-                    primary = nextTaskActionLabel(state.taskStage),
-                    onPrimary = { state.advanceTaskDemo() },
-                    secondary = "重新开始",
-                    onSecondary = { state.resetTaskDemo() }
-                )
+                AnimatedVisibility(
+                    visible = state.taskStage == CrossDeviceTaskStage.REDIRECTED,
+                    enter = fadeIn(tween(350)) + expandVertically(tween(350)),
+                    exit = fadeOut(tween(220))
+                ) {
+                    Card(shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF0F9D7A))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("方向已调整", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            }
+                            Text("新方向：${state.taskDirection}", style = MaterialTheme.typography.bodyMedium)
+                            Text("电脑端已收到新指令，继续执行中。", style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            OutlinedButton(onClick = { state.resetTaskDemo() }, modifier = Modifier.fillMaxWidth()) {
+                                Text("重新演示")
+                            }
+                        }
+                    }
+                }
             }
-        }
-    }
-}
-
-@Composable
-private fun HeroCard(
-    title: String,
-    subtitle: String,
-    accent: Color,
-    icon: ImageVector
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = accent.copy(alpha = 0.12f))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize()
-                .padding(18.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(42.dp).background(accent.copy(alpha = 0.18f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, contentDescription = null, tint = accent)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
 }
@@ -358,209 +600,6 @@ private fun MetricChip(label: String, value: String) {
         Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        }
-    }
-}
-
-@Composable
-private fun JourneyCard(title: String, body: String) {
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(body, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-private fun ReviewQuestionCard(mastery: Float, stage: ReviewDemoStage) {
-    val animatedMastery = animateFloatAsState(
-        targetValue = mastery,
-        animationSpec = tween(500),
-        label = "reviewMastery"
-    )
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("今日复习题", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text("TCP 拥塞控制的慢启动和拥塞避免分别在什么条件下切换？", style = MaterialTheme.typography.bodyLarge)
-            AnimatedContent(targetState = reviewStageLabel(stage), label = "reviewStage") { label ->
-                Text("当前表现：$label", color = MaterialTheme.colorScheme.primary)
-            }
-            LinearProgressIndicator(progress = animatedMastery.value, modifier = Modifier.fillMaxWidth().height(8.dp))
-        }
-    }
-}
-
-@Composable
-private fun ProfileCard(summary: String) {
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Person, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("学习画像变化", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            }
-            Text(summary, style = MaterialTheme.typography.bodyMedium)
-            Text("证据来源：今日错题记录 + 课程进度 + 最近追问内容", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-private fun ReminderCard(text: String) {
-    val transition = rememberInfiniteTransition(label = "reminderPulse")
-    val iconAlpha = transition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(900),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "reminderIconAlpha"
-    )
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f))
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Default.NotificationsActive,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.alpha(iconAlpha.value)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Column {
-                Text("晚些时候的复习提醒", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text(text, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProcessingCard() {
-    val transition = rememberInfiniteTransition(label = "processing")
-    val animatedProgress = transition.animateFloat(
-        initialValue = 0.24f,
-        targetValue = 0.82f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "processingProgress"
-    )
-    val statusAlpha = transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(700),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "processingStatusAlpha"
-    )
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("处理中", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(modifier = Modifier.width(8.dp))
-                AnimatedStatusDots(alpha = statusAlpha.value)
-            }
-            AnimatedContent(targetState = processingCaption(animatedProgress.value), label = "processingCaption") { caption ->
-                Text(caption, style = MaterialTheme.typography.bodyMedium)
-            }
-            LinearProgressIndicator(progress = animatedProgress.value, modifier = Modifier.fillMaxWidth().height(8.dp))
-        }
-    }
-}
-
-@Composable
-private fun ResultCard(title: String, body: String) {
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.AutoStories, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("整理结果落地页", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            }
-            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            Text(body, style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}
-
-@Composable
-private fun InCourseQaCard() {
-    val messages = LearningDemoState.courseQaMessages
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("课程内追问", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            messages.forEachIndexed { index, _ ->
-                Text(messages[index], style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-    }
-}
-
-@Composable
-private fun PlanCard(stage: CrossDeviceTaskStage, direction: String) {
-    val steps = remember {
-        mutableStateListOf(
-            "1. 解析任务目标并生成三步计划",
-            "2. 需要用户在手机端批准后，电脑端开始执行",
-            "3. 执行中允许继续聊天并中途改方向"
-        )
-    }
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("执行计划", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            steps.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            if (stage >= CrossDeviceTaskStage.REDIRECTED) {
-                Text("当前已改方向：$direction", color = MaterialTheme.colorScheme.primary)
-            }
-        }
-    }
-}
-
-@Composable
-private fun DesktopRunningCard(progress: Float) {
-    val transition = rememberInfiniteTransition(label = "desktopRunning")
-    val drift = transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 0.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "desktopProgressDrift"
-    )
-    val statusAlpha = transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "desktopStatusAlpha"
-    )
-    val animatedProgress = animateFloatAsState(
-        targetValue = (progress + drift.value).coerceAtMost(0.98f),
-        animationSpec = tween(350),
-        label = "desktopProgress"
-    )
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Computer, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("电脑端正在执行", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(modifier = Modifier.width(8.dp))
-                AnimatedStatusDots(alpha = statusAlpha.value)
-            }
-            AnimatedContent(targetState = desktopCaption(animatedProgress.value), label = "desktopCaption") { caption ->
-                Text(caption, style = MaterialTheme.typography.bodyMedium)
-            }
-            LinearProgressIndicator(progress = animatedProgress.value, modifier = Modifier.fillMaxWidth().height(8.dp))
         }
     }
 }
@@ -592,34 +631,6 @@ private fun desktopCaption(progress: Float): String = when {
     else -> "执行已进入后半段，随时可以改方向或追问下一步。"
 }
 
-@Composable
-private fun PhoneChatCard() {
-    val messages = LearningDemoState.taskChatMessages
-    Card(shape = RoundedCornerShape(22.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("手机继续聊天", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            messages.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        }
-    }
-}
-
-@Composable
-private fun DemoActions(
-    primary: String,
-    onPrimary: () -> Unit,
-    secondary: String,
-    onSecondary: () -> Unit
-) {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Button(onClick = onPrimary, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-            Text(primary)
-        }
-        OutlinedButton(onClick = onSecondary) {
-            Text(secondary)
-        }
-    }
-}
-
 private fun reviewStageLabel(stage: ReviewDemoStage): String = when (stage) {
     ReviewDemoStage.START -> "开始"
     ReviewDemoStage.ANSWERED_WRONG -> "已答错"
@@ -628,36 +639,12 @@ private fun reviewStageLabel(stage: ReviewDemoStage): String = when (stage) {
     ReviewDemoStage.RESUMED -> "已续上"
 }
 
-private fun reviewStageDescription(stage: ReviewDemoStage, next: String): String = when (stage) {
-    ReviewDemoStage.START -> "先完成今天这轮做题。答错后会立刻看到错卡数量和掌握度变化。"
-    ReviewDemoStage.ANSWERED_WRONG -> "已经记录错题，不停在这里，下一步要体现画像变化。"
-    ReviewDemoStage.PROFILE_UPDATED -> "画像已根据错题更新，下一步要在晚些时候触发提醒。"
-    ReviewDemoStage.REMINDER_READY -> "提醒规则已满足：$next"
-    ReviewDemoStage.RESUMED -> "已经从提醒续上，并完成一轮回补。"
-}
-
-private fun nextReviewActionLabel(stage: ReviewDemoStage): String = when (stage) {
-    ReviewDemoStage.START -> "提交本题"
-    ReviewDemoStage.ANSWERED_WRONG -> "更新学习画像"
-    ReviewDemoStage.PROFILE_UPDATED -> "进入提醒时段"
-    ReviewDemoStage.REMINDER_READY -> "继续上次复习"
-    ReviewDemoStage.RESUMED -> "已完成"
-}
-
 private fun courseStageLabel(stage: CourseDemoStage): String = when (stage) {
     CourseDemoStage.EMPTY -> "待导入"
     CourseDemoStage.IMPORTED -> "已导入"
     CourseDemoStage.PROCESSING -> "处理中"
     CourseDemoStage.GENERATED -> "已生成"
     CourseDemoStage.QA -> "可追问"
-}
-
-private fun nextCourseActionLabel(stage: CourseDemoStage): String = when (stage) {
-    CourseDemoStage.EMPTY -> "导入资料"
-    CourseDemoStage.IMPORTED -> "开始整理"
-    CourseDemoStage.PROCESSING -> "生成结果"
-    CourseDemoStage.GENERATED -> "课程内追问"
-    CourseDemoStage.QA -> "已完成"
 }
 
 private fun taskStageLabel(stage: CrossDeviceTaskStage): String = when (stage) {
@@ -669,11 +656,213 @@ private fun taskStageLabel(stage: CrossDeviceTaskStage): String = when (stage) {
     CrossDeviceTaskStage.REDIRECTED -> "已改方向"
 }
 
-private fun nextTaskActionLabel(stage: CrossDeviceTaskStage): String = when (stage) {
-    CrossDeviceTaskStage.DRAFT -> "生成计划"
-    CrossDeviceTaskStage.PLAN_READY -> "批准执行"
-    CrossDeviceTaskStage.APPROVED -> "电脑开始跑"
-    CrossDeviceTaskStage.RUNNING_ON_DESKTOP -> "手机继续聊天"
-    CrossDeviceTaskStage.CHATTING_ON_PHONE -> "中途改方向"
-    CrossDeviceTaskStage.REDIRECTED -> "已完成"
+private fun reviewStageDescription(stage: ReviewDemoStage, nextRecommendation: String): String = when (stage) {
+    ReviewDemoStage.START -> "开始新一轮复习，系统会根据你的答题情况调整后续推荐。"
+    ReviewDemoStage.ANSWERED_WRONG -> "答错了几道题，掌握度有所下降，准备更新学习画像。"
+    ReviewDemoStage.PROFILE_UPDATED -> "学习画像已更新，系统会根据新的画像调整复习策略。"
+    ReviewDemoStage.REMINDER_READY -> "本轮复习已完成，系统会在合适的时间提醒你继续。"
+    ReviewDemoStage.RESUMED -> "从提醒继续复习，接着上次的进度往下走。"
+}
+
+@Composable
+private fun HeroCard(
+    title: String,
+    subtitle: String,
+    accent: Color,
+    icon: ImageVector
+) {
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = accent.copy(alpha = 0.12f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(accent.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = accent)
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun JourneyCard(title: String, body: String) {
+    Card(shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(body, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReviewQuestionCard(
+    question: ReviewQuestion,
+    questionNumber: Int,
+    mastery: Float,
+    selectedChoiceId: String?,
+    answered: Boolean,
+    answerCorrect: Boolean,
+    onSelectChoice: (String) -> Unit
+) {
+    Card(shape = RoundedCornerShape(22.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("第 $questionNumber 题", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Text(question.prompt, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+            question.choices.forEach { choice ->
+                val isSelected = choice.id == selectedChoiceId
+                val bgColor = when {
+                    !answered -> if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    choice.id == question.correctChoiceId -> Color(0xFF0F9D7A).copy(alpha = 0.2f)
+                    isSelected && !answerCorrect -> MaterialTheme.colorScheme.errorContainer
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = bgColor,
+                    onClick = { if (!answered) onSelectChoice(choice.id) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(choice.text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        if (answered && choice.id == question.correctChoiceId) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF0F9D7A))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReviewFeedbackCard(
+    answerCorrect: Boolean,
+    masteryDelta: Float,
+    explanation: String,
+    summary: String,
+    nextRecommendation: String,
+    sessionCompleted: Boolean
+) {
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (answerCorrect) Color(0xFF0F9D7A).copy(alpha = 0.15f)
+            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (answerCorrect) Icons.Default.CheckCircle else Icons.Default.NotificationsActive,
+                    contentDescription = null,
+                    tint = if (answerCorrect) Color(0xFF0F9D7A) else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    if (answerCorrect) "回答正确" else "回答错误",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            Text(explanation, style = MaterialTheme.typography.bodyMedium)
+            if (!answerCorrect) {
+                Text(
+                    "掌握度变化：${if (masteryDelta >= 0) "+" else ""}${(masteryDelta * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (sessionCompleted) {
+                Text("本轮复习已完成！", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileCard(summary: String) {
+    Card(shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("学习画像", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(summary, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+private fun ReviewNextStepCard(title: String, body: String, caption: String) {
+    Card(shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(body, style = MaterialTheme.typography.bodyMedium)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(caption, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun ReminderCard(label: String) {
+    Card(
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text("提醒已设置", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(label, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReviewEventCard(events: List<ReviewEvent>) {
+    Card(shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("复习记录", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            events.forEach { event ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(event.detail, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+    }
 }

@@ -110,6 +110,12 @@ fun TaskCenterScreen(
     val approvalCount = tasks.count { it.status == TaskStatus.AWAITING_APPROVAL }
     val totalCount = tasks.size
     val completionRate = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
+    val latestCompletedTask = rawTasks
+        .filter { it.status == StudyTaskStatus.COMPLETED }
+        .maxByOrNull { it.updatedAt }
+    val focusTask = rawTasks.firstOrNull { it.status == StudyTaskStatus.RUNNING }
+        ?: rawTasks.firstOrNull { it.status == StudyTaskStatus.QUEUED }
+        ?: latestCompletedTask
 
     val tabs = listOf("进行中", "新任务", "已归档")
     var selectedTab by remember { mutableStateOf("进行中") }
@@ -138,16 +144,17 @@ fun TaskCenterScreen(
             ) {
                 Column {
                     Text(
-                        text = "Hello,",
+                        text = "任务中心",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "@MetaAgent!",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = when {
+                            focusTask != null -> "把审批、执行和交付放在同一个工作台里。"
+                            else -> "从这里发起任务、看状态、接交付结果。"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -225,6 +232,17 @@ fun TaskCenterScreen(
                     CrossDeviceCard(onClick = onCrossDeviceClick)
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            TaskCenterFocusCard(
+                focusTask = focusTask,
+                latestCompletedTask = latestCompletedTask,
+                unreadNotificationCount = unreadNotificationCount,
+                onFocusClick = focusTask?.let { { onTaskClick(it.id) } },
+                onCrossDeviceClick = onCrossDeviceClick
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -314,7 +332,7 @@ fun TaskCenterScreen(
                         }
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Your Progress",
+                            text = "推进进度",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -344,13 +362,13 @@ fun TaskCenterScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${completedCount} 个任务已完成",
+                            text = "${completedCount} 个任务已形成交付结果",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                             lineHeight = 16.sp
                         )
                         Text(
-                            text = "Keep it up!",
+                            text = if (runningCount > 0) "当前还有 $runningCount 个任务在推进" else "可以继续补齐下一条演示链路",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -376,8 +394,33 @@ fun TaskCenterScreen(
             }
         }
 
-        items(filteredTasks) { task ->
-            TaskCard(task = task, onClick = { onTaskClick(task.id) })
+        if (filteredTasks.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text("这一栏暂时没有任务", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = when (selectedTab) {
+                            "进行中" -> "可以先从“新建任务”发起一条跨端任务，再回来查看执行状态。"
+                            "新任务" -> "新建任务后会先进入这里，等待审批或补充条件。"
+                            else -> "已归档任务会显示交付结果，方便演示“完成后还能继续用”。"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            items(filteredTasks) { task ->
+                TaskCard(task = task, onClick = { onTaskClick(task.id) })
+            }
         }
     }
 
@@ -426,6 +469,100 @@ fun TaskCenterScreen(
 }
 
 @Composable
+private fun TaskCenterFocusCard(
+    focusTask: StudyTask?,
+    latestCompletedTask: StudyTask?,
+    unreadNotificationCount: Int,
+    onFocusClick: (() -> Unit)?,
+    onCrossDeviceClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("今天的推进重点", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = when {
+                focusTask?.status == StudyTaskStatus.RUNNING ->
+                    "优先盯住《${focusTask.courseName}》里的「${focusTask.title}」，它正在执行中。"
+                focusTask?.status == StudyTaskStatus.QUEUED ->
+                    "先把「${focusTask.title}」审批掉，跨端执行链路才会真正跑起来。"
+                latestCompletedTask != null ->
+                    "已经有一份最新交付《${latestCompletedTask.title}》，适合直接打开讲结果。"
+                else ->
+                    "先发起一条任务，再把审批、执行和结果交付完整串起来。"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TaskMetaChip(if (unreadNotificationCount > 0) "$unreadNotificationCount 条新通知" else "通知已清空")
+            TaskMetaChip(
+                when (focusTask?.status) {
+                    StudyTaskStatus.RUNNING -> "执行中"
+                    StudyTaskStatus.QUEUED -> "待批准"
+                    StudyTaskStatus.COMPLETED -> "可交付"
+                    else -> "待发起"
+                }
+            )
+            if (latestCompletedTask != null) {
+                TaskMetaChip("最近交付已就位")
+            }
+        }
+        if (focusTask != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(focusTask.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = "${focusTask.courseName} · ${focusTask.status.label} · ${focusTask.statusDetail}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (onFocusClick != null) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable(onClick = onFocusClick)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Text("继续当前任务", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable(onClick = onCrossDeviceClick)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text("查看跨端流程", style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
+}
+
+@Composable
 private fun StatisticsCard(
     totalTasks: Int,
     running: Int,
@@ -446,12 +583,12 @@ private fun StatisticsCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Statistics", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = "任务全景", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
             Row(
                 modifier = Modifier.clickable(onClick = onSeeAll),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "See all", fontSize = 12.sp)
+                Text(text = "详细统计", fontSize = 12.sp)
                 Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(14.dp))
             }
         }
@@ -512,7 +649,7 @@ private fun QuickActionCard(
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurface)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "See all", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "立即创建", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 Icon(Icons.Default.ChevronRight, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
@@ -546,7 +683,7 @@ private fun CrossDeviceCard(onClick: () -> Unit) {
             ) {
                 Icon(Icons.Default.Devices, contentDescription = null, modifier = Modifier.size(16.dp))
             }
-            Text(text = "See all", fontSize = 12.sp)
+            Text(text = "查看流程", fontSize = 12.sp)
         }
         Column {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1100,6 +1237,19 @@ private fun TaskCard(task: TaskItem, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (task.stepCount > 0) {
+                    TaskMetaChip("${task.stepCount} 个阶段")
+                }
+                if (task.estimatedMinutes > 0) {
+                    TaskMetaChip("${task.estimatedMinutes} 分钟")
+                }
+                if (task.status == TaskStatus.COMPLETED) {
+                    TaskMetaChip("查看结果交付")
+                }
+            }
+
             if (task.status == TaskStatus.RUNNING && task.progress > 0f) {
                 Spacer(modifier = Modifier.height(8.dp))
                 LinearProgressIndicator(
@@ -1143,6 +1293,22 @@ private fun TaskCard(task: TaskItem, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun TaskMetaChip(text: String) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

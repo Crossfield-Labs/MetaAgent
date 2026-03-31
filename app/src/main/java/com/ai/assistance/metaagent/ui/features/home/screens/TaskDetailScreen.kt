@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ import java.util.Locale
 @Composable
 fun TaskDetailScreen(
     taskId: String,
+    onOpenResult: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -117,6 +119,14 @@ fun TaskDetailScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp)
                     )
+                    if (task.status == StudyTaskStatus.COMPLETED) {
+                        TextButton(
+                            onClick = { onOpenResult(task.id) },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text("查看结果交付")
+                        }
+                    }
                 }
             }
         }
